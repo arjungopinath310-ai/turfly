@@ -92,7 +92,7 @@ Most problems are fixed by: <b>stop-all</b>, then <b>start-all</b>, then send pe
 <tr><td>Save a new public address by hand</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\set-public-url.ps1 https://new-address.trycloudflare.com</code></td></tr>
 <tr><td>Back up the database</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1</code></td></tr>
 <tr><td>Apply database changes after an update</td><td><code>npm.cmd run db:migrate</code></td></tr>
-<tr><td>Run the automatic tests</td><td><code>npm.cmd test</code> and <code>npm.cmd run test:integration</code></td></tr>
+<tr><td>Run the automatic tests</td><td><code>npm.cmd test</code> and <code>npm.cmd run test:integration</code> (the database tests use their own test area, <code>TEST_DATABASE_URL</code>, never the live data)</td></tr>
 <tr><td>Rebuild the Android test app (APK)</td><td><code>cd mobile</code> then <code>npm.cmd run build:debug</code> (APK appears in <code>mobile\dist</code>)</td></tr>
 <tr><td>Start the database if it is stopped</td><td>PowerShell <b>as Administrator</b>: <code>Start-Service postgresql-x64-16</code></td></tr>
 <tr><td>Free port 3000 if something blocks it</td><td><code>Get-NetTCPConnection -LocalPort 3000 -State Listen</code> → note <i>OwningProcess</i> → <code>Stop-Process -Id NUMBER</code></td></tr>
@@ -291,6 +291,7 @@ powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1</pre>
 <tr><td><code>npm.cmd run build</code> fails</td><td>Broken code or missing packages</td><td><code>npm.cmd ci</code> and build again. Still failing: go back to the previous version (section 6) and report the red error text to the developer.</td></tr>
 <tr><td>Server window shows <code>[env] WARNING</code> lines</td><td>Information, not errors: demo mode on, business details missing</td><td>Fill those values in .env before real launch (section 11).</td></tr>
 <tr><td>Site is slow or stops at night</td><td>PC goes to sleep</td><td>Change the power settings (section 3).</td></tr>
+<tr><td><code>npm.cmd run test:integration</code>: "TEST_DATABASE_URL is not set" or "Refusing to run tests against live data"</td><td>The database tests need their own test area</td><td>In .env add <code>TEST_DATABASE_URL</code> = your <code>DATABASE_URL</code> with <code>?schema=test</code> instead of <code>?schema=public</code>.</td></tr>
 <tr><td>status: low disk space</td><td>Old builds/backups</td><td>Delete <code>.next-preview</code> / <code>.next-verify</code> folders and old files in <code>backups\</code>; empty the Recycle Bin.</td></tr>
 </table>
 </section>
@@ -316,6 +317,7 @@ After changing it, restart the website: <code>powershell -ExecutionPolicy Bypass
 <table>
 <tr><th>Setting</th><th>Meaning</th></tr>
 <tr><td><code>DATABASE_URL</code></td><td>How to reach the database (contains its password).</td></tr>
+<tr><td><code>TEST_DATABASE_URL</code></td><td>Same database with <code>?schema=test</code>: where the automated tests write, so they never touch live data.</td></tr>
 <tr><td><code>APP_URL</code>, <code>NEXTAUTH_URL</code></td><td>The public address. Set automatically by start-all / set-public-url.</td></tr>
 <tr><td><code>NEXTAUTH_SECRET</code>, <code>CRON_SECRET</code></td><td>Random secrets. Changing <code>NEXTAUTH_SECRET</code> signs everyone out.</td></tr>
 <tr><td><code>ADMIN_PHONES</code></td><td>Comma-separated <code>+91…</code> numbers that become admin when they sign in.</td></tr>

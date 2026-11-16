@@ -69,7 +69,8 @@ powershell -ExecutionPolicy Bypass -File scripts\restart-server.ps1 -Update  # i
 
 ```bash
 npm test                    # engine unit tests (allocation, slots, pricing, policy, time)
-npm run test:integration    # against Postgres: concurrency, 7s↔5s rules, webhooks, late payments
+npm run test:integration    # against Postgres: concurrency, 7s↔5s rules, webhooks, late payments, split payments
+                            # uses TEST_DATABASE_URL (its own schema, e.g. ?schema=test), never the live data
 npm run typecheck
 ```
 

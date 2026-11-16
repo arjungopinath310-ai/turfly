@@ -10,7 +10,8 @@ $dbUrl = $dbUrl -replace '\?.*$', ''  # pg_dump does not understand Prisma's ?sc
 $dir = Join-Path $root "backups"
 New-Item -ItemType Directory -Force $dir | Out-Null
 $file = Join-Path $dir ("turfly-" + (Get-Date -Format "yyyyMMdd-HHmm") + ".dump")
-& (Join-Path $pgBin "pg_dump.exe") --format=custom --no-owner --file "$file" "$dbUrl"
+# Skip the automated tests' own schema "test"; everything else (live data + extensions) is kept
+& (Join-Path $pgBin "pg_dump.exe") --format=custom --no-owner --exclude-schema=test --file "$file" "$dbUrl"
 if ($LASTEXITCODE -ne 0) { Write-Error "Backup failed"; exit 1 }
 Get-ChildItem $dir -Filter "turfly-*.dump" | Sort-Object Name -Descending | Select-Object -Skip 14 | Remove-Item -Force
 Write-Host "Backup saved: $file ($([math]::Round((Get-Item $file).Length / 1MB, 2)) MB)"
