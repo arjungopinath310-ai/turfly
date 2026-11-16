@@ -1,10 +1,11 @@
 /**
- * Sign-in is required for the whole app. These pages stay public because payment gateways (Razorpay
- * website checks), Google sign-in verification and the Play Store review must be able to open them
- * without an account. Everything else redirects to /login and comes back afterwards.
- * Pure functions: used by the middleware and by tests.
+ * Sign-in is required for the whole app, including the home page: signed-out visitors land on /login.
+ * These pages stay public because payment gateways (Razorpay website checks), Google sign-in
+ * verification and the Play Store review must be able to open them without an account. None of them
+ * shows turfs, prices of turfs or any other part of the app. Everything else redirects to /login and
+ * comes back afterwards. Pure functions: used by the middleware and by tests.
  */
-const PUBLIC_EXACT = new Set(["/", "/login", "/contact", "/account/delete"]);
+const PUBLIC_EXACT = new Set(["/login", "/about", "/contact", "/account/delete"]);
 const PUBLIC_PREFIXES = ["/legal/"];
 
 export function isPublicPath(pathname: string) {

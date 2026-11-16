@@ -223,10 +223,11 @@ then steps 4 and 7. (Database changes are not undone; restore a backup only if r
 <section>
 <h2>7 · Admin work inside the app</h2>
 <h3>Everyone must sign in</h3>
-<p>Visitors must sign in (mobile number + code, or Google once it is set up) before they can see turfs, book or use anything else. Afterwards they
-return to the page they asked for, so shared links (split payments, team invites, turf claims) still work. These pages stay open without signing in,
-because Razorpay, Google and the Play Store check them: the landing page <code>/</code>, <code>/login</code>, <code>/legal/…</code>, <code>/contact</code>
-and <code>/account/delete</code>. The Android app skips the landing page and opens on sign-in. The rule lives in <code>src\lib\access.ts</code>.</p>
+<p>Opening Turfly, on the website or in the app, shows the sign-in page first. Visitors must sign in (mobile number + code, or Google once it is set up)
+before they can see turfs, book or use anything else. Afterwards they return to the page they asked for, so shared links (split payments, team invites,
+turf claims) still work. These pages stay open without signing in, because Razorpay, Google and the Play Store check them, and none of them shows turfs:
+<code>/login</code>, <code>/about</code> (what Turfly is, with a sign-in button), <code>/legal/…</code>, <code>/contact</code> and <code>/account/delete</code>.
+When Razorpay or Google asks for your website or home page, give the <code>/about</code> address. The rule lives in <code>src\lib\access.ts</code>.</p>
 <h3>Signing in as admin</h3>
 <ul>
 <li>Phone numbers listed in <code>ADMIN_PHONES</code> in <code>.env</code> become admin when they sign in.</li>

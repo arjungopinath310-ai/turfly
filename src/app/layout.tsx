@@ -39,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <footer className="safe-bottom mt-24 border-t border-slate-200 bg-white">
             <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-slate-500">
               <nav className="flex flex-wrap gap-x-5 gap-y-2">
+                <Link href="/about" className="hover:text-slate-800">About</Link>
                 <Link href="/legal/terms" className="hover:text-slate-800">Terms</Link>
                 <Link href="/legal/privacy" className="hover:text-slate-800">Privacy</Link>
                 <Link href="/legal/refunds" className="hover:text-slate-800">Cancellation &amp; refunds</Link>

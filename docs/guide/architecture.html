@@ -685,7 +685,7 @@ from capacity. Charts are dependency-free SVG (<code>charts.tsx</code>) with acc
 <tr><td>Transport</td><td>HTTPS everywhere (Cloudflare), HSTS, app allows HTTPS only.</td></tr>
 <tr><td>Browser</td><td>Content-Security-Policy (scripts only from self and Razorpay), X-Frame-Options DENY, strict referrer policy, Permissions-Policy.</td></tr>
 <tr><td>Sign-in</td><td>Hashed single-use OTPs, attempt and send limits per phone, IP and globally; no on-screen OTP for admins or real owners.</td></tr>
-<tr><td>Sign-in gate</td><td><code>middleware.ts</code>: every page needs a valid session except the landing, sign-in, legal, contact and account-deletion pages; signed-out visitors return to the page they asked for after signing in (same-site paths only).</td></tr>
+<tr><td>Sign-in gate</td><td><code>middleware.ts</code>: every page, the home page included, needs a valid session except the sign-in, about, legal, contact and account-deletion pages; signed-out visitors return to the page they asked for after signing in (same-site paths only).</td></tr>
 <tr><td>Authorisation</td><td><code>pageUser()</code> on every protected page; <code>requireUser(role)</code> and <code>requireTurfAccess()</code> on every API call and server action.</td></tr>
 <tr><td>Input</td><td>zod validation; Prisma parameterised queries; message length and rate limits; CSV export escapes formulas.</td></tr>
 <tr><td>Payments</td><td>Server-side amounts, HMAC-verified webhooks, idempotent event handling, mock gateway refused when real keys exist.</td></tr>

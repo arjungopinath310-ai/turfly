@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { isAppUserAgent, isPublicPath, safeNext } from "@/lib/access";
 
 describe("sign-in gate", () => {
-  it("keeps the landing, sign-in, legal, contact and deletion pages public", () => {
-    for (const p of ["/", "/login", "/legal/terms", "/legal/privacy", "/legal/refunds", "/contact", "/account/delete", "/contact/"]) expect(isPublicPath(p), p).toBe(true);
+  it("keeps the sign-in, about, legal, contact and deletion pages public", () => {
+    for (const p of ["/login", "/about", "/about/", "/legal/terms", "/legal/privacy", "/legal/refunds", "/contact", "/account/delete", "/contact/"]) expect(isPublicPath(p), p).toBe(true);
   });
 
   it("requires sign-in everywhere else", () => {
-    for (const p of ["/turfs", "/turfs/demo-arena", "/bookings", "/split/abc", "/owner", "/admin", "/messages", "/loginx", "/legal", "/contacts", "/account"])
+    for (const p of ["/", "/turfs", "/turfs/demo-arena", "/bookings", "/split/abc", "/owner", "/admin", "/messages", "/loginx", "/legal", "/contacts", "/account"])
       expect(isPublicPath(p), p).toBe(false);
   });
 

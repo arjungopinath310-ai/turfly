@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { headers } from "next/headers";
 import { isAppUserAgent, safeNext } from "@/lib/access";
 import { googleEnabled } from "@/lib/auth";
@@ -15,6 +16,9 @@ export default async function LoginPage(props: { searchParams: Promise<{ next?: 
         <h1 className="h1">Sign in</h1>
         <p className="muted mt-1">Sign in to find turfs, book and manage your team. Use your mobile number; we&apos;ll send a 6-digit OTP.</p>
         <LoginForm next={next} google={googleEnabled && !inApp} />
+        <p className="muted mt-5 text-center text-sm">
+          New here? <Link href="/about" className="font-semibold text-brand-700 hover:underline">What is Turfly?</Link>
+        </p>
       </div>
     </div>
   );

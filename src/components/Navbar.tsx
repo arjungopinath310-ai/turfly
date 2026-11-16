@@ -20,14 +20,21 @@ export async function Navbar() {
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-brand-400 to-brand-700 text-white">⚽</span>
           {BRAND.name}
         </Link>
-        <nav className="hidden items-center gap-5 text-sm font-medium text-slate-600 md:flex">
-          <Link href="/turfs" className="hover:text-slate-900">Find turfs</Link>
-          <Link href="/find-players" className="hover:text-slate-900">Find players</Link>
-          <Link href="/teams" className="hover:text-slate-900">Teams</Link>
-          <Link href="/bookings" className="hover:text-slate-900">My bookings</Link>
-          {isOwner && <Link href="/owner" className="hover:text-slate-900">Owner</Link>}
-          {user?.role === "ADMIN" && <Link href="/admin" className="hover:text-slate-900">Admin</Link>}
-        </nav>
+        {/* Signed-out visitors only get "About" and "Sign in": every app page needs an account. */}
+        {user ? (
+          <nav className="hidden items-center gap-5 text-sm font-medium text-slate-600 md:flex">
+            <Link href="/turfs" className="hover:text-slate-900">Find turfs</Link>
+            <Link href="/find-players" className="hover:text-slate-900">Find players</Link>
+            <Link href="/teams" className="hover:text-slate-900">Teams</Link>
+            <Link href="/bookings" className="hover:text-slate-900">My bookings</Link>
+            {isOwner && <Link href="/owner" className="hover:text-slate-900">Owner</Link>}
+            {user.role === "ADMIN" && <Link href="/admin" className="hover:text-slate-900">Admin</Link>}
+          </nav>
+        ) : (
+          <nav className="flex items-center text-sm font-medium text-slate-600">
+            <Link href="/about" className="hover:text-slate-900">About</Link>
+          </nav>
+        )}
         <div className="ml-auto flex items-center gap-3">
           {user ? (
             <>
