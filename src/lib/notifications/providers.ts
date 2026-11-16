@@ -1,19 +1,28 @@
 // Channel adapters. Each returns true if actually delivered via a configured provider,
 // false if not configured (message is logged instead). Swap providers here without touching callers.
 
-export async function sendSms(phone: string, text: string, vars: Record<string, string> = {}): Promise<boolean> {
-  const key = process.env.MSG91_AUTH_KEY;
-  if (!key) {
-    console.info(`[sms:not-configured] ${phone}: ${text}`);
+import { renderSms, smsTemplate, type SmsKey } from "./sms";
+
+/**
+ * SMS via MSG91. In India every SMS must use a DLT-registered template (see sms.ts):
+ * the OTP goes through MSG91's OTP API, every other message through its Flow API with ##var1##… values.
+ * Returns false (and logs the text) when MSG91 or that template's ID is not configured yet.
+ */
+export async function sendSms(phone: string, key: SmsKey, vars: string[]): Promise<boolean> {
+  const auth = process.env.MSG91_AUTH_KEY;
+  const t = smsTemplate(key);
+  const templateId = process.env[t.env];
+  const text = renderSms(key, vars);
+  if (!auth || !templateId) {
+    console.info(`[sms:${auth ? `no-template ${t.env}` : "not-configured"}] ${phone}: ${text}`);
     return false;
   }
-  // MSG91: OTP API for OTP messages, Flow API for transactional templates (DLT-registered in India).
-  const isOtp = Boolean(vars.otp);
-  const url = isOtp ? "https://control.msg91.com/api/v5/otp" : "https://control.msg91.com/api/v5/flow";
-  const body = isOtp
-    ? { template_id: process.env.MSG91_OTP_TEMPLATE_ID, mobile: phone.replace("+", ""), otp: vars.otp }
-    : { template_id: process.env.MSG91_FLOW_TEMPLATE_ID, recipients: [{ mobiles: phone.replace("+", ""), ...vars, message: text }] };
-  const res = await fetch(url, { method: "POST", headers: { authkey: key, "content-type": "application/json" }, body: JSON.stringify(body) });
+  const mobile = phone.replace("+", "");
+  const [url, body] =
+    key === "OTP"
+      ? ["https://control.msg91.com/api/v5/otp", { template_id: templateId, mobile, otp: vars[0] }]
+      : ["https://control.msg91.com/api/v5/flow", { template_id: templateId, short_url: "0", recipients: [{ mobiles: mobile, ...Object.fromEntries(vars.map((v, i) => [`var${i + 1}`, v])) }] }];
+  const res = await fetch(url, { method: "POST", headers: { authkey: auth, "content-type": "application/json" }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(`MSG91 ${res.status}: ${await res.text()}`);
   return true;
 }

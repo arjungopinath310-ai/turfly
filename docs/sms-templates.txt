@@ -1,0 +1,46 @@
+TURFLY SMS TEMPLATES FOR DLT REGISTRATION (India)
+Generated from src/lib/notifications/sms.ts. Copy each template text EXACTLY: same words, spaces and punctuation, one line.
+
+Sender ID (header): TURFLY
+Template type for all four: Service Implicit
+Variables: {#var#} on the DLT portal (max 30 characters each). In MSG91 the same text uses ##OTP## or ##var1##, ##var2##, ...
+
+1) turfly_login_otp
+   Purpose: Sign-in code (sent when someone signs in with their mobile number)
+   DLT template text:
+   {#var#} is your Turfly login OTP. It is valid for 5 minutes. Do not share it with anyone. - Turfly
+   Variables: 1 = 6-digit code
+   Example SMS: 482913 is your Turfly login OTP. It is valid for 5 minutes. Do not share it with anyone. - Turfly
+   MSG91 template text (MSG91 > OTP > Templates):
+   ##OTP## is your Turfly login OTP. It is valid for 5 minutes. Do not share it with anyone. - Turfly
+   Put MSG91's template ID in .env as: MSG91_OTP_TEMPLATE_ID
+
+2) turfly_booking_confirmed
+   Purpose: Booking confirmed (sent when the online advance is received)
+   DLT template text:
+   Booking {#var#} confirmed: {#var#}, {#var#}. Paid Rs.{#var#} online, Rs.{#var#} due at turf. - Turfly
+   Variables: 1 = booking ID; 2 = turf name; 3 = date and time; 4 = amount paid online; 5 = amount due at the turf
+   Example SMS: Booking TF-QZM8TJ confirmed: Kickoff Fives Manjeri, Tue 17 Nov, 8:00-9:00 PM. Paid Rs.49 online, Rs.951 due at turf. - Turfly
+   MSG91 template text (MSG91 > SMS > Templates (Flow)):
+   Booking ##var1## confirmed: ##var2##, ##var3##. Paid Rs.##var4## online, Rs.##var5## due at turf. - Turfly
+   Put MSG91's template ID in .env as: MSG91_TPL_BOOKING_CONFIRMED
+
+3) turfly_match_reminder
+   Purpose: Match reminder (sent 24 hours and 2 hours before the match)
+   DLT template text:
+   Reminder: your match at {#var#} is {#var#}, {#var#}. Booking {#var#}. See you on the pitch! - Turfly
+   Variables: 1 = turf name; 2 = today / tomorrow / in 2 hours; 3 = date and time; 4 = booking ID
+   Example SMS: Reminder: your match at Kickoff Fives Manjeri is tomorrow, Tue 17 Nov, 8:00-9:00 PM. Booking TF-QZM8TJ. See you on the pitch! - Turfly
+   MSG91 template text (MSG91 > SMS > Templates (Flow)):
+   Reminder: your match at ##var1## is ##var2##, ##var3##. Booking ##var4##. See you on the pitch! - Turfly
+   Put MSG91's template ID in .env as: MSG91_TPL_REMINDER
+
+4) turfly_balance_due
+   Purpose: Balance due (sent 3 hours before the match if money is still owed at the turf)
+   DLT template text:
+   Please pay the balance of Rs.{#var#} at {#var#} before your match on {#var#}. Booking {#var#}. - Turfly
+   Variables: 1 = balance amount; 2 = turf name; 3 = date and time; 4 = booking ID
+   Example SMS: Please pay the balance of Rs.951 at Kickoff Fives Manjeri before your match on Tue 17 Nov, 8:00-9:00 PM. Booking TF-QZM8TJ. - Turfly
+   MSG91 template text (MSG91 > SMS > Templates (Flow)):
+   Please pay the balance of Rs.##var1## at ##var2## before your match on ##var3##. Booking ##var4##. - Turfly
+   Put MSG91's template ID in .env as: MSG91_TPL_BALANCE_PENDING

@@ -17,7 +17,7 @@ export default async function Settings() {
   ]);
   const integrations = [
     ["Razorpay", razorpayConfigured()],
-    ["MSG91 SMS", Boolean(process.env.MSG91_AUTH_KEY)],
+    ["MSG91 SMS", Boolean(process.env.MSG91_AUTH_KEY && process.env.MSG91_OTP_TEMPLATE_ID)],
     ["WhatsApp Cloud API", Boolean(process.env.WHATSAPP_TOKEN)],
     ["Email (Resend)", Boolean(process.env.RESEND_API_KEY)],
     ["Google sign-in", Boolean(process.env.GOOGLE_CLIENT_ID)],

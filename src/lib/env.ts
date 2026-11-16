@@ -30,6 +30,11 @@ export function checkEnv(env: NodeJS.ProcessEnv = process.env): EnvReport {
   if (rzpSet.length && rzpSet.length < rzp.length) errors.push(`Razorpay is half-configured: set all of ${rzp.join(", ")}`);
   if (prod && rzpSet.length === rzp.length && env.RAZORPAY_KEY_ID?.startsWith("rzp_test_")) warnings.push("Razorpay TEST keys are in use: no real money will be collected");
 
+  if (set("MSG91_AUTH_KEY")) {
+    const missing = ["MSG91_OTP_TEMPLATE_ID", "MSG91_TPL_BOOKING_CONFIRMED", "MSG91_TPL_REMINDER", "MSG91_TPL_BALANCE_PENDING"].filter((k) => !set(k));
+    if (missing.length) warnings.push(`MSG91 is set but these SMS template IDs are missing, so those messages are not sent: ${missing.join(", ")} (see docs/sms-templates.txt)`);
+  }
+
   if (prod) {
     if (env.DEMO_MODE === "true") warnings.push("DEMO_MODE is on: OTPs are shown on screen and payments are simulated. Turn it off before real launch.");
     if (!rzpSet.length && env.DEMO_MODE !== "true" && env.ALLOW_MOCK_PAYMENTS !== "true") warnings.push("No payment gateway configured: online booking will be unavailable");

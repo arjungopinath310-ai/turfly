@@ -44,7 +44,7 @@ export async function requestOtp(rawPhone: string, ip: string | null = null): Pr
   const code = String(randomInt(100000, 1000000));
   await prisma.otpCode.create({ data: { phone, ip, codeHash: hash(phone, code), expiresAt: new Date(Date.now() + TTL_MIN * 60_000) } });
 
-  const sent = await sendSms(phone, `${code} is your Turfly login OTP. Valid for ${TTL_MIN} minutes. Do not share it.`, { otp: code });
+  const sent = await sendSms(phone, "OTP", [code]); // DLT template text says "valid for 5 minutes" (TTL_MIN)
   if (sent) return {};
   // No SMS provider: print to the server terminal (only the person running the server sees it).
   console.info(`[otp] ${phone} → ${code}`);

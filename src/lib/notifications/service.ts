@@ -4,6 +4,7 @@ import { formatDateLong, formatTimeRange } from "../time";
 import { rupees } from "../engine/pricing";
 import { describePolicy, parsePolicy } from "../engine/policy";
 import { sendEmail, sendSms, sendWhatsApp } from "./providers";
+import { smsKeyFor, smsVars } from "./sms";
 import { directionsUrl } from "../share";
 import { queuePush } from "../push";
 
@@ -107,7 +108,8 @@ export async function processDueJobs(limit = 50) {
       const msg = render(job.template, b);
       const u = b.user;
       if (job.channel === "IN_APP" && u) await notifyInApp(prisma, u.id, msg.title, msg.body, `/bookings/${b.id}`);
-      if (job.channel === "SMS" && u?.phone) await sendSms(u.phone, `${msg.title}. ${msg.body}`);
+      const smsKey = smsKeyFor(job.template);
+      if (job.channel === "SMS" && u?.phone && smsKey) await sendSms(u.phone, smsKey, smsVars(job.template, b));
       if (job.channel === "WHATSAPP" && u?.phone) await sendWhatsApp(u.phone, job.template, msg.params);
       if (job.channel === "EMAIL" && u?.email) await sendEmail(u.email, msg.title, msg.html);
       await prisma.notificationJob.update({ where: { id: job.id }, data: { status: "SENT", sentAt: new Date() } });

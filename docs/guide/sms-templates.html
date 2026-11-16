@@ -1,0 +1,122 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Turfly SMS templates</title>
+<style>
+@page { size: A4; margin: 14mm 14mm 16mm; }
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "Segoe UI", system-ui, sans-serif; color: #0f172a; font-size: 10pt; line-height: 1.5; margin: 0; }
+h1 { font-size: 21pt; margin: 0 0 2mm; } h2 { font-size: 14pt; margin: 6mm 0 2.5mm; padding-bottom: 1.5mm; border-bottom: 2px solid #12b76a; }
+h3 { font-size: 11.5pt; margin: 0 0 1mm; color: #027a48; } p { margin: 0 0 2mm; } ol, ul { margin: 0 0 3mm; padding-left: 5.5mm; } li { margin-bottom: 1mm; }
+.muted { color: #475569; } .lbl { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #64748b; margin: 2.5mm 0 1mm; }
+pre { font-family: Consolas, monospace; font-size: 9.5pt; background: #0f172a; color: #e2e8f0; padding: 2.5mm 3.5mm; border-radius: 2mm; margin: 0; white-space: pre-wrap; }
+.ex { background: #ecfdf3; border: 1px solid #a6f4c5; border-radius: 2mm; padding: 2mm 3mm; font-size: 9.5pt; }
+code { font-family: Consolas, monospace; font-size: 8.8pt; background: #f1f5f9; padding: .2mm 1mm; border-radius: 1mm; }
+table { width: 100%; border-collapse: collapse; margin: 2mm 0; font-size: 9pt; } th { text-align: left; background: #f1f5f9; padding: 1.3mm 2mm; } td { padding: 1.3mm 2mm; border-bottom: 1px solid #e2e8f0; }
+.tpl { border: 1px solid #e2e8f0; border-radius: 3mm; padding: 4mm; margin: 0 0 5mm; page-break-inside: avoid; }
+.note { border-left: 3px solid #12b76a; background: #ecfdf3; padding: 2.2mm 3.2mm; margin: 3mm 0; }
+.warn { border-left: 3px solid #f59e0b; background: #fffbeb; padding: 2.2mm 3.2mm; margin: 3mm 0; }
+.page { page-break-before: always; }
+</style></head><body>
+<h1>Turfly SMS templates</h1>
+<p class="muted">For DLT registration (India) and MSG91. Generated from <code>src/lib/notifications/sms.ts</code>, the same text the app sends.
+A copy-and-paste version is in <code>docs\sms-templates.txt</code>.</p>
+
+<h2>What you register</h2>
+<table>
+<tr><th>Item</th><th>Value</th></tr>
+<tr><td>Sender ID (header)</td><td><code>TURFLY</code> (6 letters). If the portal rejects it, use a 6-letter header that matches your business or brand name and tell your developer.</td></tr>
+<tr><td>Template type</td><td><b>Service Implicit</b> for all four (sign-in codes and booking updates for your own users)</td></tr>
+<tr><td>Category</td><td>The closest match on your portal, e.g. "Tourism and Leisure" or "Others"</td></tr>
+<tr><td>Templates</td><td>4: <code>turfly_login_otp</code>, <code>turfly_booking_confirmed</code>, <code>turfly_match_reminder</code>, <code>turfly_balance_due</code></td></tr>
+</table>
+<div class="note">Every message is plain English with "Rs." instead of the rupee sign: one special character turns an SMS into a Unicode SMS,
+which halves its length and doubles the price. Each message fits in one SMS (160 characters).</div>
+
+<h2>Step 1 · DLT registration (once)</h2>
+<ol>
+<li>Pick any one telecom DLT portal (a registration works on every network), for example Jio TrueConnect, Airtel DLT, Vi (Vilpower) or BSNL.</li>
+<li>Register as a <b>Principal Entity</b> (your business): PAN, GST certificate or Udyam registration (free online), ID of the authorised person and the
+letter of authorisation the portal provides. One-time fee of about ₹5,000–6,000; approval usually takes a few working days. Note your <b>Entity ID</b>.</li>
+<li>Register the <b>header</b> <code>TURFLY</code> for service messages.</li>
+<li>Add the four <b>content templates</b> below: type Service Implicit, header TURFLY, and paste each text exactly. Note each <b>DLT Template ID</b>.</li>
+</ol>
+<div class="warn">If a reviewer asks you to change the wording, the app's text must change too (it must match word for word):
+edit <code>src/lib/notifications/sms.ts</code> (or ask your developer), then regenerate this document.</div>
+
+<h2>Step 2 · MSG91</h2>
+<ol>
+<li>Create an account at msg91.com and complete their KYC.</li>
+<li>Add your DLT <b>Entity ID</b> and the sender ID <code>TURFLY</code>.</li>
+<li><b>Sign-in code:</b> MSG91 → OTP → Templates → new template. Paste the MSG91 text of template 1 (with <code>##OTP##</code>), enter its DLT Template ID and sender TURFLY.</li>
+<li><b>Other three:</b> MSG91 → SMS → Templates (Flow) → new template for each. Paste the MSG91 text exactly, with the variables written as
+<code>##var1##</code>, <code>##var2##</code>… in that order, and enter the matching DLT Template ID.</li>
+<li>Copy MSG91's <b>template ID</b> of each into <code>.env</code> (names below), and the <b>Auth key</b> (MSG91 → API) into <code>MSG91_AUTH_KEY</code>.</li>
+<li>Buy SMS credits (roughly ₹0.20–0.30 per SMS).</li>
+</ol>
+
+<h2>Step 3 · Switch it on</h2>
+<ol>
+<li>Open <code>.env</code> with Notepad, fill in <code>MSG91_AUTH_KEY</code>, <code>MSG91_OTP_TEMPLATE_ID</code>, <code>MSG91_TPL_BOOKING_CONFIRMED</code>, <code>MSG91_TPL_REMINDER</code>, <code>MSG91_TPL_BALANCE_PENDING</code>.</li>
+<li>Restart the website: <code>powershell -ExecutionPolicy Bypass -File scripts\restart-server.ps1</code>. The Turfly server window warns if a template ID is missing.</li>
+<li>Admin → Fees, policy &amp; offers → Reminders: tick <b>sms</b>.</li>
+<li>Test: sign in with your own number; the code should arrive by SMS (no longer shown on screen). Make a test booking and check the confirmation SMS.</li>
+</ol>
+<p class="muted">Cost per booking: up to 4 SMS (confirmation, 24 h and 2 h reminders, balance due), plus 1 per sign-in: about ₹1–1.5 per booking.</p>
+
+<div class="page"></div>
+<h2>The four templates</h2>
+
+<div class="tpl">
+  <h3>1 · turfly_login_otp</h3>
+  <p class="muted">Sign-in code (sent when someone signs in with their mobile number)</p>
+  <div class="lbl">DLT template text (copy exactly)</div>
+  <pre>{#var#} is your Turfly login OTP. It is valid for 5 minutes. Do not share it with anyone. - Turfly</pre>
+  <table><tr><th>Variable</th><th>Meaning</th><th>Example</th></tr>
+  <tr><td>1</td><td>6-digit code</td><td><code>482913</code></td></tr></table>
+  <div class="lbl">Example SMS (97 characters, 1 SMS)</div>
+  <p class="ex">482913 is your Turfly login OTP. It is valid for 5 minutes. Do not share it with anyone. - Turfly</p>
+  <div class="lbl">MSG91 template text (MSG91 &gt; OTP &gt; Templates)</div>
+  <pre>##OTP## is your Turfly login OTP. It is valid for 5 minutes. Do not share it with anyone. - Turfly</pre>
+  <p>MSG91 template ID goes in <code>.env</code> as <code>MSG91_OTP_TEMPLATE_ID</code></p>
+</div>
+
+<div class="tpl">
+  <h3>2 · turfly_booking_confirmed</h3>
+  <p class="muted">Booking confirmed (sent when the online advance is received)</p>
+  <div class="lbl">DLT template text (copy exactly)</div>
+  <pre>Booking {#var#} confirmed: {#var#}, {#var#}. Paid Rs.{#var#} online, Rs.{#var#} due at turf. - Turfly</pre>
+  <table><tr><th>Variable</th><th>Meaning</th><th>Example</th></tr>
+  <tr><td>1</td><td>booking ID</td><td><code>TF-QZM8TJ</code></td></tr><tr><td>2</td><td>turf name</td><td><code>Kickoff Fives Manjeri</code></td></tr><tr><td>3</td><td>date and time</td><td><code>Tue 17 Nov, 8:00-9:00 PM</code></td></tr><tr><td>4</td><td>amount paid online</td><td><code>49</code></td></tr><tr><td>5</td><td>amount due at the turf</td><td><code>951</code></td></tr></table>
+  <div class="lbl">Example SMS (125 characters, 1 SMS)</div>
+  <p class="ex">Booking TF-QZM8TJ confirmed: Kickoff Fives Manjeri, Tue 17 Nov, 8:00-9:00 PM. Paid Rs.49 online, Rs.951 due at turf. - Turfly</p>
+  <div class="lbl">MSG91 template text (MSG91 &gt; SMS &gt; Templates (Flow))</div>
+  <pre>Booking ##var1## confirmed: ##var2##, ##var3##. Paid Rs.##var4## online, Rs.##var5## due at turf. - Turfly</pre>
+  <p>MSG91 template ID goes in <code>.env</code> as <code>MSG91_TPL_BOOKING_CONFIRMED</code></p>
+</div>
+
+<div class="tpl">
+  <h3>3 · turfly_match_reminder</h3>
+  <p class="muted">Match reminder (sent 24 hours and 2 hours before the match)</p>
+  <div class="lbl">DLT template text (copy exactly)</div>
+  <pre>Reminder: your match at {#var#} is {#var#}, {#var#}. Booking {#var#}. See you on the pitch! - Turfly</pre>
+  <table><tr><th>Variable</th><th>Meaning</th><th>Example</th></tr>
+  <tr><td>1</td><td>turf name</td><td><code>Kickoff Fives Manjeri</code></td></tr><tr><td>2</td><td>today / tomorrow / in 2 hours</td><td><code>tomorrow</code></td></tr><tr><td>3</td><td>date and time</td><td><code>Tue 17 Nov, 8:00-9:00 PM</code></td></tr><tr><td>4</td><td>booking ID</td><td><code>TF-QZM8TJ</code></td></tr></table>
+  <div class="lbl">Example SMS (134 characters, 1 SMS)</div>
+  <p class="ex">Reminder: your match at Kickoff Fives Manjeri is tomorrow, Tue 17 Nov, 8:00-9:00 PM. Booking TF-QZM8TJ. See you on the pitch! - Turfly</p>
+  <div class="lbl">MSG91 template text (MSG91 &gt; SMS &gt; Templates (Flow))</div>
+  <pre>Reminder: your match at ##var1## is ##var2##, ##var3##. Booking ##var4##. See you on the pitch! - Turfly</pre>
+  <p>MSG91 template ID goes in <code>.env</code> as <code>MSG91_TPL_REMINDER</code></p>
+</div>
+
+<div class="tpl">
+  <h3>4 · turfly_balance_due</h3>
+  <p class="muted">Balance due (sent 3 hours before the match if money is still owed at the turf)</p>
+  <div class="lbl">DLT template text (copy exactly)</div>
+  <pre>Please pay the balance of Rs.{#var#} at {#var#} before your match on {#var#}. Booking {#var#}. - Turfly</pre>
+  <table><tr><th>Variable</th><th>Meaning</th><th>Example</th></tr>
+  <tr><td>1</td><td>balance amount</td><td><code>951</code></td></tr><tr><td>2</td><td>turf name</td><td><code>Kickoff Fives Manjeri</code></td></tr><tr><td>3</td><td>date and time</td><td><code>Tue 17 Nov, 8:00-9:00 PM</code></td></tr><tr><td>4</td><td>booking ID</td><td><code>TF-QZM8TJ</code></td></tr></table>
+  <div class="lbl">Example SMS (132 characters, 1 SMS)</div>
+  <p class="ex">Please pay the balance of Rs.951 at Kickoff Fives Manjeri before your match on Tue 17 Nov, 8:00-9:00 PM. Booking TF-QZM8TJ. - Turfly</p>
+  <div class="lbl">MSG91 template text (MSG91 &gt; SMS &gt; Templates (Flow))</div>
+  <pre>Please pay the balance of Rs.##var1## at ##var2## before your match on ##var3##. Booking ##var4##. - Turfly</pre>
+  <p>MSG91 template ID goes in <code>.env</code> as <code>MSG91_TPL_BALANCE_PENDING</code></p>
+</div>
+</body></html>

@@ -96,6 +96,9 @@ The browser never confirms anything; the checkout page polls `/api/bookings/:id`
 | Owner subscriptions / featured placement billing | `isFeatured` flag built | Razorpay Subscriptions |
 | Native apps | Android built (Capacitor, `mobile/`) | iOS: add the iOS platform to the same project |
 
+## SMS (DLT templates)
+India requires every SMS to match a DLT-registered template. `src/lib/notifications/sms.ts` is the single source of truth: four templates (sign-in code, booking confirmed, match reminder, balance due), plain ASCII so each fits one 160-character SMS, values cut to the 30-character DLT limit. `sendSms(phone, key, vars)` uses MSG91's OTP API for the code and its Flow API (`##var1##`…) for the rest; a message whose template ID (`MSG91_OTP_TEMPLATE_ID`, `MSG91_TPL_*`) is not configured is logged instead of sent. `npx tsx scripts/make-sms-docs.ts` writes `docs/sms-templates.txt` and the PDF with the exact texts to register.
+
 ## Messages (player <-> turf chat)
 * `Conversation` (unique per turf + player) and `Message` tables; `src/lib/chat.ts` holds every rule.
 * Only the player and the turf's current owner can read or reply. Admins cannot. Owners can only start chats with players who booked their turf. Unclaimed turfs cannot be messaged.

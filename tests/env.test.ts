@@ -11,6 +11,10 @@ const good = {
   BUSINESS_ADDRESS: "Manjeri",
   SUPPORT_EMAIL: "help@turfly.in",
   MSG91_AUTH_KEY: "k",
+  MSG91_OTP_TEMPLATE_ID: "t1",
+  MSG91_TPL_BOOKING_CONFIRMED: "t2",
+  MSG91_TPL_REMINDER: "t3",
+  MSG91_TPL_BALANCE_PENDING: "t4",
   RAZORPAY_KEY_ID: "rzp_live_x",
   RAZORPAY_KEY_SECRET: "s",
   RAZORPAY_WEBHOOK_SECRET: "w",
@@ -39,5 +43,13 @@ describe("startup environment checks", () => {
     expect(checkEnv({ ...good, FCM_SERVICE_ACCOUNT_JSON: "not-base64-json" }).errors.join(" ")).toMatch(/FCM_SERVICE_ACCOUNT_JSON/);
     const sa = Buffer.from(JSON.stringify({ project_id: "p", client_email: "e@p.iam.gserviceaccount.com", private_key: "k" })).toString("base64");
     expect(checkEnv({ ...good, FCM_SERVICE_ACCOUNT_JSON: sa }).errors).toEqual([]);
+  });
+});
+
+describe("SMS template settings", () => {
+  it("warns when MSG91 is connected but template IDs are missing", async () => {
+    const { checkEnv } = await import("@/lib/env");
+    const r = checkEnv({ NODE_ENV: "production", NEXTAUTH_SECRET: "x".repeat(40), NEXTAUTH_URL: "https://t.in", APP_URL: "https://t.in", CRON_SECRET: "y".repeat(20), DATABASE_URL: "postgresql://x", MSG91_AUTH_KEY: "k" });
+    expect(r.warnings.some((w) => w.includes("MSG91_TPL_REMINDER"))).toBe(true);
   });
 });

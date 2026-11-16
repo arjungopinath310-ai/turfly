@@ -322,7 +322,7 @@ After changing it, restart the website: <code>powershell -ExecutionPolicy Bypass
 <tr><td><code>NEXTAUTH_SECRET</code>, <code>CRON_SECRET</code></td><td>Random secrets. Changing <code>NEXTAUTH_SECRET</code> signs everyone out.</td></tr>
 <tr><td><code>ADMIN_PHONES</code></td><td>Comma-separated <code>+91…</code> numbers that become admin when they sign in.</td></tr>
 <tr><td><code>DEMO_MODE</code></td><td><code>true</code>: codes shown on screen, simulated payments. Set <code>false</code> only with real SMS and Razorpay keys.</td></tr>
-<tr><td><code>MSG91_*</code></td><td>Real SMS for sign-in codes and booking messages (needs DLT registration in India).</td></tr>
+<tr><td><code>MSG91_AUTH_KEY</code>, <code>MSG91_OTP_TEMPLATE_ID</code>, <code>MSG91_TPL_*</code></td><td>Real SMS for sign-in codes and booking messages. Each message needs its own DLT-registered template: texts and steps in <code>docs\Turfly-SMS-Templates.pdf</code> (copy-paste version: <code>docs\sms-templates.txt</code>).</td></tr>
 <tr><td><code>RAZORPAY_KEY_ID</code>, <code>_KEY_SECRET</code>, <code>_WEBHOOK_SECRET</code></td><td>Real online payments. Leave empty in demo.</td></tr>
 <tr><td><code>ALLOW_MOCK_PAYMENTS</code></td><td>Allows the "simulate payment" buttons. Must be off for real money.</td></tr>
 <tr><td><code>GOOGLE_CLIENT_*</code>, <code>WHATSAPP_*</code>, <code>RESEND_API_KEY</code>, <code>EMAIL_FROM</code></td><td>Optional: Google sign-in, WhatsApp messages, email.</td></tr>
