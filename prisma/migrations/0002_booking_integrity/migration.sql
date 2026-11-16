@@ -1,11 +1,12 @@
 -- Database-level double-booking guarantee.
 -- Two non-released occupancy rows on the same resource unit may never overlap in time.
+-- Columns are timestamp(3) holding UTC, so tsrange (immutable) is correct.
 -- '[)' = half-open ranges, so 18:00–19:00 and 19:00–20:00 do NOT conflict.
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 ALTER TABLE "Occupancy"
   ADD CONSTRAINT occupancy_no_overlap
-  EXCLUDE USING gist ("unitId" WITH =, tstzrange("startAt", "endAt", '[)') WITH &&)
+  EXCLUDE USING gist ("unitId" WITH =, tsrange("startAt", "endAt", '[)') WITH &&)
   WHERE (released = false);
 
 ALTER TABLE "Occupancy" ADD CONSTRAINT occupancy_valid_range CHECK ("endAt" > "startAt");

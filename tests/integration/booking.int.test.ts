@@ -66,6 +66,20 @@ describe("double booking is impossible", () => {
   });
 });
 
+describe("time handling", () => {
+  it("occupancy rows store the exact booking instants regardless of server TimeZone", async () => {
+    const b = await hold(users[11], "B", 21 * 60);
+    const occ = await prisma.occupancy.findMany({ where: { bookingId: b.id } });
+    expect(occ).toHaveLength(1);
+    expect(occ[0].startAt.toISOString()).toBe(b.startAt.toISOString());
+    expect(occ[0].endAt.toISOString()).toBe(b.endAt.toISOString());
+    // a fresh hold must not be swept as expired
+    const { releaseExpiredHolds } = await import("@/lib/engine/booking");
+    await releaseExpiredHolds();
+    expect((await prisma.booking.findUniqueOrThrow({ where: { id: b.id } })).status).toBe("HELD");
+  });
+});
+
 describe("convertible pitch", () => {
   it("Half A booked → Half B free, Full blocked", async () => {
     await hold(users[2], "A", 18 * 60);

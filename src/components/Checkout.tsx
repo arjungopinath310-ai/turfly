@@ -23,14 +23,17 @@ function loadScript() {
 
 export function Checkout(p: { bookingId: string; status: string; holdExpiresAt: string | null; mock: boolean; turfSlug: string }) {
   const router = useRouter();
-  const [left, setLeft] = useState(() => (p.holdExpiresAt ? Math.max(0, new Date(p.holdExpiresAt).getTime() - Date.now()) : 0));
+  // null until mounted, so server and client render the same markup
+  const [left, setLeft] = useState<number | null>(null);
   const [phase, setPhase] = useState<"idle" | "paying" | "verifying" | "failed">("idle");
   const [msg, setMsg] = useState<string | null>(null);
   const [order, setOrder] = useState<{ orderId: string; provider: string } | null>(null);
   const polling = useRef(false);
 
   useEffect(() => {
-    const t = setInterval(() => setLeft(p.holdExpiresAt ? Math.max(0, new Date(p.holdExpiresAt).getTime() - Date.now()) : 0), 1000);
+    const tick = () => setLeft(p.holdExpiresAt ? Math.max(0, new Date(p.holdExpiresAt).getTime() - Date.now()) : 0);
+    tick();
+    const t = setInterval(tick, 1000);
     return () => clearInterval(t);
   }, [p.holdExpiresAt]);
 
@@ -100,6 +103,7 @@ export function Checkout(p: { bookingId: string; status: string; holdExpiresAt: 
     router.replace(`/turfs/${p.turfSlug}`);
   }
 
+  if (left === null) return <div className="h-24 animate-pulse rounded-xl bg-slate-100" />;
   if (p.status !== "HELD" || left === 0)
     return (
       <div className="space-y-3 text-center">

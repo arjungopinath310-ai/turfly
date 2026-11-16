@@ -14,12 +14,16 @@ import { refundBooking } from "../payments/refunds";
 
 // ───────────── Hold expiry ─────────────
 
-/** Atomically expire overdue holds and release their occupancy (single statement → no race window). */
+/**
+ * Atomically expire overdue holds and release their occupancy (single statement → no race window).
+ * Prisma stores DateTime as UTC `timestamp` (no zone), so compare against now() in UTC explicitly;
+ * a bare now() would be shifted by the server's TimeZone setting (e.g. Asia/Calcutta).
+ */
 export async function releaseExpiredHolds(db: Tx = prisma) {
   return db.$executeRaw`
     WITH expired AS (
-      UPDATE "Booking" SET status = 'EXPIRED', "updatedAt" = now()
-      WHERE status = 'HELD' AND "holdExpiresAt" < now()
+      UPDATE "Booking" SET status = 'EXPIRED', "updatedAt" = (now() AT TIME ZONE 'UTC')
+      WHERE status = 'HELD' AND "holdExpiresAt" < (now() AT TIME ZONE 'UTC')
       RETURNING id
     )
     UPDATE "Occupancy" SET released = true WHERE "bookingId" IN (SELECT id FROM expired)`;
@@ -29,7 +33,9 @@ async function insertOccupancy(db: Tx, unitIds: string[], startAt: Date, endAt: 
   for (const unitId of unitIds) {
     await db.$executeRaw`
       INSERT INTO "Occupancy" (id, "unitId", "bookingId", "blockId", "startAt", "endAt", released, "createdAt")
-      VALUES (${randomUUID()}, ${unitId}, ${ref.bookingId ?? null}, ${ref.blockId ?? null}, ${startAt}, ${endAt}, false, now())`;
+      VALUES (${randomUUID()}, ${unitId}, ${ref.bookingId ?? null}, ${ref.blockId ?? null},
+              (${startAt.toISOString()}::timestamptz AT TIME ZONE 'UTC'), (${endAt.toISOString()}::timestamptz AT TIME ZONE 'UTC'),
+              false, (now() AT TIME ZONE 'UTC'))`;
   }
 }
 
