@@ -63,7 +63,7 @@
     <p style="max-width:140mm;color:#cbd5e1;margin-top:6mm">A guide for players, turf owners and the platform administrator: what each screen does, the booking and payment rules, how the convertible 7-a-side pitch works, and how the app is hosted and taken live.</p>
   </div>
   <div class="meta">
-    <div><b>Version</b>0.2 (demo)</div>
+    <div><b>Version</b>0.3 (demo + Android)</div>
     <div><b>Date</b>16 November 2026</div>
     <div><b>Source code</b>github.com/arjungopinath310-ai/turfly</div>
   </div>
@@ -87,10 +87,12 @@
     <div><b>12</b> Money: advance, fees, commission</div>
     <div><b>13</b> Notifications &amp; reminders</div>
     <div><b>14</b> Safety, privacy &amp; honesty rules</div>
-    <div><b>15</b> How it is hosted today</div>
-    <div><b>16</b> Going live checklist</div>
-    <div><b>17</b> Technical overview</div>
-    <div><b>18</b> What is planned next</div>
+    <div><b>15</b> Production readiness</div>
+    <div><b>16</b> The Android app</div>
+    <div><b>17</b> How it is hosted today</div>
+    <div><b>18</b> Going live checklist</div>
+    <div><b>19</b> Technical overview</div>
+    <div><b>20</b> What is planned next</div>
   </div>
 
   <h2 style="margin-top:10mm">1 · Turfly in one page</h2>
@@ -250,7 +252,7 @@
         <li>Other players see open posts for their city and tap <b>Request to join</b>.</li>
         <li>The organiser accepts or declines. Accepted players are added to the squad by name, and the post closes when full.</li>
       </ol>
-      <p class="small muted">Any share amount is paid to the organiser at the venue. In-app split payments are planned (section 18).</p>
+      <p class="small muted">Any share amount is paid to the organiser at the venue. In-app split payments are planned (section 20).</p>
       <h3>Compare turfs</h3>
       <p class="small">Tick <b>Compare</b> on up to three turfs, then open the comparison: location, distance, availability type, formats, starting price, rating, free slots today, and every amenity side by side.</p>
     </div>
@@ -534,9 +536,64 @@
   </div>
 </section>
 
+<!-- PRODUCTION READINESS -->
+<section>
+  <h2>15 · Production readiness</h2>
+  <p>Before real players and real money, the service was hardened. All of the following is built, tested and live:</p>
+  <table class="small">
+    <tr><th>Area</th><th>What protects Turfly</th></tr>
+    <tr><td>Software security</td><td>Latest patched web framework (Next.js 15, React 19); the dependency audit reports 0 known vulnerabilities</td></tr>
+    <tr><td>Browser security</td><td>Strict security headers: only Turfly, Razorpay and map tiles may load; pages can’t be embedded in other sites; HTTPS enforced</td></tr>
+    <tr><td>SMS fraud</td><td>Sign-in codes limited per phone, per network (10/hour) and platform-wide, stopping bots from running up the SMS bill</td></tr>
+    <tr><td>Safe start-up</td><td>The server refuses to start with missing or weak secrets or a half-configured payment gateway, and warns about demo mode or test keys</td></tr>
+    <tr><td>Permissions</td><td>Every admin and owner page checks the user’s role itself, on every request</td></tr>
+    <tr><td>Legal pages</td><td>Terms of use, Privacy policy (DPDP Act 2023, Grievance Officer), Cancellation &amp; refund policy, Contact; linked in every page footer</td></tr>
+    <tr><td>Your data</td><td>Profile → “Download my data” (JSON) and “Delete my account”: personal details erased, booking/payment records kept anonymised for tax law</td></tr>
+    <tr><td>Monitoring</td><td><span class="mono">/api/health</span> checks the server and database for uptime monitors</td></tr>
+    <tr><td>Deployment</td><td>Docker setup for a cloud server (database, migrations, app, reminders, Cloudflare tunnel with a permanent address)</td></tr>
+    <tr><td>Quality checks</td><td>Every change pushed to GitHub is type-checked, unit-tested, tested against a real database, audited and built automatically</td></tr>
+  </table>
+  <div class="note small"><b>Still to do before launch</b> (needs your accounts and decisions, see the next pages): a domain and always-on hosting, business details for the legal pages (plus a lawyer’s review), Razorpay KYC, MSG91 + DLT for SMS, a Firebase project for push notifications, and a Google Play account.</div>
+</section>
+
+<!-- ANDROID APP -->
+<section>
+  <h2>16 · The Android app</h2>
+  <p>Turfly has an Android app (package <span class="mono">in.turfly.app</span>, Android 7 and newer, built for Android 16 as Google Play requires). It shows the live Turfly service inside a native app, so every feature in this guide works in the app, and every update to the website reaches the app instantly. On top of that it adds native features:</p>
+  <div class="grid2">
+    <table class="small">
+      <tr><th>Native feature</th><th>What players and owners notice</th></tr>
+      <tr><td>Push notifications</td><td>Booking confirmed, 24 h / 2 h reminders, balance due, chat messages, even when the app is closed</td></tr>
+      <tr><td>UPI payment apps</td><td>Paying the ₹49 opens GPay, PhonePe, Paytm… and returns to Turfly</td></tr>
+      <tr><td>Back button</td><td>Goes back a screen; exits from the home screen</td></tr>
+      <tr><td>Downloads</td><td>CSV export, calendar file and “Download my data” save to the Downloads folder</td></tr>
+      <tr><td>Location</td><td>“Use my location” sorts turfs by distance (asked only when tapped)</td></tr>
+      <tr><td>Offline screen</td><td>A friendly “Can’t reach Turfly · Try again” page with no connection</td></tr>
+      <tr><td>Phone-friendly layout</td><td>Respects notches and the status bar; Turfly icon and splash screen</td></tr>
+    </table>
+    <div>
+      <img class="shot crop" src="img/mobile.png" alt="Turfly on a phone" style="width:50mm;height:92mm;display:block;margin:0 auto">
+      <div class="cap" style="text-align:center">Turf page on a phone, with 1-hour slots</div>
+    </div>
+  </div>
+  <h3>Install the test app on a phone</h3>
+  <ol class="steps small">
+    <li>Send the file <span class="mono">mobile/dist/turfly-1.0.0-debug.apk</span> to the phone (WhatsApp to yourself, Google Drive or USB).</li>
+    <li>Open it on the phone and allow “Install unknown apps” for that source when Android asks.</li>
+    <li>Open Turfly and sign in as usual. The app shows the server address it was built for; if the free tunnel address changes, the app must be rebuilt (<span class="mono">npm run build:debug</span> in <span class="mono">mobile/</span>).</li>
+  </ol>
+  <h3>Publishing on Google Play</h3>
+  <ul class="small">
+    <li>Google Play Console account (US$25 once). New personal accounts must run a closed test with at least 12 testers for 14 days first.</li>
+    <li>Create your own upload key (you choose and keep the password), then <span class="mono">npm run build:release</span> produces the <span class="mono">.aab</span> to upload.</li>
+    <li>Store listing needs: icon (provided), feature graphic, 2+ screenshots, the privacy-policy link (<span class="mono">/legal/privacy</span>) and the account-deletion link (<span class="mono">/account/delete</span>); fill in the Data safety form as described in <span class="mono">docs/ANDROID.md</span>.</li>
+    <li>Turf bookings are real-world services, so Razorpay payments are allowed in the app (Google Play Billing is not needed).</li>
+  </ul>
+</section>
+
 <!-- 13 HOSTING -->
 <section>
-  <h2>15 · How it is hosted today</h2>
+  <h2>17 · How it is hosted today</h2>
   <p>Turfly currently runs on your Windows PC and is reachable from any device on the internet through a <b>Cloudflare Tunnel</b>. Cloudflare gives the PC a public <span class="mono">https://…trycloudflare.com</span> address without opening router ports or exposing your home IP.</p>
   <div class="flow avoid">
     <div><b>Visitor</b>Phone or laptop anywhere</div><i>→</i>
@@ -548,7 +605,7 @@
   <h3>The three windows that must stay open</h3>
   <table class="small">
     <tr><th>Window</th><th>Command (run in the turfly folder)</th><th>Purpose</th></tr>
-    <tr><td>Turfly server</td><td class="mono">npm.cmd start</td><td>The website (production build)</td></tr>
+    <tr><td>Turfly server</td><td class="mono">npm.cmd start</td><td>The website (production build); shows [env] warnings at start-up</td></tr>
     <tr><td>Turfly public tunnel</td><td class="mono">cloudflared tunnel --url http://localhost:3000</td><td>The public address</td></tr>
     <tr><td>Turfly reminders</td><td class="mono">npm.cmd run cron:local</td><td>Reminders &amp; housekeeping every minute</td></tr>
   </table>
@@ -559,7 +616,7 @@
     <li>Put that address in <span class="mono">.env</span> as both <span class="mono">APP_URL</span> and <span class="mono">NEXTAUTH_URL</span>.</li>
     <li>Start the server (<span class="mono">npm.cmd start</span>) and the reminders loop. After code changes, run <span class="mono">npm.cmd run build</span> first.</li>
   </ol>
-  <div class="warn small"><b>Limits of this setup:</b> the site is only up while the PC is on, awake and online; the free “quick tunnel” address changes every time the tunnel restarts and has no uptime guarantee. It is ideal for demos and testing with friends and turf owners. For real customers, use permanent hosting (section 16).</div>
+  <div class="warn small"><b>Limits of this setup:</b> the site is only up while the PC is on, awake and online; the free “quick tunnel” address changes every time the tunnel restarts and has no uptime guarantee. It is ideal for demos and testing with friends and turf owners. For real customers, use permanent hosting (section 18).</div>
   <h3>Useful commands</h3>
   <table class="small">
     <tr><td class="mono">npm.cmd run db:migrate</td><td>Apply database changes</td></tr>
@@ -571,28 +628,29 @@
 
 <!-- 14 GO LIVE -->
 <section>
-  <h2>16 · Going live checklist</h2>
+  <h2>18 · Going live checklist</h2>
   <table>
-    <tr><th>#</th><th>Step</th><th>Why</th></tr>
-    <tr><td>1</td><td><b>Permanent hosting</b>: e.g. Vercel or Render for the app, plus a managed PostgreSQL (Neon, Supabase, AWS RDS), and your own domain</td><td>Always on, fixed address, backups</td></tr>
-    <tr><td>2</td><td><b>Razorpay account</b> (KYC approved). Add key ID, key secret and webhook secret; set the webhook to <span class="mono">/api/payments/webhook</span> with events payment.captured, payment.failed, order.paid, refund.processed, refund.failed; enable auto-capture</td><td>Real UPI / card payments and refunds</td></tr>
-    <tr><td>3</td><td><b>MSG91</b> with DLT-registered SMS templates (OTP and booking messages)</td><td>OTP by SMS; turns off on-screen codes</td></tr>
-    <tr><td>4</td><td>Set <span class="mono">DEMO_MODE=false</span> and <span class="mono">OTP_DEV_ECHO=false</span></td><td>Removes demo banner, on-screen OTP and simulated payments</td></tr>
-    <tr><td>5</td><td>Optional: WhatsApp Business Cloud API templates and Resend email</td><td>Confirmations and reminders on WhatsApp / email</td></tr>
-    <tr><td>6</td><td>Optional: Google sign-in client ID and secret</td><td>“Continue with Google” button</td></tr>
-    <tr><td>7</td><td>A scheduler calling <span class="mono">/api/cron/tick</span> every minute with the cron secret</td><td>Reminders and housekeeping</td></tr>
-    <tr><td>8</td><td>Remove or hide demo turfs; add real Manjeri turfs as unclaimed listings and send claim links</td><td>Real content</td></tr>
-    <tr><td>9</td><td>Publish terms, privacy policy and the refund policy page</td><td>Required by Razorpay and app users</td></tr>
+    <tr><th>#</th><th>What you provide</th><th>Why</th></tr>
+    <tr><td>1</td><td><b>Domain</b> (e.g. turfly.in) on Cloudflare</td><td>Permanent address for the website and the app; required by Razorpay, Firebase and Google Play</td></tr>
+    <tr><td>2</td><td><b>Always-on hosting</b>: a cloud server (≈ ₹1,500–2,500/month) running the Docker setup, or this PC with a named Cloudflare tunnel</td><td>The free tunnel stops when the PC sleeps and changes address</td></tr>
+    <tr><td>3</td><td><b>Business details</b>: legal name, address, support email/phone, Grievance Officer; lawyer review of the policies</td><td>Legal pages, Razorpay KYC, Play listing</td></tr>
+    <tr><td>4</td><td><b>Razorpay</b> account with KYC; live keys + webhook to <span class="mono">/api/payments/webhook</span></td><td>Real UPI/card payments and refunds</td></tr>
+    <tr><td>5</td><td><b>MSG91</b> + <b>DLT registration</b> (entity, OTP and booking templates)</td><td>Sign-in codes by SMS (mandatory registration in India)</td></tr>
+    <tr><td>6</td><td><b>Firebase</b> project (free): <span class="mono">google-services.json</span> for the app, service-account key for the server</td><td>Push notifications</td></tr>
+    <tr><td>7</td><td><b>Google Play Console</b> (US$25) and your own <b>upload key</b></td><td>Publishing the Android app</td></tr>
+    <tr><td>8</td><td>Switch off demo: <span class="mono">DEMO_MODE=false</span>, <span class="mono">OTP_DEV_ECHO=false</span>, <span class="mono">SEED_DEMO=false</span>; set <span class="mono">ADMIN_PHONES</span> to your number</td><td>Removes on-screen codes, simulated payments and demo turfs</td></tr>
+    <tr><td>9</td><td>Daily database backups and an uptime monitor on <span class="mono">/api/health</span></td><td>Recover from mistakes; know when the site is down</td></tr>
+    <tr><td>10</td><td>Add real Manjeri turfs (unclaimed listings) and send claim links to owners</td><td>Real content</td></tr>
   </table>
-  <p class="small muted">All keys go in environment variables (see <span class="mono">.env.example</span>); nothing secret is stored in the code or on GitHub.</p>
+  <p class="small muted">Step-by-step commands: <span class="mono">docs/PRODUCTION.md</span> (server) and <span class="mono">docs/ANDROID.md</span> (app). All keys go in environment variables; nothing secret is stored in the code or on GitHub.</p>
 </section>
 
 <!-- 15 TECH -->
 <section>
-  <h2>17 · Technical overview</h2>
+  <h2>19 · Technical overview</h2>
   <table class="small">
     <tr><th>Layer</th><th>Technology</th></tr>
-    <tr><td>Web app</td><td>Next.js 14 (React 18, TypeScript): pages, API routes and server actions in one project</td></tr>
+    <tr><td>Web app</td><td>Next.js 15 (React 19, TypeScript): pages, API routes and server actions in one project; Android app with Capacitor 8</td></tr>
     <tr><td>Design</td><td>Tailwind CSS, Lucide icons, Leaflet + OpenStreetMap map, Google Maps links for directions</td></tr>
     <tr><td>Database</td><td>PostgreSQL 16 with Prisma; money stored as whole paise; times in UTC</td></tr>
     <tr><td>Sign-in</td><td>NextAuth: mobile OTP (+ optional Google), 30-day sessions</td></tr>
@@ -600,7 +658,7 @@
     <tr><td>Messaging</td><td>Job queue in the database; MSG91, WhatsApp Cloud API, Resend adapters</td></tr>
   </table>
   <h3>Main data</h3>
-  <p class="small"><b>City</b> → <b>Turf</b> → <b>Areas</b> &amp; <b>Pitches</b> (+ pricing rules, hours) · <b>Booking</b> → <b>Occupancy</b> rows (one per area used, the double-booking guard) → <b>Payments</b> → <b>Refunds</b> · <b>Team</b> → <b>Members</b> · <b>Match squad</b> · <b>Reviews</b> · <b>Player posts</b> · <b>Offers</b> · <b>Ledger</b> · <b>Notifications</b> · <b>Conversations</b> → <b>Messages</b> · <b>Disputes</b> · <b>Audit log</b> · Tournament tables (prepared).</p>
+  <p class="small"><b>City</b> → <b>Turf</b> → <b>Areas</b> &amp; <b>Pitches</b> (+ pricing rules, hours) · <b>Booking</b> → <b>Occupancy</b> rows (one per area used, the double-booking guard) → <b>Payments</b> → <b>Refunds</b> · <b>Team</b> → <b>Members</b> · <b>Match squad</b> · <b>Reviews</b> · <b>Player posts</b> · <b>Offers</b> · <b>Ledger</b> · <b>Notifications</b> · <b>Conversations</b> → <b>Messages</b> · <b>Device tokens</b> (push) · <b>Disputes</b> · <b>Audit log</b> · Tournament tables (prepared).</p>
   <h3>Booking life cycle</h3>
   <div class="flow avoid">
     <div><b>HELD</b>5-minute hold</div><i>→</i>
@@ -610,8 +668,8 @@
   <p class="small">Side paths: HELD → <b>EXPIRED</b> (not paid in time) or <b>CANCELLED</b> (abandoned); CONFIRMED → <b>CANCELLED</b> (with refund per policy) or <b>NO_SHOW</b>.</p>
   <h3>Quality checks run</h3>
   <ul class="small">
-    <li>25 engine tests: slot conflicts incl. the 6–7 / 7–8 PM case, peak pricing, ₹49 maths, refund tiers, Indian time, 1-hour slot labels, analytics time buckets and formats.</li>
-    <li>16 database tests: 10 simultaneous bookings (one wins), full vs half at once, blocks, duplicate and invalid webhooks, late payment re-booking and refund, time-zone safety, the 1-hour grid, chat permissions, unread counts and rate limits, and the utilisation maths.</li>
+    <li>30 unit tests: slot conflicts incl. the 6–7 / 7–8 PM case, peak pricing, ₹49 maths, refund tiers, Indian time, 1-hour slot labels, analytics time buckets and formats.</li>
+    <li>22 database tests: 10 simultaneous bookings (one wins), full vs half at once, blocks, duplicate and invalid webhooks, late payment re-booking and refund, time-zone safety, the 1-hour grid, chat permissions, unread counts and rate limits, the utilisation maths, SMS-abuse limits, account deletion and push tokens.</li>
     <li>End-to-end test through the public address: sign-in, profile, booking, payment, confirmation.</li>
   </ul>
   <p class="small muted">Further technical detail: docs/ARCHITECTURE.md and docs/ASSUMPTIONS.md in the repository.</p>
@@ -619,7 +677,7 @@
 
 <!-- 16 ROADMAP -->
 <section>
-  <h2>18 · What is planned next</h2>
+  <h2>20 · What is planned next</h2>
   <table>
     <tr><th>Feature</th><th>Status today</th><th>Next step</th></tr>
     <tr><td>Tournaments: registration, entry fees, fixtures, knockout &amp; league, results, leaderboards</td><td>Database tables ready</td><td>Organiser and public tournament pages</td></tr>
@@ -630,7 +688,7 @@
     <tr><td>Automatic owner settlement</td><td>Ledger built</td><td>Razorpay Route linked accounts</td></tr>
     <tr><td>Owner subscriptions, featured placement billing</td><td>“Featured” flag built</td><td>Razorpay Subscriptions</td></tr>
     <tr><td>Instant chat &amp; push notifications</td><td>Chat updates every ~3 s</td><td>WebSockets and phone push for new messages</td></tr>
-    <tr><td>Android / iOS apps</td><td>Website works on phones</td><td>Native apps on the same back end</td></tr>
+    <tr><td>iPhone app</td><td>Android app built; website works on iPhones</td><td>Add the iOS platform to the same Capacitor project (needs a Mac + Apple developer account)</td></tr>
   </table>
   <div class="note" style="margin-top:8mm"><b>Need help?</b> The source code, setup steps and technical documents are in the GitHub repository <span class="mono">arjungopinath310-ai/turfly</span>.</div>
 </section>

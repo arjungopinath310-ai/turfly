@@ -41,6 +41,19 @@ allow "Install unknown apps" for that source when asked. Debug builds are for te
 > **The app shows whatever site TURFLY_URL points to.** A quick Cloudflare tunnel address changes every restart,
 > so rebuild the APK if it changes, or (better) use a permanent domain: see `docs/PRODUCTION.md`.
 
+### Troubleshooting: "Downloading gradle-8.14.3-all.zip failed: timeout"
+Some networks can't reach one of GitHub's download servers, and the Gradle wrapper does not try the others.
+Download Gradle with curl instead (the build script uses it automatically when present):
+```powershell
+cd mobile; mkdir .gradle-dist; cd .gradle-dist
+curl.exe -L -o gradle.zip https://services.gradle.org/distributions/gradle-8.14.3-bin.zip
+# compare with https://services.gradle.org/distributions/gradle-8.14.3-bin.zip.sha256
+(Get-FileHash gradle.zip -Algorithm SHA256).Hash
+Expand-Archive gradle.zip .; Remove-Item gradle.zip
+```
+
+Capacitor's CLI may switch on anonymous usage statistics on first use; turn them off with `npx cap telemetry off`.
+
 ## 3. Push notifications (Firebase)
 
 1. https://console.firebase.google.com → **Add project** (e.g. "Turfly").

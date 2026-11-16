@@ -51,7 +51,14 @@ run("npx cap sync android");
 run(`python -I "${join(root, "..", "scripts", "make-icons.py")}" "${join(root, "android", "app", "src", "main", "res")}"`);
 
 // 4. Gradle build
-const gradlew = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
+// Prefer a Gradle unpacked into mobile/.gradle-dist (for networks where the wrapper's GitHub download fails),
+// otherwise the Gradle wrapper. Full paths: some Windows setups don't run programs from the current folder.
+const win = process.platform === "win32";
+const localDist = join(root, ".gradle-dist");
+const localGradle = existsSync(localDist)
+  ? readdirSync(localDist).filter((d) => /^gradle-/.test(d)).sort().map((d) => join(localDist, d, "bin", win ? "gradle.bat" : "gradle")).find(existsSync)
+  : undefined;
+const gradlew = `"${localGradle ?? join(root, "android", win ? "gradlew.bat" : "gradlew")}"`;
 if (mode === "release" && !existsSync(join(root, "keystore.properties"))) {
   console.error("Release builds need mobile/keystore.properties with your upload key. See docs/ANDROID.md (Signing).");
   process.exit(1);

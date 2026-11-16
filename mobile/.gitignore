@@ -11,3 +11,4 @@ keystore.properties
 *.jks
 *.keystore
 .turfly-url
+.gradle-dist
