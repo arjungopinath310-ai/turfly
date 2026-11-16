@@ -3,6 +3,7 @@ import { Bell } from "lucide-react";
 import { currentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { BRAND } from "@/lib/brand";
+import { displayName } from "@/lib/format";
 import { UserMenu } from "./UserMenu";
 
 export async function Navbar() {
@@ -31,7 +32,7 @@ export async function Navbar() {
                 <Bell size={18} />
                 {unread > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />}
               </Link>
-              <UserMenu name={user.name ?? user.phone ?? user.email ?? "Me"} role={user.role} />
+              <UserMenu name={displayName(user)} hasName={Boolean(user.name?.trim())} role={user.role} />
             </>
           ) : (
             <Link href="/login" className="btn-primary">Sign in</Link>

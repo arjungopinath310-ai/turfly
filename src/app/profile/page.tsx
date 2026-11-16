@@ -5,6 +5,7 @@ import { currentUser, requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { POSITIONS } from "@/lib/brand";
 import { PageHeader } from "@/components/ui";
+import { formatPhone } from "@/lib/format";
 
 async function save(fd: FormData) {
   "use server";
@@ -22,16 +23,21 @@ async function save(fd: FormData) {
   });
   // keep the user's own team-member rows in sync with their profile name
   await prisma.teamMember.updateMany({ where: { userId: user.id }, data: { name: d.name } });
-  revalidatePath("/profile");
+  revalidatePath("/", "layout");
+  const next = String(fd.get("next") ?? "");
+  if (next.startsWith("/") && !next.startsWith("//")) redirect(next);
 }
 
-export default async function Profile() {
+export default async function Profile({ searchParams }: { searchParams: { welcome?: string; next?: string } }) {
   const user = await currentUser();
   if (!user) redirect("/login?next=/profile");
+  const next = searchParams.next?.startsWith("/") && !searchParams.next.startsWith("//") ? searchParams.next : "";
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
-      <PageHeader title="Your profile" subtitle={user.phone ?? user.email ?? ""} />
+      <PageHeader title={searchParams.welcome ? "Welcome to Turfly! 👋" : "Your profile"} subtitle={formatPhone(user.phone) ?? user.email ?? ""} />
+      {searchParams.welcome && <p className="mb-4 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-800">Tell us your name so teammates and turf owners know who booked.</p>}
       <form action={save} className="card space-y-4 p-6">
+        <input type="hidden" name="next" value={next} />
         <div>
           <label className="label">Full name</label>
           <input name="name" defaultValue={user.name ?? ""} className="input" required />
@@ -57,7 +63,7 @@ export default async function Profile() {
           </span>
         </label>
         {user.referralCode && <p className="text-sm text-slate-600">Your referral code: <b className="font-mono">{user.referralCode}</b></p>}
-        <button className="btn-primary">Save</button>
+        <button className="btn-primary">{next ? "Save & continue" : "Save"}</button>
       </form>
     </div>
   );

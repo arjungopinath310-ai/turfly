@@ -2,6 +2,7 @@ import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { prisma } from "./db";
 import { AppError } from "./errors";
 import { sendSms } from "./notifications/providers";
+import { adminPhones, isDemoMode } from "./format";
 
 const TTL_MIN = 5;
 const MAX_ATTEMPTS = 5;
@@ -18,7 +19,7 @@ export function normalizePhone(raw: string): string | null {
 const hash = (phone: string, code: string) =>
   createHmac("sha256", process.env.NEXTAUTH_SECRET ?? "dev-secret").update(`${phone}:${code}`).digest("hex");
 
-export async function requestOtp(rawPhone: string): Promise<{ devCode?: string }> {
+export async function requestOtp(rawPhone: string): Promise<{ devCode?: string; serverLog?: boolean }> {
   const phone = normalizePhone(rawPhone);
   if (!phone) throw new AppError(400, "Enter a valid 10-digit Indian mobile number");
   const hourAgo = new Date(Date.now() - 3_600_000);
@@ -31,9 +32,20 @@ export async function requestOtp(rawPhone: string): Promise<{ devCode?: string }
   await prisma.otpCode.create({ data: { phone, codeHash: hash(phone, code), expiresAt: new Date(Date.now() + TTL_MIN * 60_000) } });
 
   const sent = await sendSms(phone, `${code} is your Turfly login OTP. Valid for ${TTL_MIN} minutes. Do not share it.`, { otp: code });
-  const echo = process.env.OTP_DEV_ECHO === "true" && process.env.NODE_ENV !== "production";
-  if (!sent) console.info(`[otp] ${phone} → ${code}`);
-  return echo ? { devCode: code } : {};
+  if (sent) return {};
+  // No SMS provider: print to the server terminal (only the person running the server sees it).
+  console.info(`[otp] ${phone} → ${code}`);
+  // In demo mode, show the code on screen — but NEVER for privileged accounts, so a public visitor
+  // can't sign in as the admin or as a real turf owner just by typing their number.
+  const echo = process.env.OTP_DEV_ECHO === "true" && isDemoMode() && !(await isPrivileged(phone));
+  return echo ? { devCode: code } : { serverLog: true };
+}
+
+/** Admins, ADMIN_PHONES, and owners of real (non-demo) turfs. */
+async function isPrivileged(phone: string) {
+  if (adminPhones().includes(phone)) return true;
+  const u = await prisma.user.findUnique({ where: { phone }, select: { role: true, ownedTurfs: { where: { isDemo: false }, select: { id: true }, take: 1 } } });
+  return Boolean(u && (u.role === "ADMIN" || u.ownedTurfs.length > 0));
 }
 
 export async function verifyOtp(rawPhone: string, code: string): Promise<string | null> {

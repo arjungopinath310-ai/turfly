@@ -6,6 +6,8 @@ Discover, compare and book football turfs, starting in **Manjeri, Kerala**. Buil
 * **Owners:** register or claim a listing, configure **one 7-a-side pitch convertible into two 5-a-side pitches** (or any custom layout), peak pricing, hours (incl. past midnight), durations, refund policy; day/week/month calendar; walk-in & phone bookings; blocks; balance collection; cancel/refund; reschedule; analytics & settlement ledger.
 * **Admin:** approve/reject/suspend turfs, add unclaimed listings + claim links, verify claims, users & roles, payments, refunds, disputes, advance amount, platform fee, commission, default policy, reminders, offers.
 
+📘 **[How the app works (PDF guide)](docs/Turfly-How-It-Works.pdf)**: players, owners, admin, booking rules, hosting and go-live checklist.
+
 Read **[docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md)** (decisions made before building) and **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** (booking engine, payments, security, deployment, roadmap).
 
 ## Quick start (local)
@@ -30,6 +32,18 @@ Sign in with any seeded number; in development the OTP is shown on screen:
 | Demo player | `+91 90000 00002` |
 
 Without Razorpay keys, checkout shows a **mock gateway** that sends a simulated webhook through the real confirmation code. Add `RAZORPAY_KEY_ID / KEY_SECRET / WEBHOOK_SECRET` to use Razorpay test mode (expose `/api/payments/webhook` with a tunnel such as `ngrok` for local webhook delivery).
+
+On Windows PowerShell use `npm.cmd` instead of `npm` if scripts are blocked. If you installed PostgreSQL directly and don't know the `postgres` password, run `scripts/setup-local-db.ps1` in an Administrator PowerShell to create the `turfly` user and database.
+
+### Sharing it on the internet from your PC (demo)
+
+```bash
+npm run build && npm start                              # production server on :3000
+cloudflared tunnel --url http://localhost:3000          # prints a public https://….trycloudflare.com address
+npm run cron:local                                      # reminders + hold clean-up every minute
+```
+
+Put the tunnel address in `.env` as `APP_URL` and `NEXTAUTH_URL`, keep `DEMO_MODE="true"` until SMS and Razorpay are connected, and list your own number in `ADMIN_PHONES`. Admin and real-owner OTPs are never shown on screen; they print in the server window. For real customers use permanent hosting (see the PDF guide, section 14).
 
 Reminders and hold expiry run from a cron endpoint:
 

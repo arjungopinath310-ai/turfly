@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Providers } from "@/components/Providers";
 import { BRAND } from "@/lib/brand";
+import { mockAllowed } from "@/lib/payments/razorpay";
 
 const font = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -15,6 +16,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={font.variable}>
       <body className="min-h-screen font-sans">
         <Providers>
+          {mockAllowed() && (
+            <div className="bg-violet-600 px-4 py-1.5 text-center text-xs font-medium text-white">
+              Demo version: payments are simulated (no real money is charged) and turfs marked “Demo listing” are fictional.
+            </div>
+          )}
           <Navbar />
           <main>{children}</main>
           <footer className="mt-24 border-t border-slate-200 bg-white">

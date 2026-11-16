@@ -17,7 +17,7 @@ export default async function Home() {
         <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:pt-24">
           <span className="chip border-white/15 bg-white/5 text-brand-200">Now live in Manjeri, Kerala</span>
           <h1 className="mt-5 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
-            Book your next match <span className="bg-gradient-to-r from-brand-300 to-lime-300 bg-clip-text text-transparent">in under a minute.</span>
+            Book your next match <span className="bg-gradient-to-r from-brand-300 to-lime-300 bg-clip-text text-transparent">in under a minute</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg text-slate-300">
             Compare turfs, see real availability, reserve with a ₹49 advance and bring your whole team, all in one place.
@@ -45,7 +45,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="mx-auto -mt-8 grid max-w-6xl gap-3 px-4 sm:grid-cols-3">
+      {/* relative z-10: these cards overlap the hero's bottom edge and must paint above it */}
+      <section className="relative z-10 mx-auto -mt-8 grid max-w-6xl gap-3 px-4 sm:grid-cols-3">
         {[
           { icon: <Zap size={18} />, t: "Live slot grid", d: "Green means free right now. No calling around." },
           { icon: <Wallet size={18} />, t: "₹49 to reserve", d: "Pay the rest at the turf. Refund rules shown upfront." },

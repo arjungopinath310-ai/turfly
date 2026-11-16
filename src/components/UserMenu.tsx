@@ -2,15 +2,18 @@
 import Link from "next/link";
 import { useState } from "react";
 import { signOut } from "next-auth/react";
+import { UserRound } from "lucide-react";
 
-export function UserMenu({ name, role }: { name: string; role: string }) {
+export function UserMenu({ name, hasName, role }: { name: string; hasName: boolean; role: string }) {
   const [open, setOpen] = useState(false);
   const item = "block px-4 py-2 hover:bg-slate-50";
   return (
     <div className="relative">
-      <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium">
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-800">{name.slice(0, 1).toUpperCase()}</span>
-        <span className="hidden max-w-[120px] truncate sm:block">{name}</span>
+      <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium" aria-label="Account menu">
+        <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-800">
+          {hasName ? name.slice(0, 1).toUpperCase() : <UserRound size={15} />}
+        </span>
+        <span className="hidden max-w-[140px] truncate sm:block">{name}</span>
       </button>
       {open && (
         <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-sm shadow-card" onClick={() => setOpen(false)}>

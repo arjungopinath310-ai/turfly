@@ -1,12 +1,13 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { isDemoMode } from "../format";
 
 const API = "https://api.razorpay.com/v1";
 
 export const razorpayConfigured = () => Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 
-/** Mock gateway: only when Razorpay is not configured and we are not in production (unless explicitly allowed). */
+/** Mock gateway: only when Razorpay is NOT configured, and only in development or DEMO_MODE (or if explicitly allowed). */
 export const mockAllowed = () =>
-  !razorpayConfigured() && (process.env.NODE_ENV !== "production" || process.env.ALLOW_MOCK_PAYMENTS === "true");
+  !razorpayConfigured() && (isDemoMode() || process.env.ALLOW_MOCK_PAYMENTS === "true");
 
 export const providerName = () => (razorpayConfigured() ? "razorpay" : "mock");
 

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { Loader2 } from "lucide-react";
 
 export function LoginForm({ next, google }: { next: string; google: boolean }) {
@@ -8,6 +8,7 @@ export function LoginForm({ next, google }: { next: string; google: boolean }) {
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [devCode, setDevCode] = useState<string | null>(null);
+  const [serverLog, setServerLog] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -19,6 +20,7 @@ export function LoginForm({ next, google }: { next: string; google: boolean }) {
     setBusy(false);
     if (!r.ok) return setErr(j.error);
     setDevCode(j.devCode ?? null);
+    setServerLog(Boolean(j.serverLog));
     setStep("code");
   }
 
@@ -28,7 +30,9 @@ export function LoginForm({ next, google }: { next: string; google: boolean }) {
     const r = await signIn("otp", { phone, code, redirect: false });
     setBusy(false);
     if (r?.error) return setErr("Incorrect or expired OTP");
-    window.location.href = next;
+    // First sign-in: ask for a name so teammates and turf owners see a person, not a number.
+    const s = await getSession();
+    window.location.href = s?.user?.name ? next : `/profile?welcome=1&next=${encodeURIComponent(next)}`;
   }
 
   return (
@@ -51,7 +55,8 @@ export function LoginForm({ next, google }: { next: string; google: boolean }) {
           <div>
             <label className="label">Enter OTP sent to +91 {phone}</label>
             <input className="input text-center text-2xl tracking-[0.5em]" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} autoFocus />
-            {devCode && <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">Development mode: your OTP is <b>{devCode}</b> (SMS provider not configured).</p>}
+            {devCode && <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">Demo mode: your OTP is <b>{devCode}</b> (SMS sending isn&apos;t set up yet).</p>}
+            {!devCode && serverLog && <p className="mt-2 rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-700">For admin and turf-owner accounts the code is not shown here. It is printed in the server terminal of the person running Turfly.</p>}
           </div>
           <button className="btn-primary w-full" disabled={busy || code.length !== 6} onClick={verify}>
             {busy && <Loader2 size={16} className="animate-spin" />} Verify & continue

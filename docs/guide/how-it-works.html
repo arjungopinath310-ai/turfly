@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Turfly: How the App Works</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm; }
+  :root { --g7:#027a48; --g6:#039855; --g5:#12b76a; --g1:#d1fadf; --g0:#ecfdf3; --ink:#0f172a; --mut:#475569; --line:#e2e8f0; --am:#f59e0b; --red:#ef4444; --vi:#7c3aed; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.5; margin: 0; }
+  h1 { font-size: 22pt; margin: 0 0 4mm; letter-spacing: -.02em; }
+  h2 { font-size: 15pt; margin: 0 0 3mm; padding-bottom: 2mm; border-bottom: 2px solid var(--g5); letter-spacing: -.01em; }
+  h3 { font-size: 11.5pt; margin: 5mm 0 1.5mm; color: var(--g7); }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 5.5mm; }
+  li { margin-bottom: 1mm; }
+  section { page-break-before: always; }
+  .avoid { page-break-inside: avoid; }
+  .muted { color: var(--mut); }
+  .small { font-size: 9pt; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.5pt; }
+  th { text-align: left; background: #f1f5f9; padding: 1.8mm 2.5mm; border-bottom: 1px solid var(--line); font-weight: 600; }
+  td { padding: 1.8mm 2.5mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  code, .mono { font-family: Consolas, monospace; font-size: 9pt; background: #f1f5f9; padding: .3mm 1.2mm; border-radius: 1mm; }
+  .note { border-left: 3px solid var(--g5); background: var(--g0); padding: 2.5mm 3.5mm; margin: 3mm 0; border-radius: 0 2mm 2mm 0; }
+  .warn { border-left: 3px solid var(--am); background: #fffbeb; padding: 2.5mm 3.5mm; margin: 3mm 0; border-radius: 0 2mm 2mm 0; }
+  .shot { width: 100%; border: 1px solid var(--line); border-radius: 2.5mm; margin: 2mm 0 1mm; }
+  .shot.crop { object-fit: cover; object-position: top; }
+  .cap { font-size: 8.5pt; color: var(--mut); margin-bottom: 4mm; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .card { border: 1px solid var(--line); border-radius: 3mm; padding: 3.5mm 4mm; }
+  .card h3 { margin-top: 0; }
+  .steps { counter-reset: s; list-style: none; padding: 0; }
+  .steps li { counter-increment: s; position: relative; padding-left: 9mm; margin-bottom: 2.2mm; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: .2mm; width: 6mm; height: 6mm; border-radius: 50%; background: var(--g6); color: #fff; font-weight: 700; font-size: 8.5pt; display: grid; place-items: center; }
+  .chip { display: inline-block; padding: .4mm 2.2mm; border-radius: 10mm; font-size: 8.5pt; font-weight: 600; }
+  .c-green { background: #d1fadf; color: #05603a; } .c-red { background: #fee2e2; color: #991b1b; } .c-amber { background: #fef3c7; color: #92400e; } .c-grey { background: #e2e8f0; color: #334155; } .c-vi { background: #ede9fe; color: #5b21b6; }
+  /* cover */
+  .cover { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; background: radial-gradient(70% 55% at 75% 15%, #12b76a55, transparent 60%), #07130d; color: #fff; border-radius: 5mm; padding: 18mm 16mm; }
+  .cover h1 { font-size: 40pt; line-height: 1.05; margin: 8mm 0 5mm; }
+  .cover .tag { color: #a6f4c5; font-weight: 600; }
+  .cover .logo { display: inline-flex; align-items: center; gap: 3mm; font-size: 18pt; font-weight: 800; }
+  .cover .logo span { width: 11mm; height: 11mm; border-radius: 3mm; background: linear-gradient(135deg, #32d583, #027a48); display: grid; place-items: center; font-size: 15pt; }
+  .cover .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; font-size: 9.5pt; color: #cbd5e1; }
+  .cover .meta b { display: block; color: #fff; font-size: 10.5pt; }
+  .toc { columns: 2; column-gap: 10mm; font-size: 10.5pt; }
+  .toc div { break-inside: avoid; padding: 1.3mm 0; border-bottom: 1px dotted var(--line); }
+  .toc b { color: var(--g6); display: inline-block; width: 7mm; }
+  .flow { display: flex; align-items: stretch; gap: 1.5mm; margin: 3mm 0 4mm; }
+  .flow div { flex: 1; border: 1px solid var(--line); border-radius: 2mm; padding: 2mm; font-size: 8.5pt; text-align: center; background: #fff; }
+  .flow div b { display: block; color: var(--g7); font-size: 9pt; }
+  .flow i { align-self: center; color: var(--g5); font-style: normal; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div>
+    <div class="logo"><span>⚽</span> Turfly</div>
+    <h1>How the app<br>works</h1>
+    <p class="tag" style="font-size:13pt">Football turf discovery, team management &amp; booking, starting in Manjeri, Kerala</p>
+    <p style="max-width:140mm;color:#cbd5e1;margin-top:6mm">A guide for players, turf owners and the platform administrator: what each screen does, the booking and payment rules, how the convertible 7-a-side pitch works, and how the app is hosted and taken live.</p>
+  </div>
+  <div class="meta">
+    <div><b>Version</b>0.1 (demo)</div>
+    <div><b>Date</b>16 November 2026</div>
+    <div><b>Source code</b>github.com/arjungopinath310-ai/turfly</div>
+  </div>
+</div>
+
+<!-- CONTENTS -->
+<section>
+  <h2>Contents</h2>
+  <div class="toc">
+    <div><b>1</b> Turfly in one page</div>
+    <div><b>2</b> Getting started &amp; demo accounts</div>
+    <div><b>3</b> Player guide: finding a turf</div>
+    <div><b>4</b> Player guide: booking &amp; paying</div>
+    <div><b>5</b> After booking: squad, sharing, cancelling</div>
+    <div><b>6</b> Teams, Find Players &amp; Compare</div>
+    <div><b>7</b> The convertible 7-a-side pitch</div>
+    <div><b>8</b> Turf owner guide</div>
+    <div><b>9</b> Administrator guide</div>
+    <div><b>10</b> Money: advance, fees, commission</div>
+    <div><b>11</b> Notifications &amp; reminders</div>
+    <div><b>12</b> Safety, privacy &amp; honesty rules</div>
+    <div><b>13</b> How it is hosted today</div>
+    <div><b>14</b> Going live checklist</div>
+    <div><b>15</b> Technical overview</div>
+    <div><b>16</b> What is planned next</div>
+  </div>
+
+  <h2 style="margin-top:10mm">1 · Turfly in one page</h2>
+  <p>Turfly lets football players find turfs near them, see which time slots are free, reserve a slot by paying a small online advance (₹49 by default) and pay the rest at the venue. Teams, squads and WhatsApp sharing are built in. Turf owners run their whole calendar on Turfly (online bookings, walk-ins, maintenance blocks, prices) and a platform administrator approves turfs and manages money and disputes.</p>
+  <div class="grid2" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card"><h3>Players</h3><ul class="small"><li>Search by area, PIN, distance, price, format, amenities, rating, free time</li><li>Live colour-coded slot grid</li><li>Reserve with ₹49, pay rest at turf</li><li>Teams, squads, WhatsApp invites</li><li>Reviews, Find Players, Compare</li></ul></div>
+    <div class="card"><h3>Turf owners</h3><ul class="small"><li>Register or claim a listing</li><li>Pitch layout incl. 7s ↔ 2 × 5s</li><li>Peak pricing, hours, durations, refund policy</li><li>Day / week / month calendar</li><li>Walk-ins, blocks, balances, analytics</li></ul></div>
+    <div class="card"><h3>Administrator</h3><ul class="small"><li>Approve / reject / suspend turfs</li><li>Add unclaimed listings, verify claims</li><li>Users &amp; roles</li><li>Payments, refunds, disputes</li><li>Advance, fees, commission, offers</li></ul></div>
+  </div>
+  <div class="note"><b>Three promises the app keeps:</b> (1) two people can never book the same pitch at the same time; the database itself refuses it. (2) A booking is confirmed only when the payment gateway confirms the money, never because the browser says so. (3) Availability is labelled honestly: “Live” only when the owner manages bookings on Turfly.</div>
+</section>
+
+<!-- 2 GETTING STARTED -->
+<section>
+  <h2>2 · Getting started &amp; demo accounts</h2>
+  <ol class="steps">
+    <li>Open the Turfly address in any browser, on a phone or a computer. No app install is needed.</li>
+    <li>Tap <b>Sign in</b> and enter a 10-digit Indian mobile number. Turfly sends a 6-digit OTP.</li>
+    <li>On first sign-in you are asked for your name, so teammates and turf owners see a person, not a number.</li>
+  </ol>
+  <img class="shot crop" src="img/login.png" alt="Sign-in screen" style="width:58%;height:46mm">
+  <div class="cap">Sign-in screen. In demo mode the OTP is displayed on screen because SMS sending is not connected yet.</div>
+
+  <h3>Demo mode</h3>
+  <p>Until SMS and Razorpay accounts are connected, Turfly runs in <span class="chip c-vi">demo mode</span>. A purple banner at the top of every page says so.</p>
+  <ul>
+    <li><b>OTP on screen:</b> ordinary players see their code on screen. <b>Admin and real turf-owner accounts never do</b>; their code is printed only in the server window of the person running Turfly. A stranger therefore cannot sign in as the administrator.</li>
+    <li><b>Simulated payments:</b> checkout shows a “Simulate successful UPI payment” button instead of Razorpay. It runs the same confirmation code as a real payment, but no money moves.</li>
+    <li><b>Demo listings:</b> the seeded turfs are fictional and labelled “Demo listing”. Real Manjeri turfs are added by the admin or registered by their owners.</li>
+  </ul>
+  <h3>Demo accounts</h3>
+  <table>
+    <tr><th>Role</th><th>Mobile number</th><th>Where the OTP appears</th></tr>
+    <tr><td>Demo player</td><td class="mono">90000 00002</td><td>On screen</td></tr>
+    <tr><td>Demo turf owner (owns the demo turfs)</td><td class="mono">90000 00001</td><td>On screen (demo turfs only)</td></tr>
+    <tr><td>Administrator</td><td>The numbers listed in <code>ADMIN_PHONES</code> (yours, plus the seeded <span class="mono">99999 99999</span>)</td><td>Server window only</td></tr>
+    <tr><td>Any new number</td><td>Any valid mobile</td><td>On screen (creates a new player)</td></tr>
+  </table>
+  <p class="small muted">Limits that protect sign-in: a code is valid for 5 minutes, allows 5 attempts, can be requested at most 5 times an hour and once every 30 seconds, and works only once.</p>
+</section>
+
+<!-- 3 FIND -->
+<section>
+  <h2>3 · Player guide: finding a turf</h2>
+  <div class="grid2">
+    <div><img class="shot crop" src="img/home.png" alt="Home page" style="height:58mm">
+    <div class="cap">Home page: search by name, area or PIN, pick a format, or tap a quick chip (“Tonight 7 PM”, “5-a-side”, “Floodlit + parking”).</div></div>
+    <div><img class="shot crop" src="img/turfs.png" alt="Turf search results" style="height:58mm">
+    <div class="cap">Results: filters on the left, list / map toggle, an availability badge on every card and a “Compare” tick box.</div></div>
+  </div>
+  <h3>Filters</h3>
+  <table>
+    <tr><th>Filter</th><th>What it does</th></tr>
+    <tr><td>Search / City / PIN code</td><td>Matches turf name, locality, address or exact PIN</td></tr>
+    <tr><td>Format</td><td>Only turfs offering 5-a-side or 7-a-side</td></tr>
+    <tr><td>Max ₹ / hr</td><td>Turfs whose cheapest matching pitch is within budget</td></tr>
+    <tr><td>Free on … at …</td><td>Only turfs with a free slot at that date and time. Uses Live turfs only, because others can’t be trusted</td></tr>
+    <tr><td>Min rating · Amenities</td><td>Rating from verified bookings; parking, washroom, floodlights, etc.</td></tr>
+    <tr><td>Near me + radius</td><td>Uses your phone’s location (only after you tap the button) and sorts by distance</td></tr>
+  </table>
+  <h3>Availability badges</h3>
+  <p><span class="chip c-green">Live availability</span> the owner manages every booking here; slots are accurate and bookable online.
+  <span class="chip c-amber">Owner-reported</span> the owner updates manually; the grid is shown with its last-updated time, but you must call to book.
+  <span class="chip c-grey">Call to check availability</span> no calendar connected (e.g. an unclaimed listing); only contact details are shown.</p>
+</section>
+
+<!-- 4 BOOK -->
+<section>
+  <h2>4 · Player guide: booking &amp; paying</h2>
+  <img class="shot crop" src="img/turf.png" alt="Turf page with booking widget" style="height:66mm;object-position:top">
+  <div class="cap">Turf page: photos, pitches &amp; peak prices, amenities, hours, refund policy, reviews, and the “Book a slot” panel (right).</div>
+  <div class="grid2">
+    <div>
+      <h3>The eight booking steps</h3>
+      <ol class="steps small">
+        <li>Choose the turf (locality is chosen in search)</li>
+        <li>Pick a date from the strip (up to 30 days ahead)</li>
+        <li>Pick the pitch: Full 7-a-side, Pitch A or Pitch B</li>
+        <li>Pick the duration: 60, 90 or 120 minutes</li>
+        <li>Tap a green slot: the price (incl. peak ★) is on the slot</li>
+        <li>Choose a team, or create one, or decide later</li>
+        <li>Optional: offer code, or “pay full online” if allowed</li>
+        <li>Tap <b>Reserve · pay ₹49</b></li>
+      </ol>
+    </div>
+    <div>
+      <h3>Slot colours</h3>
+      <p class="small"><span class="chip c-green">Green</span> available<br><span class="chip c-red">Red</span> booked<br><span class="chip c-amber">Amber</span> held by someone in checkout<br><span class="chip c-grey">Grey</span> past, too soon, or blocked by the owner</p>
+      <p class="small">The grid refreshes every 20 seconds. If your chosen slot is taken meanwhile, Turfly tells you and clears the selection.</p>
+      <h3>Price breakdown (shown before paying)</h3>
+      <table class="small">
+        <tr><td>Turf booking</td><td style="text-align:right">₹1,500</td></tr>
+        <tr><td>Online advance (pay now)</td><td style="text-align:right">₹49</td></tr>
+        <tr><td>Balance at venue</td><td style="text-align:right"><b>₹1,451</b></td></tr>
+      </table>
+      <p class="small muted">Any platform fee is a separate, visible line. Offer discounts reduce the venue balance, never the ₹49.</p>
+    </div>
+  </div>
+  <h3>Checkout: what happens behind the button</h3>
+  <div class="flow avoid">
+    <div><b>Hold</b>Slot locked for you for 5 min (amber for others)</div><i>→</i>
+    <div><b>Pay</b>UPI, card, net banking or wallet via Razorpay</div><i>→</i>
+    <div><b>Gateway confirms</b>Razorpay’s signed message reaches Turfly</div><i>→</i>
+    <div><b>Confirmed</b>Booking ID e.g. TF-EYBY9Q, notifications sent</div>
+  </div>
+  <ul class="small">
+    <li>A countdown shows how long the hold lasts. If you leave or the payment fails, the slot frees itself when the hold expires. You can also tap “Cancel and release slot”.</li>
+    <li>If a payment arrives just after the hold expired, Turfly re-books the slot if it is still free; if someone else took it, the money is refunded automatically in full.</li>
+    <li>Paying twice by accident (two tabs) is detected and the extra payment refunded automatically.</li>
+    <li>You can hold at most 2 slots at a time, so nobody can block a whole evening.</li>
+  </ul>
+</section>
+
+<!-- 5 AFTER -->
+<section>
+  <h2>5 · After booking: squad, sharing, cancelling</h2>
+  <p>The booking page (<b>My bookings</b> → tap a booking) shows the booking ID, date, time, pitch, what was paid and the balance due, plus:</p>
+  <div class="grid2">
+    <div class="card"><h3>Share &amp; plan</h3><ul class="small"><li><b>Directions</b> opens Google Maps navigation</li><li><b>Google Calendar</b> / <b>.ics</b> file for any calendar app</li><li><b>Share on WhatsApp</b> sends match details from your own WhatsApp</li><li><b>Receipt</b> printable / save as PDF</li></ul></div>
+    <div class="card"><h3>Match squad</h3><ul class="small"><li>Team name for this match (can differ from the team’s usual name)</li><li>Add players by name or from your team</li><li>Mark each <i>Confirmed / Pending / Declined</i></li><li>Set captain and substitutes</li><li>Players don’t need an account</li></ul></div>
+  </div>
+  <h3>Cancelling and refunds</h3>
+  <p>Each turf has a refund policy that is shown in plain words <b>before</b> you pay and saved with your booking (later policy changes don’t affect you). Tap <b>Check refund &amp; cancel</b> to see the exact amount before confirming. Default policy:</p>
+  <table>
+    <tr><th>When you cancel</th><th>Refund of the ₹49 advance</th></tr>
+    <tr><td>24 hours or more before the match</td><td>100% (₹49)</td></tr>
+    <tr><td>6 to 24 hours before</td><td>50% (₹24.50)</td></tr>
+    <tr><td>Less than 6 hours before</td><td>No refund</td></tr>
+    <tr><td>The turf cancels</td><td>Always 100% of what you paid online</td></tr>
+  </table>
+  <h3>Reviews &amp; problems</h3>
+  <p>After the match, the organiser can rate turf quality, cleanliness, lighting, parking and overall experience. Only verified bookings can review, once per booking. <b>Report a problem</b> opens a dispute that the administrator resolves, with a refund if appropriate.</p>
+  <h3>Short of players?</h3>
+  <p>From an upcoming booking, post “Need 3 more players”. It appears in <b>Find Players</b>; see section 6.</p>
+</section>
+
+<!-- 6 TEAMS -->
+<section>
+  <h2>6 · Teams, Find Players &amp; Compare</h2>
+  <div class="grid2">
+    <div>
+      <h3>Teams</h3>
+      <ul class="small">
+        <li>Create a team: name, logo (resized automatically), 5-a-side or 7-a-side.</li>
+        <li>Add players: full name, and optionally mobile, email, position, jersey number and photo.</li>
+        <li>Edit, replace or remove players; make anyone captain.</li>
+        <li>Rename the team at any time. Renames, joins and removals are kept in <b>Team activity</b>, and past matches in <b>Match history</b>.</li>
+        <li>Invite with a link or a WhatsApp message. Players who open the link and sign in join automatically.</li>
+        <li>Choose an existing team (or create one) while booking; its players are copied into the match squad.</li>
+      </ul>
+      <div class="note small"><b>Privacy:</b> a player’s phone number is visible only to the person who entered it (the team owner), unless that player switches on “Share my phone number with my teammates” in their profile. Everyone else sees names only.</div>
+    </div>
+    <div>
+      <h3>Find Players</h3>
+      <ol class="steps small">
+        <li>An organiser posts from a confirmed booking: players needed, optional share per player and note.</li>
+        <li>Other players see open posts for their city and tap <b>Request to join</b>.</li>
+        <li>The organiser accepts or declines. Accepted players are added to the squad by name, and the post closes when full.</li>
+      </ol>
+      <p class="small muted">Any share amount is paid to the organiser at the venue. In-app split payments are planned (section 16).</p>
+      <h3>Compare turfs</h3>
+      <p class="small">Tick <b>Compare</b> on up to three turfs, then open the comparison: location, distance, availability type, formats, starting price, rating, free slots today, and every amenity side by side.</p>
+    </div>
+  </div>
+  <h3>On a phone</h3>
+  <div class="grid2" style="grid-template-columns:55mm 1fr; align-items:start">
+    <img class="shot crop" src="img/mobile.png" alt="Mobile view" style="width:45mm;height:95mm">
+    <p class="small">Every screen adapts to phone width. The navigation moves into the account menu, and the booking panel stacks below the turf details.</p>
+  </div>
+</section>
+
+<!-- 7 CONVERTIBLE -->
+<section>
+  <h2>7 · The convertible 7-a-side pitch</h2>
+  <p>The facility has one 7-a-side pitch that can also be used as two independent 5-a-side pitches. Turfly models the ground as <b>areas</b> and bookable <b>pitches</b>:</p>
+  <div class="grid2 avoid">
+    <svg viewBox="0 0 300 170" width="100%">
+      <rect x="10" y="10" width="280" height="150" rx="10" fill="#12b76a" opacity=".18" stroke="#027a48" stroke-width="2"/>
+      <rect x="18" y="18" width="128" height="134" rx="6" fill="#d1fadf" stroke="#039855" stroke-width="2"/>
+      <rect x="154" y="18" width="128" height="134" rx="6" fill="#d1fadf" stroke="#039855" stroke-width="2"/>
+      <line x1="150" y1="14" x2="150" y2="156" stroke="#027a48" stroke-dasharray="5 4" stroke-width="2"/>
+      <text x="82" y="82" text-anchor="middle" font-size="15" font-weight="700" fill="#05603a">Half A</text>
+      <text x="82" y="100" text-anchor="middle" font-size="10" fill="#05603a">Pitch A · 5-a-side</text>
+      <text x="218" y="82" text-anchor="middle" font-size="15" font-weight="700" fill="#05603a">Half B</text>
+      <text x="218" y="100" text-anchor="middle" font-size="10" fill="#05603a">Pitch B · 5-a-side</text>
+      <text x="150" y="167" text-anchor="middle" font-size="9.5" fill="#027a48">Full pitch · 7-a-side = Half A + Half B</text>
+    </svg>
+    <table class="small">
+      <tr><th>Bookable pitch</th><th>Uses areas</th></tr>
+      <tr><td>Full pitch · 7-a-side</td><td>A + B</td></tr>
+      <tr><td>Pitch A · 5-a-side</td><td>A</td></tr>
+      <tr><td>Pitch B · 5-a-side</td><td>B</td></tr>
+      <tr><td colspan="2" class="muted">One rule decides everything: two bookings clash only if they <b>share an area</b> and their <b>times overlap</b>.</td></tr>
+    </table>
+  </div>
+  <table>
+    <tr><th>If someone books…</th><th>Full 7-a-side</th><th>Pitch A</th><th>Pitch B</th></tr>
+    <tr><td>Full 7-a-side</td><td><span class="chip c-red">booked</span></td><td><span class="chip c-red">unavailable</span></td><td><span class="chip c-red">unavailable</span></td></tr>
+    <tr><td>Pitch A</td><td><span class="chip c-red">unavailable</span></td><td><span class="chip c-red">booked</span></td><td><span class="chip c-green">available</span></td></tr>
+    <tr><td>Pitch B</td><td><span class="chip c-red">unavailable</span></td><td><span class="chip c-green">available</span></td><td><span class="chip c-red">booked</span></td></tr>
+    <tr><td>Pitch A and Pitch B</td><td><span class="chip c-red">unavailable</span></td><td><span class="chip c-red">booked</span></td><td><span class="chip c-red">booked</span></td></tr>
+  </table>
+  <h3>Overlapping times are checked minute by minute, never merged</h3>
+  <p class="small">Example: Pitch A booked 6–7 PM and Pitch B booked 7–8 PM.</p>
+  <svg viewBox="0 0 640 150" width="100%" class="avoid">
+    <g font-size="11" fill="#475569">
+      <text x="120" y="16">5 PM</text><text x="220" y="16">6 PM</text><text x="320" y="16">7 PM</text><text x="420" y="16">8 PM</text><text x="520" y="16">9 PM</text>
+    </g>
+    <g stroke="#e2e8f0"><line x1="130" y1="22" x2="130" y2="140"/><line x1="230" y1="22" x2="230" y2="140"/><line x1="330" y1="22" x2="330" y2="140"/><line x1="430" y1="22" x2="430" y2="140"/><line x1="530" y1="22" x2="530" y2="140"/></g>
+    <g font-size="12" font-weight="600" fill="#0f172a"><text x="4" y="47">Pitch A</text><text x="4" y="85">Pitch B</text><text x="4" y="123">Full 7-a-side</text></g>
+    <rect x="130" y="32" width="100" height="24" rx="4" fill="#d1fadf"/><rect x="230" y="32" width="100" height="24" rx="4" fill="#fecaca"/><rect x="330" y="32" width="200" height="24" rx="4" fill="#d1fadf"/>
+    <text x="280" y="49" text-anchor="middle" font-size="10" fill="#991b1b">booked</text>
+    <rect x="130" y="70" width="200" height="24" rx="4" fill="#d1fadf"/><rect x="330" y="70" width="100" height="24" rx="4" fill="#fecaca"/><rect x="430" y="70" width="100" height="24" rx="4" fill="#d1fadf"/>
+    <text x="380" y="87" text-anchor="middle" font-size="10" fill="#991b1b">booked</text>
+    <rect x="130" y="108" width="100" height="24" rx="4" fill="#d1fadf"/><rect x="230" y="108" width="200" height="24" rx="4" fill="#fee2e2" stroke="#ef4444" stroke-dasharray="4 3"/><rect x="430" y="108" width="100" height="24" rx="4" fill="#d1fadf"/>
+    <text x="180" y="125" text-anchor="middle" font-size="10" fill="#05603a">free</text><text x="330" y="125" text-anchor="middle" font-size="10" fill="#991b1b">unavailable (one half in use each hour)</text><text x="480" y="125" text-anchor="middle" font-size="10" fill="#05603a">free</text>
+  </svg>
+  <p class="small">The full pitch is unavailable 6–8 PM because in each of those hours one half really is in use. But the two bookings are not treated as one big block: the full pitch stays bookable at 5 PM and 8 PM, Pitch A is still free 7–8 PM and Pitch B is free 6–7 PM.</p>
+  <h3>Owner options</h3>
+  <ul class="small">
+    <li><b>Halves can be combined into one 7-a-side booking:</b> on by default; off removes the Full pitch option.</li>
+    <li><b>Both halves can run at the same time:</b> on by default; off adds a hidden shared “lock” so only one half is used at a time.</li>
+    <li>Any other layout is possible (three 5s pitches merging into an 11s, extra pitches, etc.). The settings page shows a <b>conflict map</b> of which pitches block each other.</li>
+  </ul>
+</section>
+
+<!-- 8 OWNER -->
+<section>
+  <h2>8 · Turf owner guide</h2>
+  <h3>Getting listed</h3>
+  <ol class="steps small">
+    <li><b>Register:</b> Account menu → <i>List your turf</i>. Enter name, address, PIN, map coordinates, contact, photos, amenities, and choose a layout (convertible 7s ↔ 2 × 5s, single 5s, or single 7s) with prices.</li>
+    <li><b>Or claim:</b> if the admin already listed your turf, open the claim link they send, sign in and describe how you can be verified (role, GSTIN or licence). The admin confirms by calling the listing’s public number.</li>
+    <li>Review pitch layout, hours, peak prices and refund policy, then <b>Submit for approval</b>. Customers can book once the admin approves.</li>
+  </ol>
+  <h3>Turf settings</h3>
+  <table class="small">
+    <tr><th>Section</th><th>What you control</th></tr>
+    <tr><td>Status &amp; availability</td><td><b>Live</b> (you enter every booking here, including walk-ins; customers book online) or <b>Owner-reported</b> (grid shown, customers call)</td></tr>
+    <tr><td>Pitch layout</td><td>Areas, bookable pitches, players per side, base price, conflict map, one-click convertible preset</td></tr>
+    <tr><td>Peak pricing</td><td>Time windows and days with their own hourly rate; prices are prorated per 30 minutes across a boundary</td></tr>
+    <tr><td>Operating hours</td><td>Per weekday, including closing after midnight (e.g. 6 AM to 1 AM)</td></tr>
+    <tr><td>Cancellation policy</td><td>Up to three refund tiers or non-refundable; applies to new bookings</td></tr>
+    <tr><td>Details &amp; rules</td><td>Slot interval (15/30/60 min), durations (30–180 min), minimum notice, days bookable ahead, optional full online payment</td></tr>
+  </table>
+  <h3>Daily operation</h3>
+  <div class="grid2">
+    <div class="card"><h3>Calendar</h3><ul class="small"><li><b>Day:</b> every pitch as a colour grid plus the list of bookings and blocks</li><li><b>Week:</b> bookings per pitch per day</li><li><b>Month:</b> booking heat-map, blocked days</li><li><b>Walk-in / phone booking:</b> appears online instantly; refused if it clashes with anything</li><li><b>Block time:</b> maintenance, private event or holiday, for one pitch or the whole turf, over several days if needed</li></ul></div>
+    <div class="card"><h3>Bookings</h3><ul class="small"><li>Tabs: Upcoming, Balance pending, Past, Cancelled; search by ID or name</li><li>Customer, team and squad details</li><li><b>Mark balance collected</b> at the venue</li><li><b>Reschedule</b> (checked for clashes; customer notified)</li><li><b>Cancel &amp; refund</b> (always 100% of the online payment)</li><li>Mark no-show</li></ul></div>
+  </div>
+  <h3>Dashboard</h3>
+  <p class="small">Today’s bookings · upcoming count · free 1-hour slots today · bookings this month (and how many were walk-in/phone) · booking value · advances received · pending balances · cancellations and rate · peak booking hours chart (last 90 days) · settlement ledger.</p>
+</section>
+
+<!-- 9 ADMIN -->
+<section>
+  <h2>9 · Administrator guide</h2>
+  <table class="small">
+    <tr><th>Page</th><th>What the admin does there</th></tr>
+    <tr><td>Overview</td><td>Users and owners, live / unclaimed / draft turfs, items awaiting review, open disputes, bookings and booking value this month, money collected and refunded, commission earned, latest bookings, bookings by city</td></tr>
+    <tr><td>Turfs &amp; claims</td><td>Approve or reject new turfs (a reason is required to reject); suspend or reinstate; set per-turf commission % and “featured”; add <b>unclaimed listings</b> from public information with a source note; copy each listing’s <b>claim link</b> to invite the owner; approve or reject ownership claims</td></tr>
+    <tr><td>Payments &amp; disputes</td><td>Search payments by booking ID or gateway ID; refund any amount; resolve disputes with or without a refund; see failed or invalid gateway messages</td></tr>
+    <tr><td>Users</td><td>Search users, change role (player / owner / admin), suspend accounts</td></tr>
+    <tr><td>Fees, policy &amp; offers</td><td>Advance per booking (default ₹49), platform fee to customer (default ₹0), checkout hold minutes (default 5), default commission % (default 0), default refund policy, which reminders to send and by which channels, integration status, and promo codes</td></tr>
+  </table>
+  <h3>Offers</h3>
+  <p class="small">Codes can be platform-wide or for one turf; a percentage (with optional maximum) or a flat amount; with a usage limit and an end date. Types: <b>First booking</b>, <b>Repeat customer</b> (after N bookings), <b>Referral</b> and <b>Promo</b>. Every user has a referral code on their profile. The seed includes <span class="mono">WELCOME50</span>: ₹50 off a first booking, taken off the venue balance.</p>
+  <h3>Adding real Manjeri turfs</h3>
+  <ol class="steps small">
+    <li>Use only public information: the name on the signboard, the address, the public phone number and the map location. Record the source in the note.</li>
+    <li>The listing appears with “Call to check availability”; it never shows slots.</li>
+    <li>Send the owner the claim link from the table. After verification the listing becomes theirs to set up.</li>
+  </ol>
+  <div class="note small">Every sensitive admin and owner action (approvals, refunds, role changes, settings, manual bookings, reschedules) is recorded in an audit log.</div>
+</section>
+
+<!-- 10 MONEY -->
+<section>
+  <h2>10 · Money: advance, fees, commission</h2>
+  <table>
+    <tr><th>Item</th><th>Who pays / receives</th><th>Rule</th></tr>
+    <tr><td>Advance (₹49)</td><td>Customer pays online</td><td>Part of the turf price, not extra. Configurable by admin; never more than the slot price</td></tr>
+    <tr><td>Balance</td><td>Customer pays at the turf</td><td>Owner marks it collected; reminder sent if still pending</td></tr>
+    <tr><td>Platform fee</td><td>Customer, optional</td><td>Default ₹0. If set, shown as its own line before payment</td></tr>
+    <tr><td>Discount</td><td>Customer saves</td><td>Reduces the venue balance only; the advance stays the same</td></tr>
+    <tr><td>Commission</td><td>Charged to the owner</td><td>% of booking value, per turf or platform default (0%). Shown as a separate ledger line; <b>never silently taken from the advance</b></td></tr>
+    <tr><td>Full online payment</td><td>Customer, optional</td><td>Only if the owner enables it; balance becomes ₹0</td></tr>
+  </table>
+  <h3>Settlement ledger (owner dashboard)</h3>
+  <table class="small">
+    <tr><th>Entry</th><th>Example</th></tr>
+    <tr><td>Advance collected by platform</td><td>+ ₹49</td></tr>
+    <tr><td>Commission (if configured, e.g. 5% of ₹1,500)</td><td>− ₹75</td></tr>
+    <tr><td>Refund to customer</td><td>− ₹49</td></tr>
+    <tr><td>Payout to owner (when paid)</td><td>− amount paid out</td></tr>
+  </table>
+  <p class="small">The advance is collected into the platform’s Razorpay account and paid to owners from the ledger. Automatic split settlement (Razorpay Route) is a planned upgrade.</p>
+  <h3>Payment methods</h3>
+  <p class="small">UPI, debit and credit cards, net banking and supported wallets, all through Razorpay Checkout. The amount is always calculated on the server from the booking, never taken from the browser.</p>
+</section>
+
+<!-- 11 NOTIFICATIONS -->
+<section>
+  <h2>11 · Notifications &amp; reminders</h2>
+  <table>
+    <tr><th>Message</th><th>When</th><th>Contents</th></tr>
+    <tr><td>Booking confirmed</td><td>Immediately after payment</td><td>Turf, location, date &amp; time, pitch, team, booking ID, amount paid, balance, directions, cancellation policy</td></tr>
+    <tr><td>Reminder</td><td>24 hours before</td><td>Turf, time, booking ID, directions</td></tr>
+    <tr><td>Reminder</td><td>2 hours before</td><td>Same</td></tr>
+    <tr><td>Balance pending</td><td>3 hours before, only if unpaid</td><td>Amount due at the turf</td></tr>
+    <tr><td>Changes</td><td>When it happens</td><td>Cancellation by turf, reschedule, refund, team join, Find Players requests, turf approval</td></tr>
+  </table>
+  <p><b>Channels:</b> in-app (the bell icon, always on), SMS (MSG91), WhatsApp (WhatsApp Business Cloud API) and email (Resend). Each external channel switches on when its keys are added; until then the message is written to the server log. The admin chooses which reminders and channels are used.</p>
+  <p><b>The scheduler:</b> the “Turfly reminders” window calls Turfly once a minute to send due reminders, release abandoned holds and mark finished matches as completed (which unlocks reviews). Holds are also released automatically whenever someone looks at availability, so bookings stay correct even if the scheduler is off.</p>
+</section>
+
+<!-- 12 SAFETY -->
+<section>
+  <h2>12 · Safety, privacy &amp; honesty rules</h2>
+  <div class="grid2">
+    <div>
+      <h3>Booking integrity</h3>
+      <ul class="small">
+        <li>The database refuses any two active bookings, holds or blocks that use the same area at overlapping times, even if requests arrive in the same millisecond. Tested with 10 simultaneous attempts: exactly one wins.</li>
+        <li>Walk-ins, phone bookings, blocks and reschedules go through the same check.</li>
+        <li>Times are stored in UTC and shown in Indian time.</li>
+      </ul>
+      <h3>Payments</h3>
+      <ul class="small">
+        <li>Only Razorpay’s signed webhook can confirm a booking; the signature is verified with a secret key.</li>
+        <li>Each gateway message is processed once, even if Razorpay sends it again.</li>
+        <li>Duplicate and late payments are refunded automatically.</li>
+        <li>Simulated payments are switched off automatically as soon as Razorpay keys are added.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Privacy</h3>
+      <ul class="small">
+        <li>Phone numbers of team members are private by default.</li>
+        <li>WhatsApp invites are sent from the organiser’s own phone; Turfly needs nobody else’s number.</li>
+        <li>Find Players shares names, not numbers.</li>
+        <li>Location is used only after the player taps “Use my location”.</li>
+      </ul>
+      <h3>Honesty</h3>
+      <ul class="small">
+        <li>“Live availability” only where the owner runs bookings on Turfly.</li>
+        <li>No scraping of other booking systems; unclaimed listings use public information with a recorded source.</li>
+        <li>Demo data is labelled as demo.</li>
+        <li>Refund rules are shown before payment and frozen with the booking.</li>
+      </ul>
+      <h3>Accounts</h3>
+      <ul class="small"><li>Admin and real owner codes are never shown on screen.</li><li>Suspended users cannot sign in.</li><li>Every owner/admin action re-checks permissions on the server.</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 13 HOSTING -->
+<section>
+  <h2>13 · How it is hosted today</h2>
+  <p>Turfly currently runs on your Windows PC and is reachable from any device on the internet through a <b>Cloudflare Tunnel</b>. Cloudflare gives the PC a public <span class="mono">https://…trycloudflare.com</span> address without opening router ports or exposing your home IP.</p>
+  <div class="flow avoid">
+    <div><b>Visitor</b>Phone or laptop anywhere</div><i>→</i>
+    <div><b>Cloudflare</b>https://….trycloudflare.com</div><i>→</i>
+    <div><b>cloudflared</b>“Turfly public tunnel” window</div><i>→</i>
+    <div><b>Turfly server</b>localhost:3000 (“Turfly server” window)</div><i>→</i>
+    <div><b>PostgreSQL 16</b>Windows service on the PC</div>
+  </div>
+  <h3>The three windows that must stay open</h3>
+  <table class="small">
+    <tr><th>Window</th><th>Command (run in the turfly folder)</th><th>Purpose</th></tr>
+    <tr><td>Turfly server</td><td class="mono">npm.cmd start</td><td>The website (production build)</td></tr>
+    <tr><td>Turfly public tunnel</td><td class="mono">cloudflared tunnel --url http://localhost:3000</td><td>The public address</td></tr>
+    <tr><td>Turfly reminders</td><td class="mono">npm.cmd run cron:local</td><td>Reminders &amp; housekeeping every minute</td></tr>
+  </table>
+  <h3>Restarting after the PC was turned off</h3>
+  <ol class="steps small">
+    <li>PostgreSQL starts by itself with Windows.</li>
+    <li>Start the tunnel and copy the new <span class="mono">https://….trycloudflare.com</span> address it prints.</li>
+    <li>Put that address in <span class="mono">.env</span> as both <span class="mono">APP_URL</span> and <span class="mono">NEXTAUTH_URL</span>.</li>
+    <li>Start the server (<span class="mono">npm.cmd start</span>) and the reminders loop. After code changes, run <span class="mono">npm.cmd run build</span> first.</li>
+  </ol>
+  <div class="warn small"><b>Limits of this setup:</b> the site is only up while the PC is on, awake and online; the free “quick tunnel” address changes every time the tunnel restarts and has no uptime guarantee. It is ideal for demos and testing with friends and turf owners. For real customers, use permanent hosting (section 14).</div>
+  <h3>Useful commands</h3>
+  <table class="small">
+    <tr><td class="mono">npm.cmd run db:migrate</td><td>Apply database changes</td></tr>
+    <tr><td class="mono">npm.cmd run db:seed</td><td>Load demo data (skips if already present)</td></tr>
+    <tr><td class="mono">npm.cmd test</td><td>Engine tests (slot, pricing, refund rules)</td></tr>
+    <tr><td class="mono">npm.cmd run test:integration</td><td>Database tests (double booking, payments)</td></tr>
+  </table>
+</section>
+
+<!-- 14 GO LIVE -->
+<section>
+  <h2>14 · Going live checklist</h2>
+  <table>
+    <tr><th>#</th><th>Step</th><th>Why</th></tr>
+    <tr><td>1</td><td><b>Permanent hosting</b>: e.g. Vercel or Render for the app, plus a managed PostgreSQL (Neon, Supabase, AWS RDS), and your own domain</td><td>Always on, fixed address, backups</td></tr>
+    <tr><td>2</td><td><b>Razorpay account</b> (KYC approved). Add key ID, key secret and webhook secret; set the webhook to <span class="mono">/api/payments/webhook</span> with events payment.captured, payment.failed, order.paid, refund.processed, refund.failed; enable auto-capture</td><td>Real UPI / card payments and refunds</td></tr>
+    <tr><td>3</td><td><b>MSG91</b> with DLT-registered SMS templates (OTP and booking messages)</td><td>OTP by SMS; turns off on-screen codes</td></tr>
+    <tr><td>4</td><td>Set <span class="mono">DEMO_MODE=false</span> and <span class="mono">OTP_DEV_ECHO=false</span></td><td>Removes demo banner, on-screen OTP and simulated payments</td></tr>
+    <tr><td>5</td><td>Optional: WhatsApp Business Cloud API templates and Resend email</td><td>Confirmations and reminders on WhatsApp / email</td></tr>
+    <tr><td>6</td><td>Optional: Google sign-in client ID and secret</td><td>“Continue with Google” button</td></tr>
+    <tr><td>7</td><td>A scheduler calling <span class="mono">/api/cron/tick</span> every minute with the cron secret</td><td>Reminders and housekeeping</td></tr>
+    <tr><td>8</td><td>Remove or hide demo turfs; add real Manjeri turfs as unclaimed listings and send claim links</td><td>Real content</td></tr>
+    <tr><td>9</td><td>Publish terms, privacy policy and the refund policy page</td><td>Required by Razorpay and app users</td></tr>
+  </table>
+  <p class="small muted">All keys go in environment variables (see <span class="mono">.env.example</span>); nothing secret is stored in the code or on GitHub.</p>
+</section>
+
+<!-- 15 TECH -->
+<section>
+  <h2>15 · Technical overview</h2>
+  <table class="small">
+    <tr><th>Layer</th><th>Technology</th></tr>
+    <tr><td>Web app</td><td>Next.js 14 (React 18, TypeScript): pages, API routes and server actions in one project</td></tr>
+    <tr><td>Design</td><td>Tailwind CSS, Lucide icons, Leaflet + OpenStreetMap map, Google Maps links for directions</td></tr>
+    <tr><td>Database</td><td>PostgreSQL 16 with Prisma; money stored as whole paise; times in UTC</td></tr>
+    <tr><td>Sign-in</td><td>NextAuth: mobile OTP (+ optional Google), 30-day sessions</td></tr>
+    <tr><td>Payments</td><td>Razorpay Orders + Checkout + signed webhooks; simulated gateway in demo mode</td></tr>
+    <tr><td>Messaging</td><td>Job queue in the database; MSG91, WhatsApp Cloud API, Resend adapters</td></tr>
+  </table>
+  <h3>Main data</h3>
+  <p class="small"><b>City</b> → <b>Turf</b> → <b>Areas</b> &amp; <b>Pitches</b> (+ pricing rules, hours) · <b>Booking</b> → <b>Occupancy</b> rows (one per area used, the double-booking guard) → <b>Payments</b> → <b>Refunds</b> · <b>Team</b> → <b>Members</b> · <b>Match squad</b> · <b>Reviews</b> · <b>Player posts</b> · <b>Offers</b> · <b>Ledger</b> · <b>Notifications</b> · <b>Disputes</b> · <b>Audit log</b> · Tournament tables (prepared).</p>
+  <h3>Booking life cycle</h3>
+  <div class="flow avoid">
+    <div><b>HELD</b>5-minute hold</div><i>→</i>
+    <div><b>CONFIRMED</b>webhook verified</div><i>→</i>
+    <div><b>COMPLETED</b>after the match</div>
+  </div>
+  <p class="small">Side paths: HELD → <b>EXPIRED</b> (not paid in time) or <b>CANCELLED</b> (abandoned); CONFIRMED → <b>CANCELLED</b> (with refund per policy) or <b>NO_SHOW</b>.</p>
+  <h3>Quality checks run</h3>
+  <ul class="small">
+    <li>20 engine tests: slot conflicts incl. the 6–7 / 7–8 PM case, peak pricing, ₹49 maths, refund tiers, Indian time.</li>
+    <li>9 database tests: 10 simultaneous bookings (one wins), full vs half at once, blocks, duplicate and invalid webhooks, late payment re-booking and refund, time-zone safety.</li>
+    <li>End-to-end test through the public address: sign-in, profile, booking, payment, confirmation.</li>
+  </ul>
+  <p class="small muted">Further technical detail: docs/ARCHITECTURE.md and docs/ASSUMPTIONS.md in the repository.</p>
+</section>
+
+<!-- 16 ROADMAP -->
+<section>
+  <h2>16 · What is planned next</h2>
+  <table>
+    <tr><th>Feature</th><th>Status today</th><th>Next step</th></tr>
+    <tr><td>Tournaments: registration, entry fees, fixtures, knockout &amp; league, results, leaderboards</td><td>Database tables ready</td><td>Organiser and public tournament pages</td></tr>
+    <tr><td>Split payments: teammates contribute online</td><td>Not built</td><td>Per-player payment links; booking still confirmed by the organiser’s advance</td></tr>
+    <tr><td>Open matches with per-player online payment</td><td>Find Players built (share paid at venue)</td><td>Pay-to-join checkout per seat</td></tr>
+    <tr><td>Match statistics: results, goals, assists, player of the match, win/loss</td><td>Database fields ready</td><td>Optional entry form after a match</td></tr>
+    <tr><td>Loyalty points / memberships</td><td>Referral codes and first-booking / repeat offers built</td><td>Points ledger and redemption</td></tr>
+    <tr><td>Automatic owner settlement</td><td>Ledger built</td><td>Razorpay Route linked accounts</td></tr>
+    <tr><td>Owner subscriptions, featured placement billing</td><td>“Featured” flag built</td><td>Razorpay Subscriptions</td></tr>
+    <tr><td>Android / iOS apps</td><td>Website works on phones</td><td>Native apps on the same back end</td></tr>
+  </table>
+  <div class="note" style="margin-top:8mm"><b>Need help?</b> The source code, setup steps and technical documents are in the GitHub repository <span class="mono">arjungopinath310-ai/turfly</span>.</div>
+</section>
+
+</body>
+</html>

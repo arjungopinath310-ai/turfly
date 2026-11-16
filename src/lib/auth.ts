@@ -7,8 +7,8 @@ import { prisma } from "./db";
 import { verifyOtp } from "./otp";
 import { AppError } from "./errors";
 import { token } from "./ids";
+import { adminPhones } from "./format";
 
-const adminPhones = () => (process.env.ADMIN_PHONES ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 
 export const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
@@ -27,7 +27,7 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.upsert({
           where: { phone },
           create: { phone, role: adminPhones().includes(phone) ? "ADMIN" : "PLAYER", referralCode: token(5) },
-          update: {},
+          update: adminPhones().includes(phone) ? { role: "ADMIN" } : {}, // promote numbers listed in ADMIN_PHONES
         });
         if (user.isSuspended) return null;
         return { id: user.id, name: user.name, email: user.email };
