@@ -62,7 +62,7 @@ export default async function FindPlayers({ searchParams }: { searchParams: { ci
         </section>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {posts.map((p) => (
           <div key={p.id} className="card space-y-2 p-5">
             <div className="text-xs font-semibold uppercase tracking-wide text-brand-700">{p.playersPerSide}-a-side</div>

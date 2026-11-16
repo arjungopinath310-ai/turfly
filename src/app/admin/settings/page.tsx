@@ -1,3 +1,4 @@
+import { pageUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { describePolicy } from "@/lib/engine/policy";
 import { rupees } from "@/lib/engine/pricing";
@@ -8,6 +9,7 @@ import { ActionButton, ActionForm } from "@/components/ActionForm";
 import { createOffer, savePlatformSettings, toggleOffer } from "../actions";
 
 export default async function Settings() {
+  await pageUser("/admin/settings", ["ADMIN"]);
   const [s, offers, turfs] = await Promise.all([
     getSettings(),
     prisma.offer.findMany({ orderBy: { createdAt: "desc" }, include: { turf: { select: { name: true } } } }),
@@ -22,7 +24,7 @@ export default async function Settings() {
   ] as const;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <section className="card p-6">
         <h1 className="h2">Booking fees & policy</h1>
         <p className="muted mb-4">Changes apply to new bookings. Existing bookings keep the amounts and policy shown when they were paid.</p>

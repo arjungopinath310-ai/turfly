@@ -24,7 +24,7 @@ export function TurfResults({ rows, center }: { rows: TurfCard[]; center: { lat:
       {rows.length === 0 ? (
         <Empty title="No turfs match these filters">Try removing a filter. If you know a turf that is missing, tell the turf owner they can list it for free.</Empty>
       ) : view === "list" ? (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {rows.map((t) => (
             <TurfCardView key={t.id} t={t} />
           ))}

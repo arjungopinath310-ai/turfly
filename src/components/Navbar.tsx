@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Bell } from "lucide-react";
+import { Bell, MessageCircle } from "lucide-react";
+import { unreadMessageCount } from "@/lib/chat";
 import { currentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { BRAND } from "@/lib/brand";
@@ -8,7 +9,9 @@ import { UserMenu } from "./UserMenu";
 
 export async function Navbar() {
   const user = await currentUser().catch(() => null);
-  const unread = user ? await prisma.notification.count({ where: { userId: user.id, readAt: null } }) : 0;
+  const [unread, unreadChats] = user
+    ? await Promise.all([prisma.notification.count({ where: { userId: user.id, readAt: null, NOT: { link: { startsWith: "/messages" } } } }), unreadMessageCount(user.id)])
+    : [0, 0];
   const isOwner = user && (user.role === "OWNER" || user.role === "ADMIN");
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur">
@@ -28,6 +31,10 @@ export async function Navbar() {
         <div className="ml-auto flex items-center gap-3">
           {user ? (
             <>
+              <Link href="/messages" className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100" aria-label={`Messages${unreadChats ? ` (${unreadChats} unread)` : ""}`}>
+                <MessageCircle size={18} />
+                {unreadChats > 0 && <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-600 px-1 text-[9px] font-bold text-white">{unreadChats > 9 ? "9+" : unreadChats}</span>}
+              </Link>
               <Link href="/notifications" className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100" aria-label="Notifications">
                 <Bell size={18} />
                 {unread > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />}

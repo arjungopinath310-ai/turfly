@@ -122,6 +122,9 @@ export async function updateTurf(_: ActionState, fd: FormData): Promise<ActionSt
       .parse(Object.fromEntries(fd));
     const durations = fd.getAll("durations").map(Number).filter((d) => [30, 60, 90, 120, 150, 180].includes(d));
     if (!durations.length) throw new AppError(400, "Pick at least one booking duration");
+    // Durations must fill whole slots, otherwise a booking leaves an unbookable gap (e.g. 90 min on a 1-hour grid).
+    const bad = durations.filter((d) => d % ops.slotStepMinutes !== 0);
+    if (bad.length) throw new AppError(400, `With ${ops.slotStepMinutes}-minute slots, durations must be multiples of ${ops.slotStepMinutes} (remove ${bad.join(", ")} min)`);
     await prisma.turf.update({
       where: { id: turf.id },
       data: { ...data, ...ops, allowedDurations: durations.sort((a, b) => a - b), fullOnlinePaymentEnabled: fd.get("fullOnline") === "on" },

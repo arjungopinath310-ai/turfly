@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { Loader2, RefreshCw } from "lucide-react";
 import { rupees } from "@/lib/engine/pricing";
-import { addDays, formatMinute } from "@/lib/time";
+import { addDays, formatMinute, slotRange } from "@/lib/time";
 
 type SlotStatus = "available" | "booked" | "held" | "blocked" | "unavailable";
 interface Slot { startMinute: number; endMinute: number; status: SlotStatus; price: number; peakLabel: string | null }
@@ -192,7 +192,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
               className={clsx("rounded-lg border px-1 py-2 text-xs font-semibold transition", STYLE[s.status], slot?.startMinute === s.startMinute && "!border-slate-900 !bg-slate-900 !text-white", !p.bookable && s.status === "available" && "cursor-default")}
               title={`${formatMinute(s.startMinute)} – ${formatMinute(s.endMinute)} · ${rupees(s.price)}${s.peakLabel ? ` · ${s.peakLabel}` : ""}`}
             >
-              {formatMinute(s.startMinute)}
+              {slotRange(s.startMinute, s.endMinute)}
               <span className="block text-[10px] font-medium opacity-80">{rupees(s.price)}{s.peakLabel ? " ★" : ""}</span>
             </button>
           ))}

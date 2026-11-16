@@ -63,7 +63,7 @@
     <p style="max-width:140mm;color:#cbd5e1;margin-top:6mm">A guide for players, turf owners and the platform administrator: what each screen does, the booking and payment rules, how the convertible 7-a-side pitch works, and how the app is hosted and taken live.</p>
   </div>
   <div class="meta">
-    <div><b>Version</b>0.1 (demo)</div>
+    <div><b>Version</b>0.2 (demo)</div>
     <div><b>Date</b>16 November 2026</div>
     <div><b>Source code</b>github.com/arjungopinath310-ai/turfly</div>
   </div>
@@ -79,16 +79,18 @@
     <div><b>4</b> Player guide: booking &amp; paying</div>
     <div><b>5</b> After booking: squad, sharing, cancelling</div>
     <div><b>6</b> Teams, Find Players &amp; Compare</div>
-    <div><b>7</b> The convertible 7-a-side pitch</div>
-    <div><b>8</b> Turf owner guide</div>
-    <div><b>9</b> Administrator guide</div>
-    <div><b>10</b> Money: advance, fees, commission</div>
-    <div><b>11</b> Notifications &amp; reminders</div>
-    <div><b>12</b> Safety, privacy &amp; honesty rules</div>
-    <div><b>13</b> How it is hosted today</div>
-    <div><b>14</b> Going live checklist</div>
-    <div><b>15</b> Technical overview</div>
-    <div><b>16</b> What is planned next</div>
+    <div><b>7</b> Messages: chat between players and turfs</div>
+    <div><b>8</b> The convertible 7-a-side pitch</div>
+    <div><b>9</b> Turf owner guide</div>
+    <div><b>10</b> Owner analytics</div>
+    <div><b>11</b> Administrator guide</div>
+    <div><b>12</b> Money: advance, fees, commission</div>
+    <div><b>13</b> Notifications &amp; reminders</div>
+    <div><b>14</b> Safety, privacy &amp; honesty rules</div>
+    <div><b>15</b> How it is hosted today</div>
+    <div><b>16</b> Going live checklist</div>
+    <div><b>17</b> Technical overview</div>
+    <div><b>18</b> What is planned next</div>
   </div>
 
   <h2 style="margin-top:10mm">1 · Turfly in one page</h2>
@@ -158,8 +160,8 @@
 <!-- 4 BOOK -->
 <section>
   <h2>4 · Player guide: booking &amp; paying</h2>
-  <img class="shot crop" src="img/turf.png" alt="Turf page with booking widget" style="height:66mm;object-position:top">
-  <div class="cap">Turf page: photos, pitches &amp; peak prices, amenities, hours, refund policy, reviews, and the “Book a slot” panel (right).</div>
+  <img class="shot" src="img/turf.png" alt="Turf page with booking widget" style="width:70%">
+  <div class="cap">Turf page: photos, pitches &amp; peak prices, amenities, hours, refund policy, reviews, and the “Book a slot” panel with 1-hour slots (right).</div>
   <div class="grid2">
     <div>
       <h3>The eight booking steps</h3>
@@ -167,8 +169,8 @@
         <li>Choose the turf (locality is chosen in search)</li>
         <li>Pick a date from the strip (up to 30 days ahead)</li>
         <li>Pick the pitch: Full 7-a-side, Pitch A or Pitch B</li>
-        <li>Pick the duration: 60, 90 or 120 minutes</li>
-        <li>Tap a green slot: the price (incl. peak ★) is on the slot</li>
+        <li>Pick the duration: 60 or 120 minutes</li>
+        <li>Tap a green 1-hour slot (e.g. “6–7 PM”); its price, incl. peak ★, is shown on it</li>
         <li>Choose a team, or create one, or decide later</li>
         <li>Optional: offer code, or “pay full online” if allowed</li>
         <li>Tap <b>Reserve · pay ₹49</b></li>
@@ -248,7 +250,7 @@
         <li>Other players see open posts for their city and tap <b>Request to join</b>.</li>
         <li>The organiser accepts or declines. Accepted players are added to the squad by name, and the post closes when full.</li>
       </ol>
-      <p class="small muted">Any share amount is paid to the organiser at the venue. In-app split payments are planned (section 16).</p>
+      <p class="small muted">Any share amount is paid to the organiser at the venue. In-app split payments are planned (section 18).</p>
       <h3>Compare turfs</h3>
       <p class="small">Tick <b>Compare</b> on up to three turfs, then open the comparison: location, distance, availability type, formats, starting price, rating, free slots today, and every amenity side by side.</p>
     </div>
@@ -260,9 +262,53 @@
   </div>
 </section>
 
+<!-- MESSAGES -->
+<section>
+  <h2>7 · Messages: chat between players and turfs</h2>
+  <p>Players can ask a turf about anything (availability, parking, rules), and owners can answer or contact their customers, without anyone exchanging phone numbers.</p>
+  <div class="grid2">
+    <div>
+      <h3>Where to find it</h3>
+      <ul class="small">
+        <li><b>Messages icon</b> (speech bubble) in the top bar, with a green badge counting unread messages.</li>
+        <li><b>Message turf</b> button on every turf page that has an owner on Turfly.</li>
+        <li><b>Message the turf</b> on a booking’s page; the chat shows which booking it is about.</li>
+        <li>Owners: <b>Message customer</b> on each online booking in Owner → Bookings.</li>
+      </ul>
+      <h3>How it behaves</h3>
+      <ul class="small">
+        <li>One conversation per player per turf; starting again reopens the same thread.</li>
+        <li>New messages appear within about 3 seconds; a <b>Seen</b> mark shows when the other side has read yours.</li>
+        <li>Enter sends, Shift+Enter adds a new line; up to 1,000 characters per message.</li>
+        <li>On a phone, the list and the conversation are shown one at a time with a back arrow.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="card" style="background:#f8fafc;padding:3mm">
+        <div class="small" style="font-weight:700;margin-bottom:1mm">Demo Convertible Arena</div>
+        <div class="small muted" style="margin-bottom:2mm;font-size:8pt">Usually replies within a few hours</div>
+        <div style="display:flex;justify-content:flex-end;margin:1.5mm 0"><div style="background:#039855;color:#fff;border-radius:3mm 3mm 1mm 3mm;padding:2mm 3mm;font-size:9pt;max-width:78%">Hi! Is the full 7-a-side pitch free this Friday 8–9 PM? We are 14 players.<div style="font-size:7pt;opacity:.75;text-align:right">12:13 pm · Seen</div></div></div>
+        <div style="display:flex;justify-content:flex-start;margin:1.5mm 0"><div style="background:#fff;border:1px solid #e2e8f0;border-radius:3mm 3mm 3mm 1mm;padding:2mm 3mm;font-size:9pt;max-width:78%"><div style="font-size:7.5pt;font-weight:700;color:#027a48">Demo Convertible Arena</div>Yes, 8–9 PM Friday is free for the full pitch. Book it on the page and bring bibs!<div style="font-size:7pt;color:#94a3b8;text-align:right">12:14 pm</div></div></div>
+        <div style="border:1px solid #e2e8f0;border-radius:2mm;background:#fff;padding:2mm 3mm;font-size:8.5pt;color:#94a3b8;margin-top:2mm">Write a message…</div>
+      </div>
+      <div class="cap">A real exchange from testing: the player asks, and the owner answers as the turf.</div>
+    </div>
+  </div>
+  <h3>Rules that keep chat safe</h3>
+  <table class="small">
+    <tr><th>Rule</th><th>Why</th></tr>
+    <tr><td>Names are shown, phone numbers never are</td><td>Players and owners keep their numbers private</td></tr>
+    <tr><td>Owners can message only players who have booked their turf</td><td>No cold marketing to strangers</td></tr>
+    <tr><td>Only the player and the turf’s owner can read a conversation; admins can’t</td><td>Private messages stay private</td></tr>
+    <tr><td>Unclaimed turfs can’t be messaged; the page says to call instead</td><td>Nobody would be there to answer</td></tr>
+    <tr><td>At most 20 messages a minute per person</td><td>Stops spam and abuse</td></tr>
+    <tr><td>A reminder under the box: never share OTPs or card details in chat</td><td>Protects against scams</td></tr>
+  </table>
+</section>
+
 <!-- 7 CONVERTIBLE -->
 <section>
-  <h2>7 · The convertible 7-a-side pitch</h2>
+  <h2>8 · The convertible 7-a-side pitch</h2>
   <p>The facility has one 7-a-side pitch that can also be used as two independent 5-a-side pitches. Turfly models the ground as <b>areas</b> and bookable <b>pitches</b>:</p>
   <div class="grid2 avoid">
     <svg viewBox="0 0 300 170" width="100%">
@@ -317,7 +363,7 @@
 
 <!-- 8 OWNER -->
 <section>
-  <h2>8 · Turf owner guide</h2>
+  <h2>9 · Turf owner guide</h2>
   <h3>Getting listed</h3>
   <ol class="steps small">
     <li><b>Register:</b> Account menu → <i>List your turf</i>. Enter name, address, PIN, map coordinates, contact, photos, amenities, and choose a layout (convertible 7s ↔ 2 × 5s, single 5s, or single 7s) with prices.</li>
@@ -332,7 +378,7 @@
     <tr><td>Peak pricing</td><td>Time windows and days with their own hourly rate; prices are prorated per 30 minutes across a boundary</td></tr>
     <tr><td>Operating hours</td><td>Per weekday, including closing after midnight (e.g. 6 AM to 1 AM)</td></tr>
     <tr><td>Cancellation policy</td><td>Up to three refund tiers or non-refundable; applies to new bookings</td></tr>
-    <tr><td>Details &amp; rules</td><td>Slot interval (15/30/60 min), durations (30–180 min), minimum notice, days bookable ahead, optional full online payment</td></tr>
+    <tr><td>Details &amp; rules</td><td>Slot size (1 hour by default; 30 or 15 min possible), durations that fill whole slots (60, 120 min…), minimum notice, days bookable ahead, optional full online payment</td></tr>
   </table>
   <h3>Daily operation</h3>
   <div class="grid2">
@@ -343,9 +389,51 @@
   <p class="small">Today’s bookings · upcoming count · free 1-hour slots today · bookings this month (and how many were walk-in/phone) · booking value · advances received · pending balances · cancellations and rate · peak booking hours chart (last 90 days) · settlement ledger.</p>
 </section>
 
+<!-- OWNER ANALYTICS -->
+<section>
+  <h2>10 · Owner analytics</h2>
+  <p>Owner → <b>Analytics</b> shows how each turf is doing. Pick the turf and a period: 7, 30 or 90 days, this month, last month, the <b>next 30 days</b> (upcoming bookings) or any custom dates. Each figure is compared with the previous period of the same length (green arrow = better, red = worse).</p>
+  <h3>Headline figures</h3>
+  <table class="small">
+    <tr><th>Figure</th><th>Meaning</th></tr>
+    <tr><td>Booking value</td><td>Total price of bookings whose match falls in the period (after discounts)</td></tr>
+    <tr><td>Utilisation</td><td>How full the ground was: booked pitch-area hours ÷ open hours, leaving out time you blocked</td></tr>
+    <tr><td>Booked hours · Bookings</td><td>Hours sold and number of bookings (online, walk-in and phone)</td></tr>
+    <tr><td>Collected online</td><td>₹49 advances (or full online payments) paid through Turfly</td></tr>
+    <tr><td>Collected at venue</td><td>Walk-in payments taken at the counter, plus balances you marked as collected</td></tr>
+    <tr><td>Balance still pending</td><td>Money still to collect at the turf for confirmed matches</td></tr>
+    <tr><td>Cancellation rate · No-shows</td><td>Share of bookings cancelled; matches nobody turned up for</td></tr>
+    <tr><td>Repeat customers · Average rating</td><td>Online customers who booked this turf at least twice; mean review score in the period</td></tr>
+  </table>
+  <h3>Charts</h3>
+  <div class="grid2">
+    <ul class="small">
+      <li><b>Booking value per day:</b> one bar per day; hover for that day’s total and number of bookings.</li>
+      <li><b>When is the turf busy?:</b> a weekday × hour grid, darker = busier. Late-night hours (12–1 AM) count towards the evening before. Use it to set peak prices, or offers for quiet hours.</li>
+      <li><b>How bookings arrive:</b> online vs walk-in vs phone.</li>
+    </ul>
+    <ul class="small">
+      <li><b>How far ahead people book:</b> same day, 1–2 days, 3–7 days, 8+ days (online bookings).</li>
+      <li><b>Booked hours by pitch:</b> Full 7-a-side vs Pitch A vs Pitch B, with bookings and value.</li>
+      <li><b>Top teams &amp; customers</b> for the period.</li>
+      <li>Every chart has <b>View as table</b>, and <b>Export CSV</b> downloads all bookings in the period for Excel or Google Sheets.</li>
+    </ul>
+  </div>
+  <h3>How utilisation is counted on the convertible pitch</h3>
+  <p class="small">Pitches overlap (a full 7-a-side hour uses both halves), so utilisation is measured on the two physical halves. Example for one day, open 6 AM to midnight:</p>
+  <table class="small">
+    <tr><th></th><th>Area-hours</th></tr>
+    <tr><td>Open: 18 hours × 2 halves</td><td>36</td></tr>
+    <tr><td>Full 7-a-side booked 6–7 PM (both halves)</td><td>2</td></tr>
+    <tr><td>Pitch A booked 7–8 PM (one half)</td><td>1</td></tr>
+    <tr><td><b>Utilisation</b></td><td><b>3 ÷ 36 = 8%</b></td></tr>
+    <tr><td>Block 12–1 PM for maintenance → open time drops to 34</td><td>3 ÷ 34 = 9%</td></tr>
+  </table>
+</section>
+
 <!-- 9 ADMIN -->
 <section>
-  <h2>9 · Administrator guide</h2>
+  <h2>11 · Administrator guide</h2>
   <table class="small">
     <tr><th>Page</th><th>What the admin does there</th></tr>
     <tr><td>Overview</td><td>Users and owners, live / unclaimed / draft turfs, items awaiting review, open disputes, bookings and booking value this month, money collected and refunded, commission earned, latest bookings, bookings by city</td></tr>
@@ -367,7 +455,7 @@
 
 <!-- 10 MONEY -->
 <section>
-  <h2>10 · Money: advance, fees, commission</h2>
+  <h2>12 · Money: advance, fees, commission</h2>
   <table>
     <tr><th>Item</th><th>Who pays / receives</th><th>Rule</th></tr>
     <tr><td>Advance (₹49)</td><td>Customer pays online</td><td>Part of the turf price, not extra. Configurable by admin; never more than the slot price</td></tr>
@@ -392,13 +480,14 @@
 
 <!-- 11 NOTIFICATIONS -->
 <section>
-  <h2>11 · Notifications &amp; reminders</h2>
+  <h2>13 · Notifications &amp; reminders</h2>
   <table>
     <tr><th>Message</th><th>When</th><th>Contents</th></tr>
     <tr><td>Booking confirmed</td><td>Immediately after payment</td><td>Turf, location, date &amp; time, pitch, team, booking ID, amount paid, balance, directions, cancellation policy</td></tr>
     <tr><td>Reminder</td><td>24 hours before</td><td>Turf, time, booking ID, directions</td></tr>
     <tr><td>Reminder</td><td>2 hours before</td><td>Same</td></tr>
     <tr><td>Balance pending</td><td>3 hours before, only if unpaid</td><td>Amount due at the turf</td></tr>
+    <tr><td>New chat message</td><td>When it arrives</td><td>One notification per unread conversation (no spam), plus the unread badge on the Messages icon</td></tr>
     <tr><td>Changes</td><td>When it happens</td><td>Cancellation by turf, reschedule, refund, team join, Find Players requests, turf approval</td></tr>
   </table>
   <p><b>Channels:</b> in-app (the bell icon, always on), SMS (MSG91), WhatsApp (WhatsApp Business Cloud API) and email (Resend). Each external channel switches on when its keys are added; until then the message is written to the server log. The admin chooses which reminders and channels are used.</p>
@@ -407,7 +496,7 @@
 
 <!-- 12 SAFETY -->
 <section>
-  <h2>12 · Safety, privacy &amp; honesty rules</h2>
+  <h2>14 · Safety, privacy &amp; honesty rules</h2>
   <div class="grid2">
     <div>
       <h3>Booking integrity</h3>
@@ -429,7 +518,7 @@
       <ul class="small">
         <li>Phone numbers of team members are private by default.</li>
         <li>WhatsApp invites are sent from the organiser’s own phone; Turfly needs nobody else’s number.</li>
-        <li>Find Players shares names, not numbers.</li>
+        <li>Find Players and Messages show names, not numbers. Admins cannot read private chats.</li>
         <li>Location is used only after the player taps “Use my location”.</li>
       </ul>
       <h3>Honesty</h3>
@@ -440,14 +529,14 @@
         <li>Refund rules are shown before payment and frozen with the booking.</li>
       </ul>
       <h3>Accounts</h3>
-      <ul class="small"><li>Admin and real owner codes are never shown on screen.</li><li>Suspended users cannot sign in.</li><li>Every owner/admin action re-checks permissions on the server.</li></ul>
+      <ul class="small"><li>Admin and real owner codes are never shown on screen.</li><li>Suspended users cannot sign in.</li><li>Every owner/admin page and action re-checks permissions on the server, on every request.</li></ul>
     </div>
   </div>
 </section>
 
 <!-- 13 HOSTING -->
 <section>
-  <h2>13 · How it is hosted today</h2>
+  <h2>15 · How it is hosted today</h2>
   <p>Turfly currently runs on your Windows PC and is reachable from any device on the internet through a <b>Cloudflare Tunnel</b>. Cloudflare gives the PC a public <span class="mono">https://…trycloudflare.com</span> address without opening router ports or exposing your home IP.</p>
   <div class="flow avoid">
     <div><b>Visitor</b>Phone or laptop anywhere</div><i>→</i>
@@ -470,7 +559,7 @@
     <li>Put that address in <span class="mono">.env</span> as both <span class="mono">APP_URL</span> and <span class="mono">NEXTAUTH_URL</span>.</li>
     <li>Start the server (<span class="mono">npm.cmd start</span>) and the reminders loop. After code changes, run <span class="mono">npm.cmd run build</span> first.</li>
   </ol>
-  <div class="warn small"><b>Limits of this setup:</b> the site is only up while the PC is on, awake and online; the free “quick tunnel” address changes every time the tunnel restarts and has no uptime guarantee. It is ideal for demos and testing with friends and turf owners. For real customers, use permanent hosting (section 14).</div>
+  <div class="warn small"><b>Limits of this setup:</b> the site is only up while the PC is on, awake and online; the free “quick tunnel” address changes every time the tunnel restarts and has no uptime guarantee. It is ideal for demos and testing with friends and turf owners. For real customers, use permanent hosting (section 16).</div>
   <h3>Useful commands</h3>
   <table class="small">
     <tr><td class="mono">npm.cmd run db:migrate</td><td>Apply database changes</td></tr>
@@ -482,7 +571,7 @@
 
 <!-- 14 GO LIVE -->
 <section>
-  <h2>14 · Going live checklist</h2>
+  <h2>16 · Going live checklist</h2>
   <table>
     <tr><th>#</th><th>Step</th><th>Why</th></tr>
     <tr><td>1</td><td><b>Permanent hosting</b>: e.g. Vercel or Render for the app, plus a managed PostgreSQL (Neon, Supabase, AWS RDS), and your own domain</td><td>Always on, fixed address, backups</td></tr>
@@ -500,7 +589,7 @@
 
 <!-- 15 TECH -->
 <section>
-  <h2>15 · Technical overview</h2>
+  <h2>17 · Technical overview</h2>
   <table class="small">
     <tr><th>Layer</th><th>Technology</th></tr>
     <tr><td>Web app</td><td>Next.js 14 (React 18, TypeScript): pages, API routes and server actions in one project</td></tr>
@@ -511,7 +600,7 @@
     <tr><td>Messaging</td><td>Job queue in the database; MSG91, WhatsApp Cloud API, Resend adapters</td></tr>
   </table>
   <h3>Main data</h3>
-  <p class="small"><b>City</b> → <b>Turf</b> → <b>Areas</b> &amp; <b>Pitches</b> (+ pricing rules, hours) · <b>Booking</b> → <b>Occupancy</b> rows (one per area used, the double-booking guard) → <b>Payments</b> → <b>Refunds</b> · <b>Team</b> → <b>Members</b> · <b>Match squad</b> · <b>Reviews</b> · <b>Player posts</b> · <b>Offers</b> · <b>Ledger</b> · <b>Notifications</b> · <b>Disputes</b> · <b>Audit log</b> · Tournament tables (prepared).</p>
+  <p class="small"><b>City</b> → <b>Turf</b> → <b>Areas</b> &amp; <b>Pitches</b> (+ pricing rules, hours) · <b>Booking</b> → <b>Occupancy</b> rows (one per area used, the double-booking guard) → <b>Payments</b> → <b>Refunds</b> · <b>Team</b> → <b>Members</b> · <b>Match squad</b> · <b>Reviews</b> · <b>Player posts</b> · <b>Offers</b> · <b>Ledger</b> · <b>Notifications</b> · <b>Conversations</b> → <b>Messages</b> · <b>Disputes</b> · <b>Audit log</b> · Tournament tables (prepared).</p>
   <h3>Booking life cycle</h3>
   <div class="flow avoid">
     <div><b>HELD</b>5-minute hold</div><i>→</i>
@@ -521,8 +610,8 @@
   <p class="small">Side paths: HELD → <b>EXPIRED</b> (not paid in time) or <b>CANCELLED</b> (abandoned); CONFIRMED → <b>CANCELLED</b> (with refund per policy) or <b>NO_SHOW</b>.</p>
   <h3>Quality checks run</h3>
   <ul class="small">
-    <li>20 engine tests: slot conflicts incl. the 6–7 / 7–8 PM case, peak pricing, ₹49 maths, refund tiers, Indian time.</li>
-    <li>9 database tests: 10 simultaneous bookings (one wins), full vs half at once, blocks, duplicate and invalid webhooks, late payment re-booking and refund, time-zone safety.</li>
+    <li>25 engine tests: slot conflicts incl. the 6–7 / 7–8 PM case, peak pricing, ₹49 maths, refund tiers, Indian time, 1-hour slot labels, analytics time buckets and formats.</li>
+    <li>16 database tests: 10 simultaneous bookings (one wins), full vs half at once, blocks, duplicate and invalid webhooks, late payment re-booking and refund, time-zone safety, the 1-hour grid, chat permissions, unread counts and rate limits, and the utilisation maths.</li>
     <li>End-to-end test through the public address: sign-in, profile, booking, payment, confirmation.</li>
   </ul>
   <p class="small muted">Further technical detail: docs/ARCHITECTURE.md and docs/ASSUMPTIONS.md in the repository.</p>
@@ -530,7 +619,7 @@
 
 <!-- 16 ROADMAP -->
 <section>
-  <h2>16 · What is planned next</h2>
+  <h2>18 · What is planned next</h2>
   <table>
     <tr><th>Feature</th><th>Status today</th><th>Next step</th></tr>
     <tr><td>Tournaments: registration, entry fees, fixtures, knockout &amp; league, results, leaderboards</td><td>Database tables ready</td><td>Organiser and public tournament pages</td></tr>
@@ -540,6 +629,7 @@
     <tr><td>Loyalty points / memberships</td><td>Referral codes and first-booking / repeat offers built</td><td>Points ledger and redemption</td></tr>
     <tr><td>Automatic owner settlement</td><td>Ledger built</td><td>Razorpay Route linked accounts</td></tr>
     <tr><td>Owner subscriptions, featured placement billing</td><td>“Featured” flag built</td><td>Razorpay Subscriptions</td></tr>
+    <tr><td>Instant chat &amp; push notifications</td><td>Chat updates every ~3 s</td><td>WebSockets and phone push for new messages</td></tr>
     <tr><td>Android / iOS apps</td><td>Website works on phones</td><td>Native apps on the same back end</td></tr>
   </table>
   <div class="note" style="margin-top:8mm"><b>Need help?</b> The source code, setup steps and technical documents are in the GitHub repository <span class="mono">arjungopinath310-ai/turfly</span>.</div>

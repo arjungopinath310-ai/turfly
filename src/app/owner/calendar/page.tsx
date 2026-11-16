@@ -1,6 +1,6 @@
 import Link from "next/link";
 import clsx from "clsx";
-import { requireUser } from "@/lib/auth";
+import { pageUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getAvailability, releaseExpiredHolds } from "@/lib/engine/booking";
 import { manageableTurfs, pickTurf } from "@/lib/owner";
@@ -19,7 +19,7 @@ const CELL: Record<string, string> = {
 };
 
 export default async function OwnerCalendar({ searchParams }: { searchParams: { turf?: string; date?: string; view?: string } }) {
-  const user = await requireUser();
+  const user = await pageUser("/owner/calendar");
   const turfs = await manageableTurfs(user);
   const sel = pickTurf(turfs, searchParams.turf);
   if (!sel) return <Empty title="No turf yet"><Link href="/owner/turfs/new" className="underline">Register a turf</Link></Empty>;
@@ -54,10 +54,10 @@ export default async function OwnerCalendar({ searchParams }: { searchParams: { 
       {view === "week" && <RangeView turfId={turf.id} from={date} days={7} configs={turf.configs} q={q} />}
       {view === "month" && <MonthView turfId={turf.id} date={date} q={q} />}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="card p-5">
           <h2 className="h2 mb-3">Walk-in / phone booking</h2>
-          <ActionForm action={walkIn} className="grid gap-2 sm:grid-cols-2" submit="Create booking" submitClass="btn-primary sm:col-span-2">
+          <ActionForm action={walkIn} className="grid grid-cols-1 gap-2 sm:grid-cols-2" submit="Create booking" submitClass="btn-primary sm:col-span-2">
             <input type="hidden" name="turfId" value={turf.id} />
             <select name="configId" className="input sm:col-span-2">{turf.configs.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
             <input type="date" name="date" defaultValue={date} className="input" />
@@ -77,7 +77,7 @@ export default async function OwnerCalendar({ searchParams }: { searchParams: { 
         </div>
         <div className="card p-5">
           <h2 className="h2 mb-3">Block time (maintenance, private event, holiday)</h2>
-          <ActionForm action={blockSlot} className="grid gap-2 sm:grid-cols-2" submit="Block" submitClass="btn-dark sm:col-span-2">
+          <ActionForm action={blockSlot} className="grid grid-cols-1 gap-2 sm:grid-cols-2" submit="Block" submitClass="btn-dark sm:col-span-2">
             <input type="hidden" name="turfId" value={turf.id} />
             <select name="configId" className="input sm:col-span-2">
               <option value="ALL">Entire turf (all pitches)</option>
@@ -109,7 +109,7 @@ async function DayView({ turfId, date, step }: { turfId: string; date: string; s
   const slots = a.configs[0]?.slots ?? [];
   if (!a.hours || a.hours.isClosed) return <div className="card p-6 text-sm text-slate-500">Closed on {date} (weekday {weekdayOf(date)}). Change operating hours in turf settings.</div>;
   return (
-    <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
       <div className="card overflow-x-auto p-5">
         <div className="mb-3 flex flex-wrap gap-3 text-[11px] text-slate-500">
           {[["bg-brand-100", "Free"], ["bg-red-400", "Booked"], ["bg-amber-300", "Held in checkout"], ["bg-slate-400", "Blocked"], ["bg-slate-100", "Past"]].map(([c, t]) => (

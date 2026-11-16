@@ -11,6 +11,7 @@ import { directionsUrl, turfShareText, whatsappShare } from "@/lib/share";
 import { formatDateLong, formatMinute, todayIst } from "@/lib/time";
 import { AvailabilityBadge, DemoBadge, Stars } from "@/components/ui";
 import { BookingWidget } from "@/components/BookingWidget";
+import { MessageButton } from "@/components/MessageButton";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -33,7 +34,7 @@ export default async function TurfPage({ params }: { params: { slug: string } })
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="grid gap-2 overflow-hidden rounded-3xl sm:grid-cols-[2fr_1fr]">
+      <div className="grid grid-cols-1 gap-2 overflow-hidden rounded-3xl sm:grid-cols-[2fr_1fr]">
         <div className="relative aspect-[16/9] bg-gradient-to-br from-brand-700 to-brand-950 sm:aspect-auto sm:h-[360px]">
           {turf.photos[0] ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -54,7 +55,7 @@ export default async function TurfPage({ params }: { params: { slug: string } })
         </div>
       </div>
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_400px]">
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]">
         <div className="space-y-8">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -70,6 +71,7 @@ export default async function TurfPage({ params }: { params: { slug: string } })
             <div className="mt-4 flex flex-wrap gap-2">
               <a href={directionsUrl(turf)} target="_blank" className="btn-ghost btn-sm"><Navigation size={14} /> Directions</a>
               {turf.phone && <a href={`tel:${turf.phone}`} className="btn-ghost btn-sm"><Phone size={14} /> {turf.phone}</a>}
+              {turf.status === "APPROVED" && turf.ownerId && turf.ownerId !== user?.id && <MessageButton turfId={turf.id} signedIn={Boolean(user)} />}
               <a href={whatsappShare(turfShareText(turf))} target="_blank" className="btn-ghost btn-sm"><Share2 size={14} /> Share on WhatsApp</a>
               <Link href={`/compare?ids=${turf.id}`} className="btn-ghost btn-sm">Compare</Link>
             </div>
@@ -78,7 +80,7 @@ export default async function TurfPage({ params }: { params: { slug: string } })
 
           <section>
             <h2 className="h2 mb-3">Pitches & pricing</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {turf.configs.map((c) => (
                 <div key={c.id} className="card p-4">
                   <div className="flex items-center justify-between">
@@ -98,7 +100,7 @@ export default async function TurfPage({ params }: { params: { slug: string } })
             </div>
           </section>
 
-          <section className="grid gap-6 sm:grid-cols-2">
+          <section className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
               <h2 className="h2 mb-3">Amenities</h2>
               <div className="flex flex-wrap gap-2">

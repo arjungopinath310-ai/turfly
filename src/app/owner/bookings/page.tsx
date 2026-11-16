@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/auth";
+import { pageUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { rupees } from "@/lib/engine/pricing";
 import { manageableTurfs, pickTurf } from "@/lib/owner";
@@ -7,10 +7,11 @@ import { formatDateLong, formatTimeRange, todayIst } from "@/lib/time";
 import { ActionButton, ActionForm } from "@/components/ActionForm";
 import { Empty, StatusBadge } from "@/components/ui";
 import { TurfSwitcher } from "@/components/TurfSwitcher";
+import { MessageButton } from "@/components/MessageButton";
 import { collectBalance, markNoShow, ownerCancel, ownerReschedule } from "../actions";
 
 export default async function OwnerBookings({ searchParams }: { searchParams: { turf?: string; tab?: string; focus?: string; q?: string } }) {
-  const user = await requireUser();
+  const user = await pageUser("/owner/bookings");
   const turfs = await manageableTurfs(user);
   const sel = pickTurf(turfs, searchParams.turf);
   if (!sel) return <Empty title="No turf yet" />;
@@ -74,6 +75,7 @@ export default async function OwnerBookings({ searchParams }: { searchParams: { 
             </div>
             {["CONFIRMED", "COMPLETED"].includes(b.status) && (
               <div className="mt-4 flex flex-wrap items-start gap-2 border-t border-slate-100 pt-4">
+                {b.userId && <MessageButton turfId={b.turfId} playerId={b.userId} bookingId={b.id} label="Message customer" />}
                 {!b.balanceCollectedAt && b.balanceDue > 0 && <ActionButton action={collectBalance.bind(null, b.id)} label={`Mark ${rupees(b.balanceDue)} collected`} className="btn-primary btn-sm" />}
                 {b.status === "CONFIRMED" && b.startAt < now && <ActionButton action={markNoShow.bind(null, b.id)} label="No-show" confirmText="Mark as no-show?" />}
                 {b.status === "CONFIRMED" && b.startAt > now && (

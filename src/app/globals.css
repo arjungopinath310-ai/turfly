@@ -25,3 +25,20 @@ body { @apply bg-slate-50 text-slate-900 antialiased; }
 }
 
 .leaflet-container { border-radius: 1rem; z-index: 0; isolation: isolate; }
+
+/* Chart tokens: dataviz reference palette (validated categorical order, light surface) */
+.viz-root {
+  --viz-surface: #fcfcfb;
+  --viz-ink: #0b0b0b;
+  --viz-ink-2: #52514e;
+  --viz-muted: #898781;
+  --viz-grid: #e1e0d9;
+  --viz-axis: #c3c2b7;
+  --viz-zero: #f0efec;
+  --viz-border: rgba(11, 11, 11, 0.1);
+  --viz-good: #006300;
+  --viz-bad: #d03b3b;
+  --viz-s1: #2a78d6; /* blue */
+  --viz-s2: #eb6834; /* orange */
+  --viz-s3: #1baf7a; /* aqua */
+}

@@ -4,7 +4,7 @@ import { AMENITIES } from "@/lib/brand";
 /** Shared turf detail inputs for registration, owner settings and admin "add unclaimed listing". */
 export function TurfFields({ cities, turf }: { cities: City[]; turf?: Partial<Turf> }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div className="sm:col-span-2">
         <label className="label">Turf name</label>
         <input name="name" required defaultValue={turf?.name} className="input" />

@@ -1,3 +1,4 @@
+import { pageUser } from "@/lib/auth";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { rupees } from "@/lib/engine/pricing";
@@ -7,6 +8,7 @@ import { StatusBadge } from "@/components/ui";
 import { adminRefund, resolveDispute } from "../actions";
 
 export default async function Finance({ searchParams }: { searchParams: { q?: string } }) {
+  await pageUser("/admin/finance", ["ADMIN"]);
   const q = searchParams.q?.trim();
   const [disputes, payments, refunds, webhooks] = await Promise.all([
     prisma.dispute.findMany({ where: { status: "OPEN" }, include: { booking: { include: { turf: true, payments: true } }, raisedBy: true }, orderBy: { createdAt: "asc" } }),
@@ -36,7 +38,7 @@ export default async function Finance({ searchParams }: { searchParams: { q?: st
                 </div>
                 <p className="mt-1 text-sm">“{d.reason}”, {d.raisedBy.name ?? d.raisedBy.phone}</p>
                 <p className="text-xs text-slate-500">Refundable online balance: {rupees(paid)}</p>
-                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                   <ActionForm action={adminRefund} className="flex flex-wrap gap-2" submit="Refund & resolve" submitClass="btn-primary btn-sm">
                     <input type="hidden" name="bookingId" value={d.bookingId} />
                     <input type="hidden" name="disputeId" value={d.id} />
@@ -87,7 +89,7 @@ export default async function Finance({ searchParams }: { searchParams: { q?: st
         </table>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section className="card p-5">
           <h2 className="h2 mb-3">Recent refunds</h2>
           <ul className="space-y-1 text-sm">

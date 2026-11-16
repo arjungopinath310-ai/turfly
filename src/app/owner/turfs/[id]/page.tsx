@@ -43,7 +43,7 @@ export default async function TurfSettings({ params, searchParams }: { params: {
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[200px_1fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[200px_1fr]">
       <nav className="hidden h-fit space-y-1 text-sm lg:sticky lg:top-24 lg:block">
         {[["status", "Status"], ["layout", "Pitch layout"], ["pricing", "Peak pricing"], ["hours", "Operating hours"], ["policy", "Cancellation"], ["details", "Details & rules"]].map(([id, l]) => (
           <a key={id} href={`#${id}`} className="block rounded-lg px-3 py-1.5 text-slate-600 hover:bg-white">{l}</a>
@@ -73,7 +73,7 @@ export default async function TurfSettings({ params, searchParams }: { params: {
         </Section>
 
         <Section id="layout" title="Pitch layout" sub="Areas are physical parts of your ground. Each bookable pitch uses one or more areas. Two pitches that share an area can never be booked at overlapping times.">
-          <div className="grid gap-6 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">Bookable pitches</h3>
               {turf.configs.map((c) => (
@@ -187,7 +187,7 @@ export default async function TurfSettings({ params, searchParams }: { params: {
                 </ul>
               </div>
             ))}
-            <ActionForm action={addPricingRule} className="grid gap-2 rounded-xl border border-dashed border-slate-300 p-3 sm:grid-cols-6" submit="Add rule" submitClass="btn-dark btn-sm sm:col-span-6 w-fit">
+            <ActionForm action={addPricingRule} className="grid grid-cols-1 gap-2 rounded-xl border border-dashed border-slate-300 p-3 sm:grid-cols-6" submit="Add rule" submitClass="btn-dark btn-sm sm:col-span-6 w-fit">
               <input type="hidden" name="turfId" value={turf.id} />
               <select name="configId" className="input py-1.5 sm:col-span-2">{active.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
               <input name="label" defaultValue="Peak" className="input py-1.5" />
@@ -239,11 +239,11 @@ export default async function TurfSettings({ params, searchParams }: { params: {
           <ActionForm action={updateTurf} className="space-y-5">
             <input type="hidden" name="turfId" value={turf.id} />
             <TurfFields cities={cities} turf={turf} />
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label className="label">Slot start interval</label>
                 <select name="slotStepMinutes" defaultValue={turf.slotStepMinutes} className="input">
-                  {[15, 30, 60].map((n) => <option key={n} value={n}>Every {n} min</option>)}
+                  {[60, 30, 15].map((n) => <option key={n} value={n}>{n === 60 ? "Every hour (1-hour slots)" : `Every ${n} min`}</option>)}
                 </select>
               </div>
               <div>

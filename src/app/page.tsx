@@ -22,7 +22,7 @@ export default async function Home() {
           <p className="mt-5 max-w-xl text-lg text-slate-300">
             Compare turfs, see real availability, reserve with a ₹49 advance and bring your whole team, all in one place.
           </p>
-          <form action="/turfs" className="mt-8 grid max-w-3xl gap-2 rounded-2xl bg-white p-2 text-slate-900 shadow-2xl sm:grid-cols-[1.4fr_1fr_1fr_auto]">
+          <form action="/turfs" className="mt-8 grid grid-cols-1 max-w-3xl gap-2 rounded-2xl bg-white p-2 text-slate-900 shadow-2xl sm:grid-cols-[1.4fr_1fr_1fr_auto]">
             <input name="q" className="input border-0 focus:ring-0" placeholder="Turf name, area or PIN code" />
             <select name="city" className="input border-0 focus:ring-0" defaultValue="manjeri">
               {cities.map((c) => (
@@ -46,7 +46,7 @@ export default async function Home() {
       </section>
 
       {/* relative z-10: these cards overlap the hero's bottom edge and must paint above it */}
-      <section className="relative z-10 mx-auto -mt-8 grid max-w-6xl gap-3 px-4 sm:grid-cols-3">
+      <section className="relative z-10 mx-auto -mt-8 grid grid-cols-1 max-w-6xl gap-3 px-4 sm:grid-cols-3">
         {[
           { icon: <Zap size={18} />, t: "Live slot grid", d: "Green means free right now. No calling around." },
           { icon: <Wallet size={18} />, t: "₹49 to reserve", d: "Pay the rest at the turf. Refund rules shown upfront." },
@@ -70,7 +70,7 @@ export default async function Home() {
           </div>
           <Link href="/turfs" className="text-sm font-semibold text-brand-700 hover:underline">See all & map →</Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {turfs.map((t) => (
             <TurfCardView key={t.id} t={t} />
           ))}
@@ -78,7 +78,7 @@ export default async function Home() {
       </section>
 
       <section className="mx-auto mt-16 max-w-6xl px-4">
-        <div className="card grid gap-6 overflow-hidden p-8 sm:grid-cols-[1.2fr_1fr] sm:items-center">
+        <div className="card grid grid-cols-1 gap-6 overflow-hidden p-8 sm:grid-cols-[1.2fr_1fr] sm:items-center">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Own a turf? Fill your empty hours.</h2>
             <p className="muted mt-2">

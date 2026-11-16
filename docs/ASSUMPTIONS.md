@@ -30,7 +30,7 @@ These were made before implementation. Each is a deliberate default that can be 
 18. **A booking is confirmed only by the payment-gateway webhook** (`payment.captured` / `order.paid`) after HMAC verification. The browser callback is recorded but never confirms anything.
 19. If a payment is captured **after** the hold expired, the system tries to re-acquire the slot; if someone else took it, the payment is automatically refunded in full.
 20. A user may hold at most 2 slots at once (anti-squatting).
-21. Slots start on a grid (`slotStepMinutes`, default 30) and durations come from `allowedDurations` (default 60/90/120).
+21. Slots are **1 hour** by default (`slotStepMinutes` = 60) with 60/120-minute bookings; durations must be whole multiples of the slot size so no unbookable gaps appear. Owners can switch a turf to 30- or 15-minute slots.
 
 ## Payments
 22. **Razorpay** (Orders API + Checkout.js + webhooks). Auto-capture must be enabled in the Razorpay dashboard. Until keys are configured, a clearly-labelled **mock gateway** runs the exact same webhook code path for development; it is disabled in production unless `ALLOW_MOCK_PAYMENTS=true`.

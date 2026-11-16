@@ -93,3 +93,18 @@ The browser never confirms anything; the checkout page polls `/api/bookings/:id`
 | Razorpay Route settlement | Ledger built | Linked accounts per owner (KYC) |
 | Owner subscriptions / featured placement billing | `isFeatured` flag built | Razorpay Subscriptions |
 | Native apps | n/a | API routes are already JSON and session-cookie based; add token auth for mobile |
+
+## Messages (player <-> turf chat)
+* `Conversation` (unique per turf + player) and `Message` tables; `src/lib/chat.ts` holds every rule.
+* Only the player and the turf's current owner can read or reply. Admins cannot. Owners can only start chats with players who booked their turf. Unclaimed turfs cannot be messaged.
+* Names only, never phone numbers. 1,000-character messages, 20 per minute per user, one in-app notification per unread conversation.
+* The inbox (`/messages`) polls every 3 s for the open thread and every 8 s for the list. WebSockets or push can replace polling later without schema changes.
+
+## Owner analytics
+* `/owner/analytics` with `src/lib/analytics.ts` (calculations) and `src/components/charts.tsx` (dependency-free SVG charts with hover tooltips and table views).
+* Utilisation is measured on physical areas: booked area-hours / (open area-hours - blocked area-hours). A full 7-a-side hour counts as 2 area-hours.
+* Hours before 5 AM count towards the previous evening's operating day in the weekday x hour heatmap.
+* Every figure is compared with the previous period of equal length. CSV export at `/api/owner/analytics/export` (formula-injection safe).
+
+## Page-level authorization
+Every protected server page calls `pageUser()` itself (redirect to sign-in, or 404 for the wrong role). A layout check alone is not enough, because the App Router can render a page segment without re-running its layout.

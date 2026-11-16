@@ -20,6 +20,7 @@ export function UserMenu({ name, hasName, role }: { name: string; hasName: boole
           <Link className={item} href="/profile">Profile</Link>
           <Link className={`${item} md:hidden`} href="/turfs">Find turfs</Link>
           <Link className={`${item} md:hidden`} href="/bookings">My bookings</Link>
+          <Link className={item} href="/messages">Messages</Link>
           <Link className={`${item} md:hidden`} href="/teams">Teams</Link>
           <Link className={`${item} md:hidden`} href="/find-players">Find players</Link>
           <Link className={item} href="/owner">{role === "PLAYER" ? "List your turf" : "Owner dashboard"}</Link>

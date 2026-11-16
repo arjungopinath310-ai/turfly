@@ -1,3 +1,4 @@
+import { pageUser } from "@/lib/auth";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { rupees } from "@/lib/engine/pricing";
@@ -5,6 +6,7 @@ import { formatIst, formatTimeRange, istToUtc, todayIst } from "@/lib/time";
 import { Stat, StatusBadge } from "@/components/ui";
 
 export default async function AdminHome() {
+  await pageUser("/admin", ["ADMIN"]);
   const monthStart = istToUtc(todayIst().slice(0, 8) + "01", 0);
   const active = { in: ["CONFIRMED", "COMPLETED"] as ("CONFIRMED" | "COMPLETED")[] };
   const [users, owners, turfs, pending, claims, month, captured, refunds, disputes, recent, byCity, ledger] = await Promise.all([
@@ -39,7 +41,7 @@ export default async function AdminHome() {
         <Stat label="Collected online" value={rupees(captured._sum.amount ?? 0)} hint={`${captured._count} payments · refunds ${rupees(refunds._sum.amount ?? 0)}`} />
         <Stat label="Commission earned (all time)" value={rupees(-(ledger._sum.amount ?? 0))} />
       </div>
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="card overflow-x-auto p-5">
           <h2 className="h2 mb-3">Latest bookings</h2>
           <table className="table">

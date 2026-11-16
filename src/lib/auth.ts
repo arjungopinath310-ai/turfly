@@ -2,6 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { getServerSession } from "next-auth";
+import { notFound, redirect } from "next/navigation";
 import type { Role, User } from "@prisma/client";
 import { prisma } from "./db";
 import { verifyOtp } from "./otp";
@@ -68,6 +69,18 @@ export async function currentUser(): Promise<User | null> {
   if (!id) return null;
   const u = await prisma.user.findUnique({ where: { id } });
   return u && !u.isSuspended ? u : null;
+}
+
+/**
+ * For server *pages*: redirect to sign-in when signed out, 404 when the role doesn't match.
+ * Every protected page must call this itself. Layout checks alone are NOT enough, because Next.js
+ * can render a page segment without re-running its layout during client-side navigation.
+ */
+export async function pageUser(next: string, roles?: Role[]): Promise<User> {
+  const u = await currentUser();
+  if (!u) redirect(`/login?next=${encodeURIComponent(next)}`);
+  if (roles && !roles.includes(u.role)) notFound();
+  return u;
 }
 
 export async function requireUser(roles?: Role[]): Promise<User> {

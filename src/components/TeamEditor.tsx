@@ -73,7 +73,7 @@ export function TeamEditor(p: { team: { id: string; name: string; playersPerSide
         )}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_320px]">
         <div className="card divide-y divide-slate-100">
           {p.members.map((m) => (
             <div key={m.id} className="flex items-center gap-3 p-4">

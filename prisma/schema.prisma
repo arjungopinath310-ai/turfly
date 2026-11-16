@@ -45,6 +45,8 @@ model User {
   claims          TurfClaim[]        @relation("Claimant")
   disputes        Dispute[]          @relation("DisputeRaiser")
   matchPlayers    MatchPlayer[]
+  conversations   Conversation[]     @relation("ConversationPlayer")
+  messagesSent    Message[]
 }
 
 model OtpCode {
@@ -115,8 +117,8 @@ model Turf {
   email                    String?
   photos                   String[]
   amenities                String[]
-  slotStepMinutes          Int              @default(30)
-  allowedDurations         Int[]            @default([60, 90, 120])
+  slotStepMinutes          Int              @default(60)
+  allowedDurations         Int[]            @default([60, 120])
   minNoticeMinutes         Int              @default(30)
   maxAdvanceDays           Int              @default(30)
   fullOnlinePaymentEnabled Boolean          @default(false)
@@ -142,6 +144,7 @@ model Turf {
   ledger       LedgerEntry[]
   posts        PlayerPost[]
   tournaments  Tournament[]
+  conversations Conversation[]
 
   @@index([cityId, status])
 }
@@ -277,6 +280,7 @@ model Booking {
   disputes      Dispute[]
   ledger        LedgerEntry[]
   result        MatchResult?
+  conversations Conversation[]
 
   @@index([turfId, startAt])
   @@index([userId, startAt])
@@ -594,6 +598,44 @@ model Dispute {
   refundAmount Int?
   createdAt    DateTime  @default(now())
   resolvedAt   DateTime?
+}
+
+// ───────────────────────────── Chat (player ↔ turf) ─────────────────────────────
+
+/// One thread per (turf, player). The turf's current owner answers on behalf of the turf.
+/// Phone numbers are never exposed through chat; people only see names.
+model Conversation {
+  id               String    @id @default(cuid())
+  turfId           String
+  turf             Turf      @relation(fields: [turfId], references: [id])
+  playerId         String
+  player           User      @relation("ConversationPlayer", fields: [playerId], references: [id])
+  bookingId        String?   // booking the chat was started from (context only)
+  booking          Booking?  @relation(fields: [bookingId], references: [id])
+  lastMessageAt    DateTime  @default(now())
+  lastMessageText  String?
+  lastSenderId     String?
+  playerLastReadAt DateTime  @default(now())
+  ownerLastReadAt  DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+  messages         Message[]
+
+  @@unique([turfId, playerId])
+  @@index([playerId, lastMessageAt])
+  @@index([turfId, lastMessageAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id])
+  body           String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([senderId, createdAt])
 }
 
 // ───────────────────────────── Notifications ─────────────────────────────

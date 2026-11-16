@@ -11,6 +11,7 @@ export default async function OwnerLayout({ children }: { children: React.ReactN
       <div className="mb-6 flex flex-wrap items-center gap-1 rounded-2xl bg-slate-100 p-1.5">
         <Link href="/owner" className={link}>Overview</Link>
         <Link href="/owner/calendar" className={link}>Calendar</Link>
+        <Link href="/owner/analytics" className={link}>Analytics</Link>
         <Link href="/owner/bookings" className={link}>Bookings</Link>
         <Link href="/owner/turfs" className={link}>My turfs</Link>
         <Link href="/owner/turfs/new" className={`${link} ml-auto`}>+ Register turf</Link>

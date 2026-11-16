@@ -44,6 +44,20 @@ export function formatMinute(min: number): string {
   return `${h12}:${mm.toString().padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
 }
 
+/** 1080 → "6 PM", 1110 → "6:30 PM" */
+export function shortTime(min: number): string {
+  const full = formatMinute(min);
+  return full.replace(":00 ", " ");
+}
+
+/** Compact slot label: (1080, 1140) → "6–7 PM"; (660, 720) → "11 AM–12 PM"; (1110, 1200) → "6:30–8 PM" */
+export function slotRange(start: number, end: number): string {
+  const a = shortTime(start);
+  const b = shortTime(end);
+  const sa = a.slice(-2);
+  return sa === b.slice(-2) ? `${a.slice(0, -3)}–${b}` : `${a}–${b}`;
+}
+
 export function formatIst(dt: Date | string, opts: Intl.DateTimeFormatOptions = { dateStyle: "medium", timeStyle: "short" }) {
   return new Intl.DateTimeFormat("en-IN", { timeZone: TZ, ...opts }).format(new Date(dt));
 }

@@ -19,7 +19,7 @@ export default async function TeamsPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader title="Teams" subtitle="Create squads once, reuse them for every booking." />
-      <div className="grid gap-6 md:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_320px]">
         <div className="space-y-3">
           {owned.length === 0 && <Empty title="No teams yet">Create your first team. Players don&apos;t need an account to be added.</Empty>}
           {owned.map((t) => (

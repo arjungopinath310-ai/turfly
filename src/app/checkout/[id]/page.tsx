@@ -16,7 +16,7 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
   const policy = parsePolicy(b.policySnapshot);
 
   return (
-    <div className="mx-auto grid max-w-4xl gap-6 px-4 py-10 md:grid-cols-[1fr_360px]">
+    <div className="mx-auto grid grid-cols-1 max-w-4xl gap-6 px-4 py-10 md:grid-cols-[1fr_360px]">
       <div className="space-y-5">
         <h1 className="h1">Complete your reservation</h1>
         <div className="card space-y-1 p-5">

@@ -1,9 +1,11 @@
+import { pageUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatIst } from "@/lib/time";
 import { ActionForm } from "@/components/ActionForm";
 import { updateUser } from "../actions";
 
 export default async function Users({ searchParams }: { searchParams: { q?: string; role?: string } }) {
+  await pageUser("/admin/users", ["ADMIN"]);
   const q = searchParams.q?.trim();
   const users = await prisma.user.findMany({
     where: {

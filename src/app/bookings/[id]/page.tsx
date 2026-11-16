@@ -10,6 +10,7 @@ import { formatDateLong, formatIst, formatTimeRange } from "@/lib/time";
 import { StatusBadge } from "@/components/ui";
 import { RosterEditor } from "@/components/RosterEditor";
 import { BookingActions } from "@/components/BookingActions";
+import { MessageButton } from "@/components/MessageButton";
 
 export default async function BookingPage({ params, searchParams }: { params: { id: string }; searchParams: { new?: string } }) {
   const user = await currentUser();
@@ -42,7 +43,7 @@ export default async function BookingPage({ params, searchParams }: { params: { 
           <div className="mt-1 text-sm opacity-90">Confirmation sent via in-app notification{user.phone ? ", SMS/WhatsApp" : ""}{user.email ? " and email" : ""} where configured.</div>
         </div>
       )}
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-6">
           <div className="card p-6">
             <div className="flex items-center justify-between">
@@ -51,7 +52,7 @@ export default async function BookingPage({ params, searchParams }: { params: { 
             </div>
             <h1 className="mt-2 text-2xl font-bold">{b.turf.name}</h1>
             <p className="text-sm text-slate-600">{address}</p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Info k="Date" v={formatDateLong(b.startAt)} />
               <Info k="Time" v={formatTimeRange(b.startAt, b.endAt)} />
               <Info k="Pitch" v={b.config.name} />
@@ -61,6 +62,7 @@ export default async function BookingPage({ params, searchParams }: { params: { 
               <a className="btn-ghost btn-sm" target="_blank" href={googleCalendarUrl({ ...b, turfName: b.turf.name, configName: b.config.name, address })}><CalendarPlus size={14} /> Google Calendar</a>
               <a className="btn-ghost btn-sm" href={`/api/bookings/${b.id}/ics`}><Download size={14} /> .ics</a>
               <a className="btn-ghost btn-sm" href={whatsappShare(share)} target="_blank"><MessageCircle size={14} /> Share on WhatsApp</a>
+              {b.turf.ownerId && b.turf.status === "APPROVED" && <MessageButton turfId={b.turfId} bookingId={b.id} label="Message the turf" />}
             </div>
           </div>
 

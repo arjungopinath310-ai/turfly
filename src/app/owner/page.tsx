@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/auth";
+import { pageUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getAvailability } from "@/lib/engine/booking";
 import { rupees } from "@/lib/engine/pricing";
@@ -9,7 +9,7 @@ import { Empty, Stat, StatusBadge } from "@/components/ui";
 import { TurfSwitcher } from "@/components/TurfSwitcher";
 
 export default async function OwnerHome({ searchParams }: { searchParams: { turf?: string } }) {
-  const user = await requireUser();
+  const user = await pageUser("/owner");
   const turfs = await manageableTurfs(user);
   const turf = pickTurf(turfs, searchParams.turf);
   if (!turf)
@@ -77,7 +77,7 @@ export default async function OwnerHome({ searchParams }: { searchParams: { turf
         <Stat label="Cancellations" value={`${cancelled}`} hint={`${cancelRate}% this month`} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_1fr]">
         <div className="card p-5">
           <h2 className="h2 mb-3">Today</h2>
           {todays.length === 0 ? (

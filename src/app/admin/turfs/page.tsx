@@ -1,3 +1,4 @@
+import { pageUser } from "@/lib/auth";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { AMENITIES } from "@/lib/brand";
@@ -6,6 +7,7 @@ import { StatusBadge } from "@/components/ui";
 import { addUnclaimedTurf, reviewClaim, reviewTurf, updateTurfAdmin } from "../actions";
 
 export default async function AdminTurfs({ searchParams }: { searchParams: { status?: string } }) {
+  await pageUser("/admin/turfs", ["ADMIN"]);
   const [pending, claims, turfs, cities] = await Promise.all([
     prisma.turf.findMany({ where: { status: "PENDING_REVIEW" }, include: { owner: true, city: true, configs: true }, orderBy: { updatedAt: "asc" } }),
     prisma.turfClaim.findMany({ where: { status: "PENDING" }, include: { turf: true, user: true }, orderBy: { createdAt: "asc" } }),
@@ -24,7 +26,7 @@ export default async function AdminTurfs({ searchParams }: { searchParams: { sta
       <section>
         <h1 className="h1 mb-4">Turf approvals</h1>
         {pending.length === 0 && <p className="muted">No turfs awaiting review.</p>}
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           {pending.map((t) => (
             <div key={t.id} className="card p-5">
               <div className="flex justify-between">
@@ -70,7 +72,7 @@ export default async function AdminTurfs({ searchParams }: { searchParams: { sta
       <section className="card p-5">
         <h2 className="h2">Add unclaimed listing</h2>
         <p className="muted mb-4">Only publicly identifiable business information (signboard name, address, public phone, map location). The listing shows “Call to check availability” and never shows slots until the owner claims it.</p>
-        <ActionForm action={addUnclaimedTurf} className="grid gap-2 sm:grid-cols-3" submit="Add listing" submitClass="btn-dark sm:col-span-3 w-fit">
+        <ActionForm action={addUnclaimedTurf} className="grid grid-cols-1 gap-2 sm:grid-cols-3" submit="Add listing" submitClass="btn-dark sm:col-span-3 w-fit">
           <input name="name" placeholder="Turf name" className="input" />
           <select name="cityId" className="input">{cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
           <input name="locality" placeholder="Locality" className="input" />

@@ -2,8 +2,8 @@
 
 Discover, compare and book football turfs, starting in **Manjeri, Kerala**. Built for players, turf owners and platform admins.
 
-* **Players:** OTP / Google sign-in, search by area, PIN, distance, price, format, amenities, rating and free time; list + map view; live colour-coded slot grid; reserve with a **₹49 advance** (balance at venue); teams with WhatsApp invites; match squads; reviews from verified bookings; find-players posts; compare up to 3 turfs; Google Calendar / .ics; receipts.
-* **Owners:** register or claim a listing, configure **one 7-a-side pitch convertible into two 5-a-side pitches** (or any custom layout), peak pricing, hours (incl. past midnight), durations, refund policy; day/week/month calendar; walk-in & phone bookings; blocks; balance collection; cancel/refund; reschedule; analytics & settlement ledger.
+* **Players:** OTP / Google sign-in, search by area, PIN, distance, price, format, amenities, rating and free time; list + map view; live colour-coded grid of **1-hour slots**; reserve with a **₹49 advance** (balance at venue); teams with WhatsApp invites; match squads; reviews from verified bookings; find-players posts; compare up to 3 turfs; Google Calendar / .ics; receipts; **chat with turfs** (Messages).
+* **Owners:** register or claim a listing, configure **one 7-a-side pitch convertible into two 5-a-side pitches** (or any custom layout), peak pricing, hours (incl. past midnight), durations, refund policy; day/week/month calendar; walk-in & phone bookings; blocks; balance collection; cancel/refund; reschedule; **analytics view** (utilisation heatmap, revenue per day, sources, lead time, top teams, CSV export) & settlement ledger; **chat with customers**.
 * **Admin:** approve/reject/suspend turfs, add unclaimed listings + claim links, verify claims, users & roles, payments, refunds, disputes, advance amount, platform fee, commission, default policy, reminders, offers.
 
 📘 **[How the app works (PDF guide)](docs/Turfly-How-It-Works.pdf)**: players, owners, admin, booking rules, hosting and go-live checklist.
@@ -43,7 +43,7 @@ cloudflared tunnel --url http://localhost:3000          # prints a public https:
 npm run cron:local                                      # reminders + hold clean-up every minute
 ```
 
-Put the tunnel address in `.env` as `APP_URL` and `NEXTAUTH_URL`, keep `DEMO_MODE="true"` until SMS and Razorpay are connected, and list your own number in `ADMIN_PHONES`. Admin and real-owner OTPs are never shown on screen; they print in the server window. For real customers use permanent hosting (see the PDF guide, section 14).
+Put the tunnel address in `.env` as `APP_URL` and `NEXTAUTH_URL`, keep `DEMO_MODE="true"` until SMS and Razorpay are connected, and list your own number in `ADMIN_PHONES`. Admin and real-owner OTPs are never shown on screen; they print in the server window. For real customers use permanent hosting (see the PDF guide, section 16).
 
 Reminders and hold expiry run from a cron endpoint:
 

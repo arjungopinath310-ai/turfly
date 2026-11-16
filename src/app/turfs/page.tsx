@@ -17,7 +17,7 @@ export default async function TurfsPage({ searchParams: sp }: { searchParams: Tu
         <h1 className="h1">Football turfs{city ? ` in ${city.name}` : ""}</h1>
         <p className="muted">{rows.length} result{rows.length === 1 ? "" : "s"}. Only turfs marked “Live availability” can be booked online instantly.</p>
       </div>
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
         <form className="card h-fit space-y-4 p-4 lg:sticky lg:top-20">
           <div>
             <label className="label">Search</label>

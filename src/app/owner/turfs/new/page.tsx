@@ -13,7 +13,7 @@ export default async function NewTurf() {
         <TurfFields cities={cities} />
         <div>
           <label className="label">Pitch layout</label>
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {[
               ["convertible", "7-a-side that splits into two 5-a-side", "Full pitch, Pitch A and Pitch B with automatic conflict rules"],
               ["single5", "Single 5-a-side pitch", ""],

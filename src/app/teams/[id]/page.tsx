@@ -34,7 +34,7 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
         isOwner={isOwner}
         inviteUrl={isOwner ? teamInviteUrl(team.inviteToken) : null}
       />
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
+      <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="card p-5">
           <h2 className="h2 mb-3">Match history</h2>
           <ul className="space-y-2 text-sm">

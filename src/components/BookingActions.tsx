@@ -34,7 +34,7 @@ export function BookingActions(p: { bookingId: string; canCancel: boolean; canRe
       {p.canPost && (
         <details className="card p-5">
           <summary className="cursor-pointer font-semibold">Short of players? Post in Find Players</summary>
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
             <input type="number" min={1} max={10} className="input" value={post.playersNeeded} onChange={(e) => setPost({ ...post, playersNeeded: Number(e.target.value) })} />
             <input className="input" placeholder="Share per player ₹ (optional)" inputMode="numeric" value={post.sharePerPlayer} onChange={(e) => setPost({ ...post, sharePerPlayer: e.target.value.replace(/\D/g, "") })} />
             <input className="input" placeholder="Note (skill level etc.)" value={post.note} onChange={(e) => setPost({ ...post, note: e.target.value })} />
