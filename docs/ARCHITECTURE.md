@@ -1,0 +1,95 @@
+# Architecture
+
+## Stack
+| Layer | Choice | Why |
+|---|---|---|
+| App | Next.js 14 (App Router), React 18, TypeScript | One codebase for SSR pages, API routes, server actions |
+| UI | Tailwind CSS, lucide icons, Leaflet + OpenStreetMap | Modern, mobile-first; no map API key needed (directions deep-link to Google Maps) |
+| DB | PostgreSQL 16 + Prisma 5 | `EXCLUDE` constraints & `tstzrange` for correct concurrency |
+| Auth | NextAuth (JWT): phone OTP (MSG91) + optional Google | OTP is the norm for Indian consumers |
+| Payments | Razorpay Orders + Checkout.js + webhooks | UPI, cards, net banking, wallets in one integration |
+| Notifications | DB job queue + cron tick → in-app / MSG91 SMS / WhatsApp Cloud API / Resend email | Provider-agnostic adapters, idempotent jobs |
+
+## Directory map
+```
+prisma/
+  schema.prisma                 data model (money in paise, UTC timestamps)
+  migrations/0001_init          generated tables
+  migrations/0002_booking_integrity   EXCLUDE constraint, CHECKs  ← the double-booking guarantee
+  seed.ts                       cities, admin, clearly-labelled demo turfs
+src/lib/engine/
+  allocation.ts   resource-unit model + presets (pure)
+  slots.ts        slot grid + peak pricing (pure)
+  pricing.ts      ₹49 advance / balance / fee / discount maths (pure)
+  policy.ts       cancellation tiers + plain-language text (pure)
+  booking.ts      holds, confirmation, walk-ins, blocks, cancel, reschedule (DB)
+src/lib/payments/  razorpay.ts (HTTP + HMAC), service.ts (orders, webhook handling), refunds.ts
+src/lib/notifications/  providers.ts (SMS/WA/email), service.ts (scheduling + worker)
+src/app/           pages (player, /owner, /admin) and /api routes
+tests/             engine.test.ts (unit) · integration/booking.int.test.ts (real Postgres)
+```
+
+## Resource allocation (the convertible pitch)
+```
+ Units:    [ Half A ]  [ Half B ]  (+ optional virtual LOCK)
+ Configs:  Full 7s  = {A, B}
+           Pitch A  = {A}        (or {A, LOCK} if halves can't run together)
+           Pitch B  = {B}        (or {B, LOCK})
+ Rule:     conflict ⇔ units ∩ ≠ ∅  ∧  [s1,e1) ∩ [s2,e2) ≠ ∅
+```
+Every booking/hold/block writes one `Occupancy` row **per unit** it consumes. PostgreSQL enforces:
+```sql
+EXCLUDE USING gist ("unitId" WITH =, tstzrange("startAt","endAt",'[)') WITH &&) WHERE (released = false)
+```
+So two transactions racing for overlapping resources can't both commit, whichever server instance they run on. The application catches `23P01` and returns "slot just taken". Owners can model any layout (three 5s pitches merging into one 11s, shared changing-room lock, etc.) by creating units and mapping configs to them; the settings page shows a live conflict map.
+
+## Booking lifecycle
+```
+select slot ─▶ POST /api/bookings ─▶ HELD (occupancy rows, holdExpiresAt = now + 5 min)
+                                      │
+             POST /api/payments/order (server computes amount from DB; reuses open order)
+                                      │
+     Razorpay Checkout ── handler ──▶ /api/payments/verify  (records signature only)
+                                      │
+     Razorpay ── webhook (HMAC) ────▶ /api/payments/webhook
+                                      ├─ event id already processed → no-op
+                                      ├─ amount mismatch → error (retry/alert)
+                                      ├─ HELD → CONFIRMED (conditional UPDATE … WHERE status='HELD')
+                                      ├─ EXPIRED → try re-acquire; if taken → auto full refund
+                                      └─ 2nd capture on same booking → auto-refund that payment
+ CONFIRMED ─▶ ledger (ADVANCE_COLLECTED, COMMISSION) + notification jobs (confirm, 24 h, 2 h, balance)
+ cron tick: expire holds (one atomic CTE), complete past bookings, send due jobs
+```
+The browser never confirms anything; the checkout page polls `/api/bookings/:id` until the webhook flips it.
+
+## Money & transparency
+* Customer sees: slot price, discount (venue side), online advance, optional platform fee line, balance at venue, refund policy, all before paying.
+* Owner sees: ledger of advances collected, commission (if configured, per turf or platform default), refunds. Net balance = what the platform settles to the owner.
+* Settlement today: platform's Razorpay account → manual/periodic payout recorded as `PAYOUT` ledger rows. Next step: Razorpay Route linked accounts for automatic split settlement.
+
+## Security notes
+* All amounts are computed server-side from DB rows; client values are never trusted.
+* Webhook verified with HMAC-SHA256 over the raw body and `timingSafeEqual`; events deduplicated by `x-razorpay-event-id`.
+* OTPs: HMAC-hashed, 5-minute TTL, 5 attempts, 5 sends/hour, 30 s resend gap, atomic single use.
+* Every owner/admin mutation re-checks ownership/role server-side (`requireTurfAccess`, `requireUser(["ADMIN"])`) and writes an `AuditLog` row for sensitive actions.
+* Privacy: member phone numbers visible only to the team owner, or teammates if the member opted in. Find-players acceptance shares names, not numbers.
+* Mock gateway refuses to run when Razorpay keys exist, and in production unless explicitly allowed.
+
+## Deploying
+1. Postgres 14+ (Neon, Supabase, RDS…). `npm run db:migrate && npm run db:seed`.
+2. Host on Vercel / Render / a VM (`npm run build && npm start`). Set env vars from `.env.example`.
+3. Razorpay dashboard → Webhooks → `https://<domain>/api/payments/webhook`, events `payment.captured, payment.failed, order.paid, refund.processed, refund.failed`; enable auto-capture.
+4. Schedule `POST /api/cron/tick` every minute with `Authorization: Bearer $CRON_SECRET`.
+5. Register DLT SMS templates (India) with MSG91 and WhatsApp templates named `booking_confirmed`, `reminder_24h`, `reminder_2h`, `balance_pending`.
+
+## Roadmap (not yet built)
+| Feature | State | Notes |
+|---|---|---|
+| Tournaments (fixtures, leagues, leaderboards, entry fees) | Schema only (`Tournament`, `TournamentTeam`, `Fixture`) | Entry fees reuse the Payment model with `purpose = TOURNAMENT` |
+| Split payments | Not built | Per-player `Payment(purpose = SPLIT_SHARE)` against the booking; booking still confirms on the organiser's advance only |
+| Open matches with per-player payments | Find-players built (pay organiser at venue) | Add per-seat checkout using split-share payments |
+| Match statistics | Schema (`MatchResult`, goals/assists on `MatchPlayer`) | Add an entry form on the booking page |
+| Loyalty points / memberships | Referral codes + REPEAT/FIRST_BOOKING offers built | Points ledger table + redemption at checkout |
+| Razorpay Route settlement | Ledger built | Linked accounts per owner (KYC) |
+| Owner subscriptions / featured placement billing | `isFeatured` flag built | Razorpay Subscriptions |
+| Native apps | n/a | API routes are already JSON and session-cookie based; add token auth for mobile |
