@@ -30,7 +30,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
   const [todays, upcoming, month, cancelled, pending, ledger, recent, avail] = await Promise.all([
     prisma.booking.findMany({ where: { turfId: turf.id, status: active, startAt: { gte: dayStart, lt: dayEnd } }, include: { config: true, team: true, user: { select: { name: true } } }, orderBy: { startAt: "asc" } }),
     prisma.booking.count({ where: { turfId: turf.id, status: "CONFIRMED", startAt: { gte: new Date() } } }),
-    prisma.booking.findMany({ where: { turfId: turf.id, status: active, startAt: { gte: monthStart } }, select: { totalPrice: true, discount: true, onlineAmount: true, platformFee: true, source: true } }),
+    prisma.booking.findMany({ where: { turfId: turf.id, status: active, startAt: { gte: monthStart } }, select: { totalPrice: true, discount: true, onlineAmount: true, platformFee: true, splitCollected: true, source: true } }),
     prisma.booking.count({ where: { turfId: turf.id, status: "CANCELLED", startAt: { gte: monthStart } } }),
     prisma.booking.aggregate({ where: { turfId: turf.id, status: active, balanceCollectedAt: null, balanceDue: { gt: 0 } }, _sum: { balanceDue: true }, _count: true }),
     prisma.ledgerEntry.groupBy({ by: ["type"], where: { turfId: turf.id }, _sum: { amount: true } }),
@@ -39,7 +39,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
   ]);
 
   const revenue = month.reduce((a, b) => a + b.totalPrice - b.discount, 0);
-  const advances = month.reduce((a, b) => a + b.onlineAmount - b.platformFee, 0);
+  const advances = month.reduce((a, b) => a + b.onlineAmount - b.platformFee + b.splitCollected, 0);
   const freeSlots = avail ? avail.configs.reduce((a, c) => a + c.slots.filter((s) => s.status === "available").length, 0) : 0;
   const cancelRate = month.length + cancelled ? Math.round((cancelled / (month.length + cancelled)) * 100) : 0;
   const owed = ledger.reduce((a, l) => a + (l._sum.amount ?? 0), 0);

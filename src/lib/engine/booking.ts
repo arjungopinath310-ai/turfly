@@ -11,6 +11,7 @@ import { quote, type OfferLite } from "./pricing";
 import { generateSlots, priceFor, type Slot } from "./slots";
 import { cancelBookingJobs, notifyInApp, scheduleBookingJobs } from "../notifications/service";
 import { refundBooking } from "../payments/refunds";
+import { refundSplitShares } from "../split";
 
 // ───────────── Hold expiry ─────────────
 
@@ -363,7 +364,7 @@ export async function cancelBooking(actor: User, bookingId: string, reason: stri
   }
   if (b.status !== "CONFIRMED") throw new AppError(400, "Only confirmed bookings can be cancelled");
   if (by === "customer" && b.startAt.getTime() <= Date.now()) throw new AppError(400, "The match has already started");
-  const paid = b.payments.filter((p) => p.status === "CAPTURED" || p.status === "PARTIALLY_REFUNDED").reduce((a, p) => a + p.amount - p.refundedAmount, 0);
+  const paid = b.payments.filter((p) => p.purpose !== "SPLIT_SHARE" && (p.status === "CAPTURED" || p.status === "PARTIALLY_REFUNDED")).reduce((a, p) => a + p.amount - p.refundedAmount, 0);
   const policy = parsePolicy(b.policySnapshot);
   const refund = by === "customer" ? customerRefund(policy, paid, b.startAt).amount : Math.floor((paid * policy.ownerCancelRefundPercent) / 100);
 
@@ -375,6 +376,7 @@ export async function cancelBooking(actor: User, bookingId: string, reason: stri
   await prisma.occupancy.updateMany({ where: { bookingId: b.id }, data: { released: true } });
   await cancelBookingJobs(prisma, b.id);
   const refunded = await refundBooking(b.id, refund, `Cancelled by ${by}: ${reason}`, actor.id);
+  await refundSplitShares(b.id, `Booking ${b.code} was cancelled`, actor.id);
   if (b.userId && by !== "customer")
     await notifyInApp(prisma, b.userId, `Booking ${b.code} cancelled by the turf`, `Refund of ₹${refunded / 100} initiated.`, `/bookings/${b.id}`);
   if (b.turf.ownerId && by === "customer") await notifyInApp(prisma, b.turf.ownerId, `Booking ${b.code} cancelled`, reason, `/owner/bookings`);

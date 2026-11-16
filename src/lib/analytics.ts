@@ -93,7 +93,7 @@ async function core(turfId: string, r: Range) {
       where: { turfId, status: { in: [...ACTIVE] }, startAt: { gte: startUtc, lt: endUtc } },
       select: {
         id: true, code: true, startAt: true, endAt: true, createdAt: true, durationMinutes: true, status: true, source: true,
-        totalPrice: true, discount: true, advanceAmount: true, balanceDue: true, balanceCollectedAt: true,
+        totalPrice: true, discount: true, advanceAmount: true, balanceDue: true, balanceCollectedAt: true, splitCollected: true,
         userId: true, teamName: true, customerName: true, configId: true,
         team: { select: { name: true } }, user: { select: { name: true } }, config: { select: { name: true } },
       },
@@ -141,12 +141,12 @@ async function core(turfId: string, r: Range) {
 
   // ── money & counts (by match date) ──
   const value = bookings.reduce((t, b) => t + b.totalPrice - b.discount, 0);
-  const online = bookings.reduce((t, b) => t + b.advanceAmount, 0);
-  // Money taken at the turf = booking value − online advance − whatever is still owed.
+  const online = bookings.reduce((t, b) => t + b.advanceAmount + b.splitCollected, 0);
+  // Money taken at the turf = booking value − paid online (advance + friends' split shares) − whatever is still owed.
   // Covers balances marked collected later AND walk-ins who paid (fully or partly) at the counter.
   const atVenue = bookings.reduce((t, b) => {
     const owed = b.balanceCollectedAt ? 0 : b.balanceDue;
-    return t + Math.max(0, b.totalPrice - b.discount - b.advanceAmount - owed);
+    return t + Math.max(0, b.totalPrice - b.discount - b.advanceAmount - b.splitCollected - owed);
   }, 0);
   const pending = bookings.filter((b) => !b.balanceCollectedAt && b.status !== "NO_SHOW").reduce((t, b) => t + b.balanceDue, 0);
   const noShows = bookings.filter((b) => b.status === "NO_SHOW").length;

@@ -72,7 +72,7 @@ export default async function OwnerBookings(
               </div>
               <div className="text-right text-sm">
                 <div>Total {rupees(b.totalPrice - b.discount)}</div>
-                <div className="text-slate-500">Online {rupees(b.onlineAmount - b.platformFee)}</div>
+                <div className="text-slate-500">Online {rupees(b.onlineAmount - b.platformFee + b.splitCollected)}{b.splitCollected > 0 ? " (incl. split)" : ""}</div>
                 <div className={b.balanceCollectedAt ? "text-brand-700" : "font-semibold"}>{b.balanceCollectedAt ? "Balance collected ✓" : `Due ${rupees(b.balanceDue)}`}</div>
               </div>
             </div>

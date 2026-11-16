@@ -88,7 +88,7 @@ The browser never confirms anything; the checkout page polls `/api/bookings/:id`
 | Feature | State | Notes |
 |---|---|---|
 | Tournaments (fixtures, leagues, leaderboards, entry fees) | Schema only (`Tournament`, `TournamentTeam`, `Fixture`) | Entry fees reuse the Payment model with `purpose = TOURNAMENT` |
-| Split payments | Not built | Per-player `Payment(purpose = SPLIT_SHARE)` against the booking; booking still confirms on the organiser's advance only |
+| Split payments | Built (see below) | |
 | Open matches with per-player payments | Find-players built (pay organiser at venue) | Add per-seat checkout using split-share payments |
 | Match statistics | Schema (`MatchResult`, goals/assists on `MatchPlayer`) | Add an entry form on the booking page |
 | Loyalty points / memberships | Referral codes + REPEAT/FIRST_BOOKING offers built | Points ledger table + redemption at checkout |
@@ -101,6 +101,14 @@ The browser never confirms anything; the checkout page polls `/api/bookings/:id`
 * Only the player and the turf's current owner can read or reply. Admins cannot. Owners can only start chats with players who booked their turf. Unclaimed turfs cannot be messaged.
 * Names only, never phone numbers. 1,000-character messages, 20 per minute per user, one in-app notification per unread conversation.
 * The inbox (`/messages`) polls every 3 s for the open thread and every 8 s for the list. WebSockets or push can replace polling later without schema changes.
+
+## Split payments
+* `SplitPlan` (one per booking, secret link token) and `SplitShare` (one row per friend's share); `src/lib/split.ts` holds every rule, `src/lib/engine/split.ts` the maths.
+* The organiser's ₹49 advance still confirms the booking. The venue price after discount is split into equal whole-rupee shares; the organiser keeps the remainder (advance + balance at the venue). Friends' shares can never exceed the balance due.
+* A friend claims a share for 10 minutes while paying (`UPDATE … FOR UPDATE SKIP LOCKED`), so two people can't pay for the last share. Like bookings, only the HMAC-verified webhook marks a share paid; a share that can no longer be paid (all taken, split stopped, booking cancelled, balance settled at the venue) is refunded in full automatically. One share per person (unique index).
+* Paid share → `balanceDue` decreases, `splitCollected` increases, `SPLIT_COLLECTED` ledger row (owed to the owner), payer added to the squad, organiser notified.
+* Cancelling the booking (anyone) refunds every paid share in full; the organiser's own advance follows the cancellation policy. The split can be changed or stopped only while nobody has paid.
+* Pages: the "Split the cost" card on the booking page (organiser) and `/split/<token>` (friends).
 
 ## Owner analytics
 * `/owner/analytics` with `src/lib/analytics.ts` (calculations) and `src/components/charts.tsx` (dependency-free SVG charts with hover tooltips and table views).

@@ -2,13 +2,14 @@ import { prisma } from "../db";
 import { refundPayment } from "./razorpay";
 
 /**
- * Refunds up to `amount` across the booking's captured payments.
+ * Refunds up to `amount` across the organiser's captured payments (friends' split shares are refunded
+ * separately, in full, by refundSplitShares).
  * Records Refund rows and ledger entries. Safe to call with amount 0 (no-op).
  */
 export async function refundBooking(bookingId: string, amount: number, reason: string, initiatedById?: string, onlyPaymentId?: string) {
   if (amount <= 0) return 0;
   const payments = await prisma.payment.findMany({
-    where: { bookingId, ...(onlyPaymentId ? { id: onlyPaymentId } : {}), status: { in: ["CAPTURED", "PARTIALLY_REFUNDED", "REFUND_PENDING"] } },
+    where: { bookingId, ...(onlyPaymentId ? { id: onlyPaymentId } : { purpose: { not: "SPLIT_SHARE" } }), status: { in: ["CAPTURED", "PARTIALLY_REFUNDED", "REFUND_PENDING"] } },
     orderBy: { createdAt: "asc" },
   });
   let remaining = amount;

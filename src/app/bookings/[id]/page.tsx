@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/ui";
 import { RosterEditor } from "@/components/RosterEditor";
 import { BookingActions } from "@/components/BookingActions";
 import { MessageButton } from "@/components/MessageButton";
+import { SplitPanel } from "@/components/SplitPanel";
 
 export default async function BookingPage(
   props: { params: Promise<{ id: string }>; searchParams: Promise<{ new?: string }> }
@@ -29,6 +30,7 @@ export default async function BookingPage(
       payments: { include: { refunds: true }, orderBy: { createdAt: "asc" } },
       review: true,
       disputes: true,
+      split: { include: { shares: { orderBy: { seq: "asc" }, include: { paidBy: { select: { name: true } } } } } },
     },
   });
   if (!b || b.userId !== user.id) notFound();
@@ -82,6 +84,28 @@ export default async function BookingPage(
             />
           )}
 
+          {(() => {
+            const plan = b.split && !b.split.cancelledAt ? b.split : null;
+            const editable = b.status === "CONFIRMED" && b.startAt > new Date() && !b.balanceCollectedAt;
+            if (!plan && !(editable && b.balanceDue > 0)) return null;
+            const now = new Date();
+            return (
+              <SplitPanel
+                bookingId={b.id}
+                editable={editable}
+                money={{ totalPrice: b.totalPrice, discount: b.discount, advanceAmount: b.advanceAmount, balanceDue: b.balanceDue, splitCollected: b.splitCollected }}
+                defaultPlayers={Math.min(30, Math.max(2, b.config.playersPerSide * 2))}
+                plan={plan && {
+                  token: plan.token,
+                  players: plan.players,
+                  shareAmount: plan.shareAmount,
+                  shares: plan.shares.map((s) => ({ seq: s.seq, status: s.status, paidByName: s.paidBy?.name ?? null, inCheckout: s.status === "OPEN" && Boolean(s.claimExpiresAt && s.claimExpiresAt > now) })),
+                }}
+                inviteLine={`football at ${b.turf.name} on ${formatDateLong(b.startAt)}, ${formatTimeRange(b.startAt, b.endAt)}`}
+              />
+            );
+          })()}
+
           <BookingActions
             bookingId={b.id}
             canCancel={b.status === "CONFIRMED" && b.startAt > new Date()}
@@ -99,11 +123,12 @@ export default async function BookingPage(
               <Row k="Turf booking" v={rupees(b.totalPrice)} />
               {b.discount > 0 && <Row k="Discount" v={`− ${rupees(b.discount)}`} />}
               <Row k="Paid online" v={rupees(b.onlineAmount)} />
+              {b.splitCollected > 0 && <Row k="Paid by friends (split)" v={rupees(b.splitCollected)} />}
               {b.platformFee > 0 && <Row k="incl. platform fee" v={rupees(b.platformFee)} />}
               <Row k="Balance at venue" v={b.balanceCollectedAt ? "Paid ✓" : rupees(b.balanceDue)} />
             </dl>
             <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
-              {b.payments.map((p) => (
+              {b.payments.filter((p) => p.purpose !== "SPLIT_SHARE").map((p) => (
                 <div key={p.id}>
                   <div className="flex justify-between">
                     <span>{p.providerPaymentId ?? p.providerOrderId}{p.method ? ` · ${p.method.toUpperCase()}` : ""}</span>

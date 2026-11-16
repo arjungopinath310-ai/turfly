@@ -9,11 +9,13 @@
  * - NEXT_DIST_DIR lets a new build be prepared without touching the one a live server is using.
  */
 const razorpay = "https://checkout.razorpay.com https://api.razorpay.com https://*.razorpay.com";
+// `next dev` needs eval for React Refresh; production builds never get it.
+const devEval = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
 
 const csp = [
   "default-src 'self'",
   // Next.js inlines small bootstrap scripts; Razorpay Checkout loads its own script.
-  `script-src 'self' 'unsafe-inline' https://checkout.razorpay.com`,
+  `script-src 'self' 'unsafe-inline'${devEval} https://checkout.razorpay.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",

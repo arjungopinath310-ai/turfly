@@ -49,6 +49,7 @@ model User {
   conversations   Conversation[]     @relation("ConversationPlayer")
   messagesSent    Message[]
   devices         DeviceToken[]
+  splitShares     SplitShare[]       @relation("SplitSharePayer")
 }
 
 model OtpCode {
@@ -268,6 +269,7 @@ model Booking {
   platformFee         Int           @default(0) // shown separately, on top
   onlineAmount        Int           // advanceAmount (+ rest if full payment) + platformFee
   balanceDue          Int           // payable at venue
+  splitCollected      Int           @default(0) // friends' shares paid online (already deducted from balanceDue)
   payFullOnline       Boolean       @default(false)
   balanceCollectedAt  DateTime?
   balanceCollectedBy  String?
@@ -300,6 +302,7 @@ model Booking {
   ledger        LedgerEntry[]
   result        MatchResult?
   conversations Conversation[]
+  split         SplitPlan?
 
   @@index([turfId, startAt])
   @@index([userId, startAt])
@@ -363,6 +366,8 @@ model Payment {
   amount            Int
   currency          String        @default("INR")
   purpose           String        @default("ADVANCE") // ADVANCE | FULL | SPLIT_SHARE
+  splitShareId      String?       // set for purpose SPLIT_SHARE
+  splitShare        SplitShare?   @relation(fields: [splitShareId], references: [id])
   status            PaymentStatus @default(CREATED)
   method            String?       // upi | card | netbanking | wallet
   clientVerifiedAt  DateTime?     // browser handler signature check (informational only)
@@ -375,6 +380,39 @@ model Payment {
   ledger            LedgerEntry[]
 
   @@index([bookingId])
+}
+
+/// Organiser splits the venue price into equal shares; friends pay theirs online via one link.
+/// The organiser's own share (the remainder) is covered by their advance + the balance at the venue.
+model SplitPlan {
+  id          String       @id @default(cuid())
+  bookingId   String       @unique
+  booking     Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  token       String       @unique // share link /split/<token>
+  players     Int // total people sharing, organiser included
+  shareAmount Int // paise per friend
+  createdAt   DateTime     @default(now())
+  cancelledAt DateTime?
+  shares      SplitShare[]
+}
+
+model SplitShare {
+  id             String    @id @default(cuid())
+  planId         String
+  plan           SplitPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  seq            Int
+  status         String    @default("OPEN") // OPEN | PAID | REFUNDED
+  claimedById    String? // payer currently in checkout; the claim expires so abandoned checkouts free the share
+  claimExpiresAt DateTime?
+  paidById       String?
+  paidBy         User?     @relation("SplitSharePayer", fields: [paidById], references: [id])
+  paidPaymentId  String?   @unique
+  paidAt         DateTime?
+  payments       Payment[]
+
+  @@unique([planId, seq])
+  @@unique([planId, paidById]) // one share per person
+  @@index([planId, status])
 }
 
 model Refund {
@@ -411,7 +449,7 @@ model LedgerEntry {
   booking   Booking? @relation(fields: [bookingId], references: [id])
   paymentId String?
   payment   Payment? @relation(fields: [paymentId], references: [id])
-  type      String   // ADVANCE_COLLECTED | COMMISSION | REFUND | PAYOUT
+  type      String   // ADVANCE_COLLECTED | SPLIT_COLLECTED | COMMISSION | REFUND | PAYOUT
   amount    Int
   note      String?
   createdAt DateTime @default(now())

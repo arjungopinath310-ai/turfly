@@ -11,7 +11,7 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
   if (!user) redirect("/login");
   const b = await prisma.booking.findUnique({
     where: { id: params.id },
-    include: { turf: { include: { city: true } }, config: true, payments: { where: { status: { not: "CREATED" } }, include: { refunds: true } } },
+    include: { turf: { include: { city: true } }, config: true, payments: { where: { status: { not: "CREATED" }, purpose: { not: "SPLIT_SHARE" } }, include: { refunds: true } } },
   });
   if (!b || b.userId !== user.id) notFound();
   return (
@@ -39,6 +39,7 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
             <tr><td>Advance paid online</td><td className="text-right">{rupees(b.advanceAmount)}</td></tr>
             {b.platformFee > 0 && <tr><td>Platform fee</td><td className="text-right">{rupees(b.platformFee)}</td></tr>}
             <tr className="font-semibold"><td>Total paid online</td><td className="text-right">{rupees(b.onlineAmount)}</td></tr>
+            {b.splitCollected > 0 && <tr><td>Paid by friends online (split)</td><td className="text-right">{rupees(b.splitCollected)}</td></tr>}
             <tr><td>Balance payable at venue</td><td className="text-right">{b.balanceCollectedAt ? "Collected" : rupees(b.balanceDue)}</td></tr>
           </tbody>
         </table>

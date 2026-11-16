@@ -122,15 +122,15 @@ def deployment_today():
     b.append(box(36, 210, 428, 50, "cloudflared.exe", ["Outbound QUIC connection to Cloudflare; forwards to http://localhost:3000"], "inf"))
     b.append(arrow([(240, 260), (240, 286)]))
     b.append(box(36, 288, 428, 132, "Next.js 15 production server  (npm start, port 3000)", [
-        "34 server-rendered pages: player, owner, admin, legal",
-        "32 API route handlers + server actions (owner, admin)",
+        "35 server-rendered pages: player, owner, admin, legal",
+        "35 API route handlers + server actions (owner, admin)",
         "next-auth JWT sessions, zod validation, CSP headers",
         "Booking engine, payments, notifications, chat, analytics",
         "instrumentation.ts checks env at start-up",
     ], "app"))
     b.append(box(36, 452, 190, 58, "cron-loop.mjs", ["POST /api/cron/tick", "every 60 s, Bearer secret"], "inf"))
     b.append(arrow([(131, 452), (131, 422)]))
-    b.append(box(256, 452, 208, 58, "PostgreSQL 16 service", ["port 5432, 37 tables", "EXCLUDE gist constraint"], "db"))
+    b.append(box(256, 452, 208, 58, "PostgreSQL 16 service", ["port 5432, 39 tables", "EXCLUDE gist constraint"], "db"))
     b.append(arrow([(360, 420), (360, 450)], both=True))
     ext = [
         ("Razorpay", "Orders, Checkout.js, refunds"),
@@ -358,6 +358,21 @@ SEQ_BOOK = sequence(
     ],
 )
 
+SEQ_SPLIT = sequence(
+    [("Organiser", "booking page", "inf"), ("Friend", "/split/<token>", "inf"), ("Next.js", "lib/split.ts", "app"), ("PostgreSQL", "SplitPlan, SplitShare", "db")],
+    [
+        (0, 2, "POST /api/bookings/:id/split {players}", "call"),
+        (2, 3, "SplitPlan + N-1 OPEN shares", "call"),
+        (0, 1, "share link on WhatsApp", "call"),
+        (1, 2, "POST /api/split/:token/pay", "call"),
+        (2, 3, "claim a free share for 10 min", "call"),
+        (2, 2, "Razorpay order for the share amount", "note"),
+        (2, 3, "webhook: share PAID, balance −, ledger +", "call"),
+        (3, 2, "nothing free / closed → full refund", "alt"),
+        (2, 0, "'Rahul paid their share (3 of 9)'", "ret"),
+    ],
+)
+
 SEQ_CHAT = sequence(
     [("Player", "Messages page", "inf"), ("Next.js", "/api/conversations", "app"), ("PostgreSQL", "Conversation, Message", "db"), ("Owner", "Messages page", "inf")],
     [
@@ -376,19 +391,19 @@ LAYERS = """
 <div class="layers">
   <div class="layer l-client"><b>Clients</b><span>Android app (Capacitor WebView)</span><span>Mobile / desktop browser</span><span>Service worker + offline page</span><span>Razorpay Checkout.js</span></div>
   <div class="layer l-page"><b>Pages (React Server Components, src/app)</b>
-    <span>Player: / · /turfs · /turfs/[slug] · /compare · /checkout/[id] · /bookings · /teams · /find-players · /messages · /notifications · /profile</span>
+    <span>Player: / · /turfs · /turfs/[slug] · /compare · /checkout/[id] · /bookings · /split/[token] · /teams · /find-players · /messages · /notifications · /profile</span>
     <span>Owner: /owner · /owner/turfs · /owner/turfs/[id] · /owner/calendar · /owner/bookings · /owner/analytics</span>
     <span>Admin: /admin · /admin/turfs · /admin/users · /admin/finance · /admin/settings</span>
     <span>Public: /login · /legal/* · /contact · /claim/[token] · /join/team/[token] · /account/delete</span></div>
   <div class="layer l-comp"><b>Client components (src/components)</b>
     <span>BookingWidget</span><span>Checkout</span><span>ChatApp</span><span>TurfMap (Leaflet)</span><span>charts</span><span>RosterEditor</span><span>TeamEditor</span><span>LoginForm</span><span>NativeBridge</span><span>ActionForm</span><span>ImagePicker</span><span>CompareBar</span></div>
   <div class="layer l-entry"><b>Server entry points</b>
-    <span>/api/auth (OTP, next-auth)</span><span>/api/bookings (+ cancel, dispute, roster, ics)</span><span>/api/payments (order, verify, webhook, mock)</span><span>/api/turfs/[id] (availability, quote)</span><span>/api/teams · /api/player-posts · /api/reviews</span><span>/api/conversations</span><span>/api/notifications · /api/devices</span><span>/api/account · /api/owner/analytics/export</span><span>/api/cron/tick · /api/health</span><span>Server actions: owner/actions.ts, admin/actions.ts</span></div>
+    <span>/api/auth (OTP, next-auth)</span><span>/api/bookings (+ cancel, dispute, roster, ics)</span><span>/api/payments (order, verify, webhook, mock)</span><span>/api/turfs/[id] (availability, quote)</span><span>/api/teams · /api/player-posts · /api/reviews</span><span>/api/conversations</span><span>/api/bookings/[id]/split · /api/split/[token] (+ pay)</span><span>/api/notifications · /api/devices</span><span>/api/account · /api/owner/analytics/export</span><span>/api/cron/tick · /api/health</span><span>Server actions: owner/actions.ts, admin/actions.ts</span></div>
   <div class="layer l-guard"><b>Guards (every request)</b>
     <span>auth.ts: pageUser · requireUser(role) · requireTurfAccess</span><span>zod schemas</span><span>errors.ts: AppError → JSON</span><span>http.ts: clientIp (rate limits)</span><span>next.config: CSP, HSTS, frame deny</span></div>
   <div class="layer l-domain"><b>Domain logic (src/lib)</b>
-    <span><i>engine/</i> allocation · slots · pricing · policy · booking</span><span><i>payments/</i> razorpay · service · refunds</span><span><i>notifications/</i> providers · service</span><span>push</span><span>chat</span><span>analytics</span><span>teams</span><span>search</span><span>otp</span><span>account</span><span>owner · business · settings</span><span>time (IST) · format · share</span></div>
-  <div class="layer l-data"><b>Data</b><span>db.ts: one Prisma client</span><span>PostgreSQL 16: 37 tables, 4 migrations</span><span>EXCLUDE + CHECK constraints</span><span>money in paise, times in UTC</span></div>
+    <span><i>engine/</i> allocation · slots · pricing · policy · split · booking</span><span><i>payments/</i> razorpay · service · refunds</span><span><i>notifications/</i> providers · service</span><span>push</span><span>split</span><span>chat</span><span>analytics</span><span>teams</span><span>search</span><span>otp</span><span>account</span><span>owner · business · settings</span><span>time (IST) · format · share</span></div>
+  <div class="layer l-data"><b>Data</b><span>db.ts: one Prisma client</span><span>PostgreSQL 16: 39 tables, 5 migrations</span><span>EXCLUDE + CHECK constraints</span><span>money in paise, times in UTC</span></div>
 </div>
 """
 
@@ -401,7 +416,7 @@ FEATURES = [
         ("iPhone app from the same Capacitor project", "Reaches iOS users; needs a Mac and Apple account", "M", "Android only"),
     ]),
     ("Players", [
-        ("Split payment: each player pays a share by UPI link", "Organiser no longer fronts the full cost; used by Playtomic", "M", "Schema ready"),
+        ("Split payment: each player pays a share by UPI link", "Organiser no longer fronts the full cost; used by Playtomic", "M", "Built (Nov 2026)"),
         ("Slot alerts / waitlist: 'tell me if 7 PM frees up'", "Fills cancelled slots in minutes; a gap players ask for in other apps", "S", "Not built"),
         ("Recurring weekly bookings (same slot every Tuesday)", "Office groups and regular teams book once for the month", "M", "Not built"),
         ("Rain-out credit for the monsoon (June to September)", "Owner declares a washout → automatic credit or free reschedule; builds trust in Kerala", "S", "Not built"),
@@ -499,13 +514,13 @@ Everything else (payments, SMS, WhatsApp, email, push) is a third-party service 
 <tr><td>Web app</td><td>Next.js 15.5 (App Router), React 19, TypeScript, Tailwind CSS</td><td><code>src/app</code>, <code>src/components</code></td></tr>
 <tr><td>Android app</td><td>Capacitor 8 WebView shell, Java <code>MainActivity</code></td><td><code>mobile/</code></td></tr>
 <tr><td>Auth</td><td>next-auth 4 (JWT cookie), phone OTP, optional Google</td><td><code>src/lib/auth.ts</code>, <code>src/lib/otp.ts</code></td></tr>
-<tr><td>Database</td><td>PostgreSQL 16 via Prisma 5 (37 tables, 4 migrations)</td><td><code>prisma/</code>, <code>src/lib/db.ts</code></td></tr>
+<tr><td>Database</td><td>PostgreSQL 16 via Prisma 5 (39 tables, 5 migrations)</td><td><code>prisma/</code>, <code>src/lib/db.ts</code></td></tr>
 <tr><td>Booking engine</td><td>Pure TypeScript rules + DB constraint for concurrency</td><td><code>src/lib/engine/</code></td></tr>
 <tr><td>Payments</td><td>Razorpay Orders + Checkout.js + webhooks, refunds API</td><td><code>src/lib/payments/</code></td></tr>
 <tr><td>Notifications</td><td>Job table + cron; in-app, FCM push, MSG91 SMS, WhatsApp Cloud API, Resend email</td><td><code>src/lib/notifications/</code>, <code>src/lib/push.ts</code></td></tr>
 <tr><td>Maps</td><td>Leaflet + OpenStreetMap tiles; directions open Google Maps</td><td><code>TurfMap.tsx</code></td></tr>
 <tr><td>Validation</td><td>zod 4 on every API body and server action</td><td>each route</td></tr>
-<tr><td>Tests</td><td>Vitest: 30 unit tests, 22 database integration tests</td><td><code>tests/</code></td></tr>
+<tr><td>Tests</td><td>Vitest: 34 unit tests, 27 database integration tests</td><td><code>tests/</code></td></tr>
 <tr><td>Delivery</td><td>GitHub, Actions CI (type check, tests, build), Android APK workflow, Dockerfile</td><td><code>.github/workflows</code></td></tr>
 </table>
 <h3>Design rules the whole system follows</h3>
@@ -529,7 +544,7 @@ section("Deployment today", f"""
 <tr><td>PostgreSQL 16</td><td>Windows service (automatic)</td><td>All data. User <code>turfly</code>, database <code>turfly</code>, port 5432, not exposed outside the PC.</td></tr>
 </table>
 <div class="warn">Limits of this setup: the site is down whenever the PC sleeps, restarts or loses internet; the URL changes when cloudflared restarts
-(the Android app has the URL built in); there are no off-site backups. Section 13 shows the production layout that removes these limits.</div>
+(the Android app has the URL built in); there are no off-site backups. Section 14 shows the production layout that removes these limits.</div>
 """)
 
 section("Code layers", f"""
@@ -554,7 +569,7 @@ section("Data model", f"""
 <tr><td>Identity</td><td>User (PLAYER / OWNER / ADMIN), OtpCode, DeviceToken (push), AuditLog</td></tr>
 <tr><td>Venues</td><td>City, Turf, OperatingHours, ResourceUnit, PitchConfig, PitchConfigUnit, PricingRule, TurfClaim, Review</td></tr>
 <tr><td>Bookings</td><td>Booking (HELD, CONFIRMED, CANCELLED, EXPIRED, COMPLETED, NO_SHOW; source ONLINE, WALK_IN, PHONE), Occupancy, SlotBlock, Dispute</td></tr>
-<tr><td>Money</td><td>Payment, Refund, WebhookEvent, LedgerEntry, Offer, PlatformSetting</td></tr>
+<tr><td>Money</td><td>Payment, Refund, WebhookEvent, LedgerEntry, Offer, PlatformSetting, SplitPlan, SplitShare</td></tr>
 <tr><td>Community</td><td>Team, TeamMember, TeamEvent, MatchPlayer, MatchResult, PlayerPost, PlayerPostRequest</td></tr>
 <tr><td>Messaging</td><td>Conversation, Message, Notification, NotificationJob</td></tr>
 <tr><td>Planned (schema only)</td><td>Tournament, TournamentTeam, Fixture</td></tr>
@@ -609,8 +624,24 @@ section("Booking lifecycle", f"""
 <tr><td>Player cancels</td><td><code>policy.ts</code> tiers decide the refund (shown in plain words before paying); units released.</td></tr>
 <tr><td>Owner cancels</td><td>Refund of the owner-cancel percentage in the turf's policy (100% by default); player notified.</td></tr>
 <tr><td>Reschedule</td><td>Old units released and new ones locked in one transaction; if the new slot is taken the whole change rolls back.</td></tr>
+<tr><td>Friends paid split shares, then the booking is cancelled</td><td>Every share is refunded in full; the organiser's advance follows the policy.</td></tr>
 <tr><td>Dispute</td><td>Player raises it from the booking page; admin resolves it in the admin console.</td></tr>
 </table>
+""")
+
+section("Split payments", f"""
+{SEQ_SPLIT}
+<ul>
+<li><b>Maths:</b> the venue price after discount is split into equal whole-rupee shares. Friends pay theirs online; the organiser keeps the remainder,
+which their ₹49 advance already counts towards. Friends are never asked for more than the balance due at the venue.</li>
+<li><b>Last-share race:</b> a friend claims a share for 10 minutes while paying (<code>FOR UPDATE SKIP LOCKED</code>), so two people can't pay for the same one.
+Claims expire, so an abandoned checkout frees the share again.</li>
+<li><b>Webhook only:</b> a share is marked paid only by the verified Razorpay webhook. If it can no longer be paid (all taken, split stopped, booking cancelled,
+balance settled at the venue) the payment is refunded in full automatically. One share per person is enforced by a unique index.</li>
+<li><b>Money:</b> each paid share lowers <code>balanceDue</code>, raises <code>splitCollected</code> and writes a <code>SPLIT_COLLECTED</code> ledger row owed to the turf.
+Owner dashboards and analytics count it as collected online.</li>
+<li><b>Cancellation:</b> every paid share is refunded in full; the organiser's own advance follows the cancellation policy. The split can be changed or stopped only while nobody has paid.</li>
+</ul>
 """)
 
 section("Background work and notifications", f"""
@@ -676,7 +707,7 @@ monsoon rain-out credits and a Malayalam interface. Effort: <span class="chip eS
 <span class="chip eM">M</span> 1 to 2 weeks, <span class="chip eL">L</span> 3+ weeks.</p>
 {features_html()}
 <div class="note"><b>Suggested order:</b> 1) permanent hosting, backups and monitoring; 2) Razorpay Route settlement; 3) slot alerts + last-minute deals;
-4) split payments; 5) rain-out credits and the wallet; 6) Malayalam.</div>
+4) rain-out credits and the wallet; 5) Malayalam. Split payments are built (section 9).</div>
 <p class="small muted">Sources: Playtomic help centre (open matches, split payment, level requests); Playo, Hudle and KheloMore store listings; Turf Town
 business model write-up (smarther.co); club-management software listings on Capterra India. Feature availability changes often; check before relying on it.</p>
 """)

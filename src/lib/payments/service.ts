@@ -5,6 +5,7 @@ import { confirmFromPayment } from "../engine/booking";
 import { notifyInApp } from "../notifications/service";
 import { createOrder, providerName, verifyCheckoutSignature } from "./razorpay";
 import { refundBooking } from "./refunds";
+import { onShareCaptured } from "../split";
 
 /**
  * Creates (or reuses) the gateway order for a held booking.
@@ -17,7 +18,7 @@ export async function createPaymentOrder(user: User, bookingId: string) {
     throw new AppError(410, "Your hold on this slot has expired. Please select the slot again.", "HOLD_EXPIRED");
   if (b.onlineAmount <= 0) throw new AppError(400, "Nothing to pay");
 
-  const existing = await prisma.payment.findFirst({ where: { bookingId, status: "CREATED", amount: b.onlineAmount }, orderBy: { createdAt: "desc" } });
+  const existing = await prisma.payment.findFirst({ where: { bookingId, status: "CREATED", amount: b.onlineAmount, purpose: { not: "SPLIT_SHARE" } }, orderBy: { createdAt: "desc" } });
   if (existing) return { payment: existing, booking: b };
 
   const order = await createOrder(b.onlineAmount, b.code, { bookingId: b.id, code: b.code });
@@ -80,11 +81,15 @@ async function onCaptured(p: RzpPaymentEntity) {
     data: { status: "CAPTURED", providerPaymentId: p.id, method: p.method, capturedAt: new Date(), failureReason: null },
   });
   if (count === 0) return; // already captured (duplicate event)
+  if (payment.purpose === "SPLIT_SHARE") {
+    await onShareCaptured(payment);
+    return;
+  }
 
   // Duplicate payment on the same booking (e.g. paid in two tabs): the earliest capture wins,
   // every later one refunds itself. Deterministic ordering means only one side ever refunds.
   const captured = await prisma.payment.findMany({
-    where: { bookingId: payment.bookingId, capturedAt: { not: null } },
+    where: { bookingId: payment.bookingId, capturedAt: { not: null }, purpose: { not: "SPLIT_SHARE" } },
     orderBy: [{ capturedAt: "asc" }, { id: "asc" }],
     select: { id: true },
   });

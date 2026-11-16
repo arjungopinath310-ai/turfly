@@ -16,7 +16,7 @@ async function load(userId: string, id: string) {
 export const GET = handle(async (_req, { params }) => {
   const user = await requireUser();
   const b = await load(user.id, params.id);
-  const paid = b.payments.filter((p) => p.status === "CAPTURED").reduce((a, p) => a + p.amount - p.refundedAmount, 0);
+  const paid = b.payments.filter((p) => p.status === "CAPTURED" && p.purpose !== "SPLIT_SHARE").reduce((a, p) => a + p.amount - p.refundedAmount, 0);
   return NextResponse.json(customerRefund(parsePolicy(b.policySnapshot), paid, b.startAt));
 });
 

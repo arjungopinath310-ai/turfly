@@ -25,6 +25,8 @@ export default async function Refunds() {
         <li>If a payment was taken but the slot could not be confirmed (for example the hold expired and someone else booked it), or you were charged twice, the full amount is refunded automatically.</li>
         <li>The amount paid at the venue is between you and the turf and is refunded by the turf if the match does not take place for reasons on their side.</li>
       </ul>
+      <H>Split payments</H>
+      <p>When an organiser splits a booking, each friend pays their share online through {b.brand}. Shares reduce the balance the organiser pays at the venue. If the booking is cancelled, by the organiser or the turf, every friend&apos;s share is refunded in full; the organiser&apos;s own advance follows the policy above. If a share is paid after every share was already taken or the split was closed, that payment is refunded in full automatically.</p>
       <H>Turf cancellations</H>
       <p>If the turf cancels or reschedules a booking you don’t accept, you receive a full refund of everything paid online ({rupees(s.advanceAmountPaise)} advance by default).</p>
       <H>Problems</H>
