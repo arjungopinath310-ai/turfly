@@ -7,7 +7,10 @@ import { haversineKm } from "@/lib/search";
 import { formatMinute, todayIst } from "@/lib/time";
 import { AvailabilityBadge, Empty, Stars } from "@/components/ui";
 
-export default async function Compare({ searchParams }: { searchParams: { ids?: string; lat?: string; lng?: string } }) {
+export default async function Compare(
+  props: { searchParams: Promise<{ ids?: string; lat?: string; lng?: string }> }
+) {
+  const searchParams = await props.searchParams;
   const ids = (searchParams.ids ?? "").split(",").filter(Boolean).slice(0, 3);
   const turfs = await prisma.turf.findMany({
     where: { id: { in: ids }, status: { in: ["APPROVED", "UNCLAIMED"] } },

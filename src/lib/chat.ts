@@ -2,6 +2,7 @@ import type { User } from "@prisma/client";
 import { prisma } from "./db";
 import { AppError } from "./errors";
 import { displayName } from "./format";
+import { queuePush } from "./push";
 
 /**
  * Player ↔ turf chat.
@@ -75,6 +76,9 @@ export async function sendMessage(user: User, conversationId: string, raw: strin
   const body = cleanBody(raw);
   await rateLimit(user.id);
   const now = new Date();
+  const recipientId = role === "player" ? c.turf.ownerId : c.playerId;
+  const link = `/messages?c=${c.id}`;
+  const pushTitle = role === "player" ? `New message from ${displayName(user)} · ${c.turf.name}` : `${c.turf.name} replied`;
   const msg = await prisma.$transaction(async (tx) => {
     const m = await tx.message.create({ data: { conversationId: c.id, senderId: user.id, body } });
     await tx.conversation.update({
@@ -87,17 +91,14 @@ export async function sendMessage(user: User, conversationId: string, raw: strin
       },
     });
     // One in-app notification per unread burst: skip if the recipient already has an unread one for this chat.
-    const recipientId = role === "player" ? c.turf.ownerId : c.playerId;
+    // (The phone push below is sent for every message, but tagged per chat so it replaces the previous one.)
     if (recipientId && recipientId !== user.id) {
-      const link = `/messages?c=${c.id}`;
       const pending = await tx.notification.findFirst({ where: { userId: recipientId, link, readAt: null } });
-      if (!pending)
-        await tx.notification.create({
-          data: { userId: recipientId, title: role === "player" ? `New message from ${displayName(user)} · ${c.turf.name}` : `${c.turf.name} replied`, body: body.slice(0, 120), link },
-        });
+      if (!pending) await tx.notification.create({ data: { userId: recipientId, title: pushTitle, body: body.slice(0, 120), link } });
     }
     return m;
   });
+  if (recipientId && recipientId !== user.id) queuePush(recipientId, { title: pushTitle, body: body.slice(0, 200), link, tag: `chat-${c.id}` });
   return msg;
 }
 

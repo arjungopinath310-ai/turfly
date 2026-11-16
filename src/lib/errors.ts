@@ -23,10 +23,11 @@ export function isExclusionViolation(e: unknown): boolean {
   );
 }
 
+/** Wraps a route handler: awaits Next 15's async params and turns domain errors into JSON responses. */
 export function handle(fn: (req: Request, ctx: { params: Record<string, string> }) => Promise<Response>) {
-  return async (req: Request, ctx: { params: Record<string, string> }) => {
+  return async (req: Request, ctx: { params: Promise<Record<string, string>> }) => {
     try {
-      return await fn(req, ctx);
+      return await fn(req, { params: (await ctx?.params) ?? {} });
     } catch (e) {
       return errorResponse(e);
     }

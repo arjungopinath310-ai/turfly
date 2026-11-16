@@ -10,7 +10,10 @@ import { TurfSwitcher } from "@/components/TurfSwitcher";
 import { MessageButton } from "@/components/MessageButton";
 import { collectBalance, markNoShow, ownerCancel, ownerReschedule } from "../actions";
 
-export default async function OwnerBookings({ searchParams }: { searchParams: { turf?: string; tab?: string; focus?: string; q?: string } }) {
+export default async function OwnerBookings(
+  props: { searchParams: Promise<{ turf?: string; tab?: string; focus?: string; q?: string }> }
+) {
+  const searchParams = await props.searchParams;
   const user = await pageUser("/owner/bookings");
   const turfs = await manageableTurfs(user);
   const sel = pickTurf(turfs, searchParams.turf);

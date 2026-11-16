@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { ChatApp } from "@/components/ChatApp";
 
-export default async function MessagesPage({ searchParams }: { searchParams: { c?: string } }) {
+export default async function MessagesPage(props: { searchParams: Promise<{ c?: string }> }) {
+  const searchParams = await props.searchParams;
   const user = await currentUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(searchParams.c ? `/messages?c=${searchParams.c}` : "/messages")}`);
   return (

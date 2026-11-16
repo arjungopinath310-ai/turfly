@@ -43,7 +43,10 @@ function Kpi({ label, value, cur, prev, upIsGood = true, hint, hero = false }: {
   );
 }
 
-export default async function OwnerAnalytics({ searchParams }: { searchParams: { turf?: string; range?: string; from?: string; to?: string } }) {
+export default async function OwnerAnalytics(
+  props: { searchParams: Promise<{ turf?: string; range?: string; from?: string; to?: string }> }
+) {
+  const searchParams = await props.searchParams;
   const user = await pageUser("/owner/analytics");
   const turfs = await manageableTurfs(user);
   const sel = pickTurf(turfs, searchParams.turf);

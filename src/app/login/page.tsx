@@ -1,7 +1,8 @@
 import { googleEnabled } from "@/lib/auth";
 import { LoginForm } from "@/components/LoginForm";
 
-export default function LoginPage({ searchParams }: { searchParams: { next?: string } }) {
+export default async function LoginPage(props: { searchParams: Promise<{ next?: string }> }) {
+  const searchParams = await props.searchParams;
   const next = searchParams.next?.startsWith("/") ? searchParams.next : "/";
   return (
     <div className="mx-auto grid min-h-[70vh] max-w-md place-items-center px-4 py-12">

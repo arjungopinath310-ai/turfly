@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { POSITIONS } from "@/lib/brand";
 import { PageHeader } from "@/components/ui";
 import { formatPhone } from "@/lib/format";
+import { AccountData } from "@/components/AccountData";
 
 async function save(fd: FormData) {
   "use server";
@@ -28,7 +29,8 @@ async function save(fd: FormData) {
   if (next.startsWith("/") && !next.startsWith("//")) redirect(next);
 }
 
-export default async function Profile({ searchParams }: { searchParams: { welcome?: string; next?: string } }) {
+export default async function Profile(props: { searchParams: Promise<{ welcome?: string; next?: string }> }) {
+  const searchParams = await props.searchParams;
   const user = await currentUser();
   if (!user) redirect("/login?next=/profile");
   const next = searchParams.next?.startsWith("/") && !searchParams.next.startsWith("//") ? searchParams.next : "";
@@ -65,6 +67,11 @@ export default async function Profile({ searchParams }: { searchParams: { welcom
         {user.referralCode && <p className="text-sm text-slate-600">Your referral code: <b className="font-mono">{user.referralCode}</b></p>}
         <button className="btn-primary">{next ? "Save & continue" : "Save"}</button>
       </form>
+      {!searchParams.welcome && (
+        <div className="mt-6">
+          <AccountData />
+        </div>
+      )}
     </div>
   );
 }

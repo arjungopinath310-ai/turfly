@@ -4,7 +4,8 @@ import { currentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { JoinTeamButton } from "@/components/JoinTeamButton";
 
-export default async function JoinTeam({ params }: { params: { token: string } }) {
+export default async function JoinTeam(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const team = await prisma.team.findUnique({
     where: { inviteToken: params.token },
     include: { owner: { select: { name: true } }, _count: { select: { members: { where: { status: { not: "REMOVED" } } } } } },

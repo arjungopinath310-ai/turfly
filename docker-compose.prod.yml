@@ -1,0 +1,61 @@
+# Full Turfly stack for a server (cloud VM or this PC).
+#   cp .env.example .env.production   # fill in real values (see docs/PRODUCTION.md)
+#   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+#
+# Services: db (PostgreSQL 16, persistent volume) → migrate (one-off: migrations + first seed)
+#           → app (website + API) → cron (reminders/housekeeping every minute)
+#           → tunnel (optional: Cloudflare named tunnel giving a permanent https address, profile "tunnel")
+name: turfly
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-turfly}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-turfly}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-turfly} -d ${POSTGRES_DB:-turfly}"]
+      interval: 5s
+      retries: 20
+
+  migrate:
+    build: { context: ., target: build }
+    env_file: .env.production
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-turfly}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-turfly}?schema=public
+    command: sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts"
+    depends_on: { db: { condition: service_healthy } }
+    restart: "no"
+
+  app:
+    build: { context: ., target: run }
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-turfly}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-turfly}?schema=public
+    ports: ["127.0.0.1:3000:3000"]  # only reachable locally / through the tunnel or a reverse proxy
+    depends_on:
+      db: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+
+  cron:
+    image: curlimages/curl:8.10.1
+    restart: unless-stopped
+    env_file: .env.production
+    entrypoint: ["/bin/sh", "-c", 'while true; do curl -fsS -X POST -H "authorization: Bearer $$CRON_SECRET" http://app:3000/api/cron/tick || true; sleep 60; done']
+    depends_on: [app]
+
+  tunnel:
+    image: cloudflare/cloudflared:2024.11.1
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN for the tunnel profile}
+    depends_on: [app]
+
+volumes:
+  pgdata:

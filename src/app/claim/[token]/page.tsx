@@ -5,7 +5,8 @@ import { prisma } from "@/lib/db";
 import { ActionForm } from "@/components/ActionForm";
 import { claimListing } from "@/app/owner/actions";
 
-export default async function ClaimPage({ params }: { params: { token: string } }) {
+export default async function ClaimPage(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const turf = await prisma.turf.findUnique({ where: { claimToken: params.token }, include: { city: true } });
   if (!turf || turf.status !== "UNCLAIMED") notFound();
   const user = await currentUser();

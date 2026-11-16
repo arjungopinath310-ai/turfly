@@ -7,7 +7,8 @@ import { formatDateLong, formatTimeRange } from "@/lib/time";
 import { mockAllowed } from "@/lib/payments/razorpay";
 import { Checkout } from "@/components/Checkout";
 
-export default async function CheckoutPage({ params }: { params: { id: string } }) {
+export default async function CheckoutPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await currentUser();
   if (!user) redirect(`/login?next=/checkout/${params.id}`);
   const b = await prisma.booking.findUnique({ where: { id: params.id }, include: { turf: { include: { city: true } }, config: true, team: true } });

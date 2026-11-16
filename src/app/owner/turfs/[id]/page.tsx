@@ -17,7 +17,11 @@ import {
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const hhmm = (m: number) => `${String(Math.floor((m % 1440) / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 
-export default async function TurfSettings({ params, searchParams }: { params: { id: string }; searchParams: { created?: string } }) {
+export default async function TurfSettings(
+  props: { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string }> }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const { turf: t } = await requireTurfAccess(params.id).catch(() => notFound());
   const [turf, cities, settings] = await Promise.all([
     prisma.turf.findUniqueOrThrow({

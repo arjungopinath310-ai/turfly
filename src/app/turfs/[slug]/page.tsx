@@ -15,7 +15,8 @@ import { MessageButton } from "@/components/MessageButton";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default async function TurfPage({ params }: { params: { slug: string } }) {
+export default async function TurfPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const turf = await prisma.turf.findUnique({
     where: { slug: params.slug },
     include: {

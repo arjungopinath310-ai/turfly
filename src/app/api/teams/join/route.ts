@@ -1,3 +1,4 @@
+import { createNotification } from "@/lib/notifications/service";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
@@ -23,7 +24,7 @@ export const POST = handle(async (req) => {
         data: { teamId: team.id, userId: user.id, name: user.name ?? "Player", phone: user.phone, email: user.email, position: user.preferredPosition, status: "ACTIVE" },
       });
     await tx.teamEvent.create({ data: { teamId: team.id, type: "MEMBER_JOINED", detail: `${user.name ?? "A player"} joined via invite` } });
-    await tx.notification.create({ data: { userId: team.ownerId, title: `${user.name ?? "A player"} joined ${team.name}`, body: "Accepted your team invite", link: `/teams/${team.id}` } });
+    await createNotification(tx, { userId: team.ownerId, title: `${user.name ?? "A player"} joined ${team.name}`, body: "Accepted your team invite", link: `/teams/${team.id}` });
   });
   return NextResponse.json({ teamId: team.id });
 });

@@ -39,6 +39,12 @@ async function main() {
 
   const adminPhone = (process.env.ADMIN_PHONES ?? "+919999999999").split(",")[0].trim();
   await prisma.user.upsert({ where: { phone: adminPhone }, update: { role: "ADMIN" }, create: { phone: adminPhone, name: "Platform Admin", role: "ADMIN", referralCode: tok().slice(0, 6) } });
+
+  // Production: SEED_DEMO=false creates only cities and the admin, with no fictional turfs or demo accounts.
+  if (process.env.SEED_DEMO === "false") {
+    console.log(`Seeded cities and admin ${adminPhone}. Demo data skipped (SEED_DEMO=false).`);
+    return;
+  }
   const owner = await prisma.user.upsert({ where: { phone: "+919000000001" }, update: {}, create: { phone: "+919000000001", name: "Demo Owner", role: "OWNER", referralCode: tok().slice(0, 6) } });
   await prisma.user.upsert({ where: { phone: "+919000000002" }, update: {}, create: { phone: "+919000000002", name: "Demo Player", referralCode: tok().slice(0, 6) } });
 

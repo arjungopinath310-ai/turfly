@@ -42,3 +42,8 @@ body { @apply bg-slate-50 text-slate-900 antialiased; }
   --viz-s2: #eb6834; /* orange */
   --viz-s3: #1baf7a; /* aqua */
 }
+
+/* Phones with notches / Android edge-to-edge: keep content clear of the status and navigation bars */
+/* Capacitor's SystemBars plugin injects --safe-area-inset-* in the Android app; browsers provide env(). */
+.safe-bottom { padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom)); }
+header.sticky { padding-top: var(--safe-area-inset-top, env(safe-area-inset-top)); }

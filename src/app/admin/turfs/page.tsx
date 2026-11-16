@@ -6,7 +6,8 @@ import { ActionForm } from "@/components/ActionForm";
 import { StatusBadge } from "@/components/ui";
 import { addUnclaimedTurf, reviewClaim, reviewTurf, updateTurfAdmin } from "../actions";
 
-export default async function AdminTurfs({ searchParams }: { searchParams: { status?: string } }) {
+export default async function AdminTurfs(props: { searchParams: Promise<{ status?: string }> }) {
+  const searchParams = await props.searchParams;
   await pageUser("/admin/turfs", ["ADMIN"]);
   const [pending, claims, turfs, cities] = await Promise.all([
     prisma.turf.findMany({ where: { status: "PENDING_REVIEW" }, include: { owner: true, city: true, configs: true }, orderBy: { updatedAt: "asc" } }),

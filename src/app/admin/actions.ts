@@ -1,4 +1,5 @@
 "use server";
+import { createNotification } from "@/lib/notifications/service";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
@@ -106,7 +107,7 @@ export async function reviewClaim(_: ActionState, fd: FormData): Promise<ActionS
         if (c.user.role === "PLAYER") await tx.user.update({ where: { id: c.userId }, data: { role: "OWNER" } });
         await tx.turfClaim.updateMany({ where: { turfId: c.turfId, status: "PENDING", id: { not: c.id } }, data: { status: "REJECTED", reviewNote: "Another claim was approved" } });
       }
-      await tx.notification.create({ data: { userId: c.userId, title: `Claim ${decision.toLowerCase()}: ${c.turf.name}`, body: note ?? (decision === "APPROVED" ? "Set up pitches and hours, then submit for approval." : ""), link: decision === "APPROVED" ? `/owner/turfs/${c.turfId}` : undefined } });
+      await createNotification(tx, { userId: c.userId, title: `Claim ${decision.toLowerCase()}: ${c.turf.name}`, body: note ?? (decision === "APPROVED" ? "Set up pitches and hours, then submit for approval." : ""), link: decision === "APPROVED" ? `/owner/turfs/${c.turfId}` : undefined });
     });
     await audit(a.id, `CLAIM_${decision}`, "TurfClaim", c.id);
     revalidatePath("/admin/turfs");

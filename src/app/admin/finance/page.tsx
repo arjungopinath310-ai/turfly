@@ -7,7 +7,8 @@ import { ActionForm } from "@/components/ActionForm";
 import { StatusBadge } from "@/components/ui";
 import { adminRefund, resolveDispute } from "../actions";
 
-export default async function Finance({ searchParams }: { searchParams: { q?: string } }) {
+export default async function Finance(props: { searchParams: Promise<{ q?: string }> }) {
+  const searchParams = await props.searchParams;
   await pageUser("/admin/finance", ["ADMIN"]);
   const q = searchParams.q?.trim();
   const [disputes, payments, refunds, webhooks] = await Promise.all([

@@ -28,6 +28,7 @@ model User {
   preferredPosition     String?
   shareContactWithTeams Boolean   @default(false) // consent to show phone to teammates
   isSuspended           Boolean   @default(false)
+  deletedAt             DateTime? // account deleted by the user: personal data erased, financial records kept
   referralCode          String?   @unique
   referredById          String?
   createdAt             DateTime  @default(now())
@@ -47,11 +48,13 @@ model User {
   matchPlayers    MatchPlayer[]
   conversations   Conversation[]     @relation("ConversationPlayer")
   messagesSent    Message[]
+  devices         DeviceToken[]
 }
 
 model OtpCode {
   id         String    @id @default(cuid())
   phone      String
+  ip         String?   // requester IP, for SMS-pumping protection
   codeHash   String
   expiresAt  DateTime
   attempts   Int       @default(0)
@@ -59,6 +62,22 @@ model OtpCode {
   createdAt  DateTime  @default(now())
 
   @@index([phone, createdAt])
+  @@index([ip, createdAt])
+  @@index([createdAt])
+}
+
+/// Push-notification token of an installed app (Firebase Cloud Messaging).
+model DeviceToken {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token      String   @unique
+  platform   String   // "android" | "ios" | "web"
+  appVersion String?
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // ───────────────────────────── Geography ─────────────────────────────

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 import { UserRound } from "lucide-react";
+import { forgetPushToken } from "./NativeBridge";
 
 export function UserMenu({ name, hasName, role }: { name: string; hasName: boolean; role: string }) {
   const [open, setOpen] = useState(false);
@@ -25,7 +26,7 @@ export function UserMenu({ name, hasName, role }: { name: string; hasName: boole
           <Link className={`${item} md:hidden`} href="/find-players">Find players</Link>
           <Link className={item} href="/owner">{role === "PLAYER" ? "List your turf" : "Owner dashboard"}</Link>
           {role === "ADMIN" && <Link className={item} href="/admin">Admin</Link>}
-          <button className="block w-full px-4 py-2 text-left text-red-600 hover:bg-red-50" onClick={() => signOut({ callbackUrl: "/" })}>
+          <button className="block w-full px-4 py-2 text-left text-red-600 hover:bg-red-50" onClick={async () => { await forgetPushToken(); await signOut({ callbackUrl: "/" }); }}>
             Sign out
           </button>
         </div>

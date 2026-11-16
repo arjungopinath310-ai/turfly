@@ -8,6 +8,9 @@ Discover, compare and book football turfs, starting in **Manjeri, Kerala**. Buil
 
 📘 **[How the app works (PDF guide)](docs/Turfly-How-It-Works.pdf)**: players, owners, admin, booking rules, hosting and go-live checklist.
 
+📱 **Android app:** [docs/ANDROID.md](docs/ANDROID.md) (Capacitor app in `mobile/`, package `in.turfly.app`).
+🚀 **Going live:** [docs/PRODUCTION.md](docs/PRODUCTION.md): what is production-ready, what you need to provide, Docker deployment.
+
 Read **[docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md)** (decisions made before building) and **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** (booking engine, payments, security, deployment, roadmap).
 
 ## Quick start (local)

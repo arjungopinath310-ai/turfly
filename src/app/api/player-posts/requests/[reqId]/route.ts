@@ -1,3 +1,4 @@
+import { createNotification } from "@/lib/notifications/service";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
@@ -19,14 +20,12 @@ export const POST = handle(async (req, { params }) => {
       const accepted = await tx.playerPostRequest.count({ where: { postId: r.postId, status: "ACCEPTED" } });
       if (accepted >= r.post.playersNeeded) await tx.playerPost.update({ where: { id: r.postId }, data: { status: "FILLED" } });
     }
-    await tx.notification.create({
-      data: {
+    await createNotification(tx, {
         userId: r.userId,
         title: decision === "ACCEPTED" ? "You're in! Request accepted" : "Request declined",
         body: decision === "ACCEPTED" ? "The organiser added you to the match. Check your notifications for details." : "The organiser couldn't fit you in this time.",
         link: r.post.bookingId ? `/find-players` : undefined,
-      },
-    });
+      });
   });
   return NextResponse.json({ ok: true });
 });

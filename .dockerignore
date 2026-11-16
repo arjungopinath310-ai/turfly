@@ -1,0 +1,14 @@
+node_modules
+.next
+.next-*
+.git
+.env
+.env.*
+!.env.example
+mobile/android
+mobile/node_modules
+docs
+tests
+coverage
+*.log
+.claude

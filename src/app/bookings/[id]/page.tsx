@@ -12,7 +12,11 @@ import { RosterEditor } from "@/components/RosterEditor";
 import { BookingActions } from "@/components/BookingActions";
 import { MessageButton } from "@/components/MessageButton";
 
-export default async function BookingPage({ params, searchParams }: { params: { id: string }; searchParams: { new?: string } }) {
+export default async function BookingPage(
+  props: { params: Promise<{ id: string }>; searchParams: Promise<{ new?: string }> }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const user = await currentUser();
   if (!user) redirect(`/login?next=/bookings/${params.id}`);
   const b = await prisma.booking.findUnique({

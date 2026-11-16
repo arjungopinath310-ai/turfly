@@ -1,12 +1,12 @@
 "use client";
-import { useFormState, useFormStatus } from "react-dom";
-import { useTransition, useState } from "react";
+import { useFormStatus } from "react-dom";
+import { useActionState, useTransition, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 type State = { ok?: string; error?: string } | null;
 
 export function ActionForm({ action, children, className, submit = "Save", submitClass = "btn-primary" }: { action: (s: State, fd: FormData) => Promise<State>; children: React.ReactNode; className?: string; submit?: string | null; submitClass?: string }) {
-  const [state, formAction] = useFormState(action, null);
+  const [state, formAction] = useActionState(action, null);
   return (
     <form action={formAction} className={className}>
       {children}

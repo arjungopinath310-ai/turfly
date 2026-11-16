@@ -5,7 +5,8 @@ import { rupees } from "@/lib/engine/pricing";
 import { formatDateLong, formatIst, formatTimeRange } from "@/lib/time";
 import { PrintButton } from "@/components/PrintButton";
 
-export default async function ReceiptPage({ params }: { params: { id: string } }) {
+export default async function ReceiptPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await currentUser();
   if (!user) redirect("/login");
   const b = await prisma.booking.findUnique({

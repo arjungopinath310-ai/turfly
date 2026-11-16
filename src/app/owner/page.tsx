@@ -8,7 +8,8 @@ import { formatMinute, formatTimeRange, istParts, istToUtc, todayIst } from "@/l
 import { Empty, Stat, StatusBadge } from "@/components/ui";
 import { TurfSwitcher } from "@/components/TurfSwitcher";
 
-export default async function OwnerHome({ searchParams }: { searchParams: { turf?: string } }) {
+export default async function OwnerHome(props: { searchParams: Promise<{ turf?: string }> }) {
+  const searchParams = await props.searchParams;
   const user = await pageUser("/owner");
   const turfs = await manageableTurfs(user);
   const turf = pickTurf(turfs, searchParams.turf);

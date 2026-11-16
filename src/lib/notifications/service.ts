@@ -5,11 +5,19 @@ import { rupees } from "../engine/pricing";
 import { describePolicy, parsePolicy } from "../engine/policy";
 import { sendEmail, sendSms, sendWhatsApp } from "./providers";
 import { directionsUrl } from "../share";
+import { queuePush } from "../push";
 
 const APP = () => process.env.APP_URL ?? "http://localhost:3000";
 
+/** Every in-app notification goes through here, so it is also sent as a phone push when push is configured. */
+export async function createNotification(db: Tx, data: { userId: string; title: string; body: string; link?: string | null }) {
+  const n = await db.notification.create({ data: { ...data, link: data.link ?? undefined } });
+  queuePush(data.userId, { title: data.title, body: data.body, link: data.link });
+  return n;
+}
+
 export async function notifyInApp(db: Tx, userId: string, title: string, body: string, link?: string) {
-  await db.notification.create({ data: { userId, title, body, link } });
+  await createNotification(db, { userId, title, body, link });
 }
 
 /** Called inside the confirmation transaction. Idempotent thanks to @@unique(bookingId, template, channel). */

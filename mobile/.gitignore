@@ -1,0 +1,13 @@
+node_modules
+dist
+www/config.js
+www/icon.png
+android/app/build
+android/build
+android/.gradle
+android/local.properties
+android/app/google-services.json
+keystore.properties
+*.jks
+*.keystore
+.turfly-url

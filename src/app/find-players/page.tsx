@@ -6,7 +6,8 @@ import { formatDateLong, formatTimeRange } from "@/lib/time";
 import { Empty, PageHeader, StatusBadge } from "@/components/ui";
 import { JoinPostButton, RespondButtons } from "@/components/PostButtons";
 
-export default async function FindPlayers({ searchParams }: { searchParams: { city?: string; format?: string } }) {
+export default async function FindPlayers(props: { searchParams: Promise<{ city?: string; format?: string }> }) {
+  const searchParams = await props.searchParams;
   const user = await currentUser();
   const city = searchParams.city ?? "manjeri";
   const posts = await prisma.playerPost.findMany({

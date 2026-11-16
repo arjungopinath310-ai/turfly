@@ -5,7 +5,10 @@ import { TurfResults } from "@/components/TurfResults";
 import { CompareBar } from "@/components/CompareBar";
 import { LocateButton } from "@/components/LocateButton";
 
-export default async function TurfsPage({ searchParams: sp }: { searchParams: TurfFilters & { amenity?: string | string[] } }) {
+export default async function TurfsPage(
+  props: { searchParams: Promise<TurfFilters & { amenity?: string | string[] }> }
+) {
+  const sp = await props.searchParams;
   const amenity = sp.amenity ? ([] as string[]).concat(sp.amenity).join(",") : undefined;
   const searchParams: TurfFilters = { ...sp, amenities: sp.amenities ?? amenity };
   const [cities, rows] = await Promise.all([prisma.city.findMany({ where: { isActive: true } }), searchTurfs(searchParams)]);

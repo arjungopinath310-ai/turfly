@@ -4,7 +4,8 @@ import { formatIst } from "@/lib/time";
 import { ActionForm } from "@/components/ActionForm";
 import { updateUser } from "../actions";
 
-export default async function Users({ searchParams }: { searchParams: { q?: string; role?: string } }) {
+export default async function Users(props: { searchParams: Promise<{ q?: string; role?: string }> }) {
+  const searchParams = await props.searchParams;
   await pageUser("/admin/users", ["ADMIN"]);
   const q = searchParams.q?.trim();
   const users = await prisma.user.findMany({

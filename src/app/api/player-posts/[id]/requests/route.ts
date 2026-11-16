@@ -1,3 +1,4 @@
+import { createNotification } from "@/lib/notifications/service";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
@@ -16,8 +17,6 @@ export const POST = handle(async (req, { params }) => {
     create: { postId: post.id, userId: user.id, message },
     update: { message },
   });
-  await prisma.notification.create({
-    data: { userId: post.userId, title: `${user.name ?? "A player"} wants to join your match`, body: message ?? "", link: "/find-players?mine=1" },
-  });
+  await createNotification(prisma, { userId: post.userId, title: `${user.name ?? "A player"} wants to join your match`, body: message ?? "", link: "/find-players?mine=1" });
   return NextResponse.json({ ok: true }, { status: 201 });
 });

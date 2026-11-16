@@ -19,17 +19,30 @@ export function normalizePhone(raw: string): string | null {
 const hash = (phone: string, code: string) =>
   createHmac("sha256", process.env.NEXTAUTH_SECRET ?? "dev-secret").update(`${phone}:${code}`).digest("hex");
 
-export async function requestOtp(rawPhone: string): Promise<{ devCode?: string; serverLog?: boolean }> {
+const MAX_PER_IP_HOUR = 10;
+const globalPerHour = () => Number(process.env.OTP_GLOBAL_PER_HOUR ?? 500);
+
+export async function requestOtp(rawPhone: string, ip: string | null = null): Promise<{ devCode?: string; serverLog?: boolean }> {
   const phone = normalizePhone(rawPhone);
   if (!phone) throw new AppError(400, "Enter a valid 10-digit Indian mobile number");
   const hourAgo = new Date(Date.now() - 3_600_000);
+  // SMS-pumping protection: per-IP and platform-wide hourly ceilings on top of the per-phone limit.
+  const [byIp, total] = await Promise.all([
+    ip ? prisma.otpCode.count({ where: { ip, createdAt: { gt: hourAgo } } }) : Promise.resolve(0),
+    prisma.otpCode.count({ where: { createdAt: { gt: hourAgo } } }),
+  ]);
+  if (byIp >= MAX_PER_IP_HOUR) throw new AppError(429, "Too many sign-in attempts from this network. Please try again later.");
+  if (total >= globalPerHour()) {
+    console.error(`[otp] global hourly limit (${globalPerHour()}) reached; possible SMS-pumping attack`);
+    throw new AppError(503, "Sign-in is temporarily busy. Please try again in a few minutes.");
+  }
   const recent = await prisma.otpCode.findMany({ where: { phone, createdAt: { gt: hourAgo } }, orderBy: { createdAt: "desc" } });
   if (recent.length >= MAX_PER_HOUR) throw new AppError(429, "Too many OTP requests. Try again in an hour.");
   if (recent[0] && Date.now() - recent[0].createdAt.getTime() < RESEND_SECONDS * 1000)
     throw new AppError(429, `Please wait ${RESEND_SECONDS} seconds before requesting another OTP.`);
 
   const code = String(randomInt(100000, 1000000));
-  await prisma.otpCode.create({ data: { phone, codeHash: hash(phone, code), expiresAt: new Date(Date.now() + TTL_MIN * 60_000) } });
+  await prisma.otpCode.create({ data: { phone, ip, codeHash: hash(phone, code), expiresAt: new Date(Date.now() + TTL_MIN * 60_000) } });
 
   const sent = await sendSms(phone, `${code} is your Turfly login OTP. Valid for ${TTL_MIN} minutes. Do not share it.`, { otp: code });
   if (sent) return {};

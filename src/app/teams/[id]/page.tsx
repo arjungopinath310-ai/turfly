@@ -8,7 +8,8 @@ import { formatDateLong, formatTimeRange } from "@/lib/time";
 import { StatusBadge } from "@/components/ui";
 import { TeamEditor } from "@/components/TeamEditor";
 
-export default async function TeamPage({ params }: { params: { id: string } }) {
+export default async function TeamPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await currentUser();
   if (!user) redirect(`/login?next=/teams/${params.id}`);
   const team = await prisma.team.findUnique({

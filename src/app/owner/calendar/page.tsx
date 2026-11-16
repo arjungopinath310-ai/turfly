@@ -18,7 +18,10 @@ const CELL: Record<string, string> = {
   unavailable: "bg-slate-100 border-slate-200",
 };
 
-export default async function OwnerCalendar({ searchParams }: { searchParams: { turf?: string; date?: string; view?: string } }) {
+export default async function OwnerCalendar(
+  props: { searchParams: Promise<{ turf?: string; date?: string; view?: string }> }
+) {
+  const searchParams = await props.searchParams;
   const user = await pageUser("/owner/calendar");
   const turfs = await manageableTurfs(user);
   const sel = pickTurf(turfs, searchParams.turf);
