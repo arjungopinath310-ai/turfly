@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Turfly technical architecture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"><style>
+@page { size: A4; margin: 14mm 14mm 16mm; }
+:root { --g7:#027a48; --g6:#039855; --g5:#12b76a; --g0:#ecfdf3; --ink:#0f172a; --mut:#475569; --line:#e2e8f0; }
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); font-size: 10pt; line-height: 1.5; margin: 0; }
+h1 { font-size: 22pt; margin: 0 0 4mm; }
+h2 { font-size: 14.5pt; margin: 0 0 3mm; padding-bottom: 2mm; border-bottom: 2px solid var(--g5); }
+h3 { font-size: 11pt; margin: 4mm 0 1.5mm; color: var(--g7); }
+p { margin: 0 0 2.5mm; } ul { margin: 0 0 3mm; padding-left: 5mm; } li { margin-bottom: .8mm; }
+section { page-break-before: always; }
+.avoid { page-break-inside: avoid; }
+.dia { display: block; margin: 2mm 0 3mm; font-family: "Segoe UI", system-ui, sans-serif; }
+.muted { color: var(--mut); } .small { font-size: 8.8pt; }
+table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9pt; }
+th { text-align: left; background: #f1f5f9; padding: 1.5mm 2mm; border-bottom: 1px solid var(--line); font-weight: 600; }
+td { padding: 1.5mm 2mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr { page-break-inside: avoid; }
+td.c { text-align: center; white-space: nowrap; }
+code { font-family: Consolas, monospace; font-size: 8.6pt; background: #f1f5f9; padding: .2mm 1mm; border-radius: 1mm; }
+.note { border-left: 3px solid var(--g5); background: var(--g0); padding: 2.2mm 3.2mm; margin: 3mm 0; }
+.warn { border-left: 3px solid #f59e0b; background: #fffbeb; padding: 2.2mm 3.2mm; margin: 3mm 0; }
+.chip { display: inline-block; padding: .2mm 2mm; border-radius: 10mm; font-size: 8pt; font-weight: 700; }
+.eS { background: #d1fadf; color: #05603a; } .eM { background: #fef3c7; color: #92400e; } .eL { background: #fee2e2; color: #991b1b; }
+.cover { height: 262mm; display: flex; flex-direction: column; justify-content: space-between; background: #07130d; color: #fff; border-radius: 5mm; padding: 18mm 16mm; }
+.cover h1 { font-size: 38pt; line-height: 1.05; margin: 8mm 0 5mm; }
+.cover .tag { color: #a6f4c5; font-weight: 600; }
+.cover .logo { font-size: 18pt; font-weight: 800; }
+.cover .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; font-size: 9.5pt; color: #cbd5e1; }
+.cover .meta b { display: block; color: #fff; font-size: 10.5pt; }
+.toc { columns: 2; column-gap: 10mm; }
+.toc div { break-inside: avoid; padding: 1.2mm 0; border-bottom: 1px dotted var(--line); }
+.toc b { color: var(--g6); display: inline-block; width: 7mm; }
+.layers { display: flex; flex-direction: column; gap: 2mm; margin: 2mm 0 4mm; }
+.layer { border: 1px solid; border-radius: 2.5mm; padding: 2mm 2.5mm; display: flex; flex-wrap: wrap; gap: 1.2mm; font-size: 8.4pt; }
+.layer b { width: 100%; font-size: 9.5pt; }
+.layer span { background: #fff; border: 1px solid var(--line); border-radius: 1.5mm; padding: .4mm 1.6mm; }
+.layer i { color: var(--g7); font-style: normal; font-weight: 600; }
+.l-client { background: #f8fafc; border-color: #94a3b8; } .l-page, .l-comp { background: #ecfdf3; border-color: #12b76a; }
+.l-entry { background: #f0fdf4; border-color: #16a34a; } .l-guard { background: #fef2f2; border-color: #ef4444; }
+.l-domain { background: #ecfdf3; border-color: #039855; } .l-data { background: #f5f3ff; border-color: #7c3aed; }
+.down { text-align: center; color: #94a3b8; font-size: 9pt; margin: -1.2mm 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+.card { border: 1px solid var(--line); border-radius: 2.5mm; padding: 2.5mm 3.5mm; font-size: 9pt; }
+.card h3 { margin-top: 0; }
+</style></head>
+<body>
+<div class="cover">
+  <div class="logo">Turfly</div>
+  <div><div class="tag">Technical architecture</div><h1>How Turfly is built<br>and how it runs</h1>
+  <p style="color:#cbd5e1;max-width:140mm">Deployment, code layers, data model, booking engine, payments, background jobs, the Android app, security,
+  the recommended production layout and researched features worth adding next.</p></div>
+  <div class="meta"><div><b>Version</b>0.3 (demo + Android)</div><div><b>Stack</b>Next.js 15 · PostgreSQL 16 · Capacitor 8</div><div><b>Launch city</b>Manjeri, Kerala</div></div>
+</div>
+<section><h2>Contents</h2><div class="toc"><div><b>1</b>System at a glance</div>
+<div><b>2</b>Deployment today</div>
+<div><b>3</b>Code layers</div>
+<div><b>4</b>Data model</div>
+<div><b>5</b>Convertible pitch: how double booking is prevented</div>
+<div><b>6</b>Sign-in</div>
+<div><b>7</b>Booking and payment</div>
+<div><b>8</b>Booking lifecycle</div>
+<div><b>9</b>Background work and notifications</div>
+<div><b>10</b>Chat and owner analytics</div>
+<div><b>11</b>Android app</div>
+<div><b>12</b>Security</div>
+<div><b>13</b>Production layout (recommended next step)</div>
+<div><b>14</b>Value-add features (research)</div></div>
+<p class="small muted" style="margin-top:6mm">Generated by <code>scripts/make-architecture-doc.py</code>. Companion documents: <code>docs/ARCHITECTURE.md</code>,
+<code>docs/PRODUCTION.md</code>, <code>docs/ANDROID.md</code> and the user guide <code>docs/Turfly-How-It-Works.pdf</code>.</p></section>
+<section><h2>1 · System at a glance</h2>
+
+<p>Turfly is <b>one Next.js application</b> backed by <b>one PostgreSQL database</b>. The same server renders every page, answers the
+JSON API used by the pages and the Android app, receives Razorpay webhooks and runs the minute-by-minute background work.
+Everything else (payments, SMS, WhatsApp, email, push) is a third-party service called over HTTPS.</p>
+<table>
+<tr><th>Layer</th><th>Technology</th><th>Where in the code</th></tr>
+<tr><td>Web app</td><td>Next.js 15.5 (App Router), React 19, TypeScript, Tailwind CSS</td><td><code>src/app</code>, <code>src/components</code></td></tr>
+<tr><td>Android app</td><td>Capacitor 8 WebView shell, Java <code>MainActivity</code></td><td><code>mobile/</code></td></tr>
+<tr><td>Auth</td><td>next-auth 4 (JWT cookie), phone OTP, optional Google</td><td><code>src/lib/auth.ts</code>, <code>src/lib/otp.ts</code></td></tr>
+<tr><td>Database</td><td>PostgreSQL 16 via Prisma 5 (37 tables, 4 migrations)</td><td><code>prisma/</code>, <code>src/lib/db.ts</code></td></tr>
+<tr><td>Booking engine</td><td>Pure TypeScript rules + DB constraint for concurrency</td><td><code>src/lib/engine/</code></td></tr>
+<tr><td>Payments</td><td>Razorpay Orders + Checkout.js + webhooks, refunds API</td><td><code>src/lib/payments/</code></td></tr>
+<tr><td>Notifications</td><td>Job table + cron; in-app, FCM push, MSG91 SMS, WhatsApp Cloud API, Resend email</td><td><code>src/lib/notifications/</code>, <code>src/lib/push.ts</code></td></tr>
+<tr><td>Maps</td><td>Leaflet + OpenStreetMap tiles; directions open Google Maps</td><td><code>TurfMap.tsx</code></td></tr>
+<tr><td>Validation</td><td>zod 4 on every API body and server action</td><td>each route</td></tr>
+<tr><td>Tests</td><td>Vitest: 30 unit tests, 22 database integration tests</td><td><code>tests/</code></td></tr>
+<tr><td>Delivery</td><td>GitHub, Actions CI (type check, tests, build), Android APK workflow, Dockerfile</td><td><code>.github/workflows</code></td></tr>
+</table>
+<h3>Design rules the whole system follows</h3>
+<ul>
+<li><b>The database is the referee.</b> Double booking is made impossible by a PostgreSQL <code>EXCLUDE</code> constraint, not by application checks that two servers could both pass.</li>
+<li><b>Only the payment gateway confirms a booking.</b> The browser's "payment succeeded" message is recorded but never trusted; the HMAC-signed webhook is.</li>
+<li><b>Money is integers.</b> All amounts are stored in paise and computed on the server from database rows.</li>
+<li><b>Time is UTC in the database, IST on screen.</b> India has no daylight saving, so IST is a fixed +05:30 offset.</li>
+<li><b>Every protected page and API call checks the user itself</b> (role and ownership), not just the layout around it.</li>
+</ul>
+
+</section>
+<section><h2>2 · Deployment today</h2>
+
+<p>How a request travels from a phone to the code and back, as it runs right now on the Windows PC.</p>
+<svg viewBox="0 0 720 556" width="100%" class="dia" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="20" y="14" width="200" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="120.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Android app</text>
+<text x="120.0" y="47.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Capacitor WebView, in.turfly.app</text>
+<rect x="260" y="14" width="200" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="360.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Mobile browser</text>
+<text x="360.0" y="47.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">PWA, service worker</text>
+<rect x="500" y="14" width="200" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="600.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Desktop browser</text>
+<text x="600.0" y="47.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Players, owners, admin</text>
+<polyline points="120,66 120,98" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="360,66 360,98" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="600,66 600,98" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="20" y="100" width="680" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="360.0" y="119.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Cloudflare edge</text>
+<text x="360.0" y="133.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">TLS certificate, DDoS protection, quick tunnel host  *.trycloudflare.com  (random name per run)</text>
+<rect x="20" y="182" width="460" height="344" rx="12" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6 4"/><text x="32" y="198" font-size="11.5" font-weight="600" fill="#1e293b">Windows PC  (current host, must stay on)</text>
+<polyline points="340,152 340,208" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="36" y="210" width="428" height="50" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="250.0" y="228.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">cloudflared.exe</text>
+<text x="250.0" y="242.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Outbound QUIC connection to Cloudflare; forwards to http://localhost:3000</text>
+<polyline points="240,260 240,286" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="36" y="288" width="428" height="132" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="250.0" y="319.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">Next.js 15 production server  (npm start, port 3000)</text>
+<text x="250.0" y="333.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">34 server-rendered pages: player, owner, admin, legal</text>
+<text x="250.0" y="347.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">32 API route handlers + server actions (owner, admin)</text>
+<text x="250.0" y="361.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">next-auth JWT sessions, zod validation, CSP headers</text>
+<text x="250.0" y="375.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Booking engine, payments, notifications, chat, analytics</text>
+<text x="250.0" y="389.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">instrumentation.ts checks env at start-up</text>
+<rect x="36" y="452" width="190" height="58" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="131.0" y="467.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">cron-loop.mjs</text>
+<text x="131.0" y="481.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">POST /api/cron/tick</text>
+<text x="131.0" y="495.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">every 60 s, Bearer secret</text>
+<polyline points="131,452 131,422" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="256" y="452" width="208" height="58" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1"/>
+<text x="360.0" y="467.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#4c1d95">PostgreSQL 16 service</text>
+<text x="360.0" y="481.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">port 5432, 37 tables</text>
+<text x="360.0" y="495.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">EXCLUDE gist constraint</text>
+<polyline points="360,420 360,450" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)" marker-start="url(#ah)"/>
+<rect x="500" y="182" width="200" height="56" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="600.0" y="203.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">Razorpay</text>
+<text x="600.0" y="217.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Orders, Checkout.js, refunds</text>
+<polyline points="488,210 498,210" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="500" y="250" width="200" height="56" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="600.0" y="271.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">MSG91</text>
+<text x="600.0" y="285.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">OTP + booking SMS (DLT)</text>
+<polyline points="488,278 498,278" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="500" y="318" width="200" height="56" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="600.0" y="339.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">WhatsApp Cloud API</text>
+<text x="600.0" y="353.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Template reminders</text>
+<polyline points="488,346 498,346" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="500" y="386" width="200" height="56" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="600.0" y="407.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">Resend</text>
+<text x="600.0" y="421.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Email receipts</text>
+<polyline points="488,414 498,414" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="500" y="454" width="200" height="56" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="600.0" y="475.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">Firebase Cloud Messaging</text>
+<text x="600.0" y="489.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Push via HTTP v1</text>
+<polyline points="488,482 498,482" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="464,354 488,354" fill="none" stroke="#64748b" stroke-width="1.3"/>
+<polyline points="488,210 488,482" fill="none" stroke="#64748b" stroke-width="1.3"/>
+<polyline points="600,182 600,154" fill="none" stroke="#f97316" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<text x="606" y="172" text-anchor="start" font-size="10" font-weight="400" fill="#9a3412">webhooks in</text>
+<text x="20" y="548" text-anchor="start" font-size="10" font-weight="400" fill="#475569">Green = Turfly code   Purple = data   Orange = third-party service   Grey = infrastructure</text></svg>
+<table>
+<tr><th>Process</th><th>Started by</th><th>Role</th></tr>
+<tr><td>Next.js server</td><td><code>npm.cmd start</code></td><td>Pages, API, webhooks. Listens only on localhost:3000.</td></tr>
+<tr><td>cloudflared</td><td><code>cloudflared tunnel --url http://localhost:3000</code></td><td>Opens an outbound connection to Cloudflare; no router ports are opened. A quick tunnel gets a <b>new random hostname each start</b>.</td></tr>
+<tr><td>Cron loop</td><td><code>npm.cmd run cron:local</code></td><td>Calls <code>/api/cron/tick</code> every minute with the <code>CRON_SECRET</code>.</td></tr>
+<tr><td>PostgreSQL 16</td><td>Windows service (automatic)</td><td>All data. User <code>turfly</code>, database <code>turfly</code>, port 5432, not exposed outside the PC.</td></tr>
+</table>
+<div class="warn">Limits of this setup: the site is down whenever the PC sleeps, restarts or loses internet; the URL changes when cloudflared restarts
+(the Android app has the URL built in); there are no off-site backups. Section 13 shows the production layout that removes these limits.</div>
+
+</section>
+<section><h2>3 · Code layers</h2>
+
+<p>Requests flow top to bottom. Each layer only calls the layer below it; domain rules live in <code>src/lib</code> so pages, API routes
+and server actions share exactly the same logic.</p>
+
+<div class="layers">
+  <div class="layer l-client"><b>Clients</b><span>Android app (Capacitor WebView)</span><span>Mobile / desktop browser</span><span>Service worker + offline page</span><span>Razorpay Checkout.js</span></div>
+  <div class="layer l-page"><b>Pages (React Server Components, src/app)</b>
+    <span>Player: / · /turfs · /turfs/[slug] · /compare · /checkout/[id] · /bookings · /teams · /find-players · /messages · /notifications · /profile</span>
+    <span>Owner: /owner · /owner/turfs · /owner/turfs/[id] · /owner/calendar · /owner/bookings · /owner/analytics</span>
+    <span>Admin: /admin · /admin/turfs · /admin/users · /admin/finance · /admin/settings</span>
+    <span>Public: /login · /legal/* · /contact · /claim/[token] · /join/team/[token] · /account/delete</span></div>
+  <div class="layer l-comp"><b>Client components (src/components)</b>
+    <span>BookingWidget</span><span>Checkout</span><span>ChatApp</span><span>TurfMap (Leaflet)</span><span>charts</span><span>RosterEditor</span><span>TeamEditor</span><span>LoginForm</span><span>NativeBridge</span><span>ActionForm</span><span>ImagePicker</span><span>CompareBar</span></div>
+  <div class="layer l-entry"><b>Server entry points</b>
+    <span>/api/auth (OTP, next-auth)</span><span>/api/bookings (+ cancel, dispute, roster, ics)</span><span>/api/payments (order, verify, webhook, mock)</span><span>/api/turfs/[id] (availability, quote)</span><span>/api/teams · /api/player-posts · /api/reviews</span><span>/api/conversations</span><span>/api/notifications · /api/devices</span><span>/api/account · /api/owner/analytics/export</span><span>/api/cron/tick · /api/health</span><span>Server actions: owner/actions.ts, admin/actions.ts</span></div>
+  <div class="layer l-guard"><b>Guards (every request)</b>
+    <span>auth.ts: pageUser · requireUser(role) · requireTurfAccess</span><span>zod schemas</span><span>errors.ts: AppError → JSON</span><span>http.ts: clientIp (rate limits)</span><span>next.config: CSP, HSTS, frame deny</span></div>
+  <div class="layer l-domain"><b>Domain logic (src/lib)</b>
+    <span><i>engine/</i> allocation · slots · pricing · policy · booking</span><span><i>payments/</i> razorpay · service · refunds</span><span><i>notifications/</i> providers · service</span><span>push</span><span>chat</span><span>analytics</span><span>teams</span><span>search</span><span>otp</span><span>account</span><span>owner · business · settings</span><span>time (IST) · format · share</span></div>
+  <div class="layer l-data"><b>Data</b><span>db.ts: one Prisma client</span><span>PostgreSQL 16: 37 tables, 4 migrations</span><span>EXCLUDE + CHECK constraints</span><span>money in paise, times in UTC</span></div>
+</div>
+
+<div class="grid2">
+<div class="card"><h3>Server components and server actions</h3>Pages run on the server, read the database directly through <code>src/lib</code> and send HTML.
+Owner and admin forms post to server actions (<code>owner/actions.ts</code>, <code>admin/actions.ts</code>), which re-check the role and turf ownership
+and write an <code>AuditLog</code> row for sensitive changes.</div>
+<div class="card"><h3>API routes</h3>Interactive parts (slot picker, checkout, chat, teams) call JSON routes. Each one validates input with zod, calls
+<code>requireUser()</code>, runs domain code and turns an <code>AppError</code> into a clean JSON error with the right status code.</div>
+</div>
+
+</section>
+<section><h2>4 · Data model</h2>
+
+<p>The core booking tables and how they connect. The convertible pitch is modelled with <b>resource units</b> (physical areas) and
+<b>pitch configs</b> (what can be booked); a booking locks every unit its config uses.</p>
+<svg viewBox="0 0 720 396" width="100%" class="dia" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="10" y="20" width="140" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="80.0" y="37.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">Turf</text>
+<text x="80.0" y="51.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">hours, pricing rules</text>
+<rect x="195" y="20" width="140" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="265.0" y="37.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">PitchConfig</text>
+<text x="265.0" y="51.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Full 7s, Pitch A, Pitch B</text>
+<rect x="380" y="20" width="150" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="455.0" y="37.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">PitchConfigUnit</text>
+<text x="455.0" y="51.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">config uses unit</text>
+<rect x="570" y="20" width="140" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="640.0" y="37.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">ResourceUnit</text>
+<text x="640.0" y="51.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Half A, Half B, lock</text>
+<polyline points="150,44 193,44" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="171" y="38" text-anchor="middle" font-size="9" font-weight="400" fill="#475569">1:n</text>
+<polyline points="335,44 378,44" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="356" y="38" text-anchor="middle" font-size="9" font-weight="400" fill="#475569">1:n</text>
+<polyline points="568,44 532,44" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="550" y="38" text-anchor="middle" font-size="9" font-weight="400" fill="#475569">1:n</text>
+<rect x="10" y="150" width="140" height="48" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="80.0" y="167.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">User</text>
+<text x="80.0" y="181.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">role, phone, deletedAt</text>
+<rect x="195" y="150" width="140" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="265.0" y="167.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">Booking</text>
+<text x="265.0" y="181.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">status, startAt, endAt</text>
+<rect x="570" y="150" width="140" height="48" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1"/>
+<text x="640.0" y="167.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#4c1d95">Occupancy</text>
+<text x="640.0" y="181.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">unitId, tsrange, released</text>
+<polyline points="150,174 193,174" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="171" y="168" text-anchor="middle" font-size="9" font-weight="400" fill="#475569">1:n</text>
+<polyline points="265,68 265,148" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="271" y="110" text-anchor="start" font-size="9" font-weight="400" fill="#475569">booked config</text>
+<polyline points="335,174 568,174" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="450" y="168" text-anchor="middle" font-size="9" font-weight="400" fill="#475569">1 row per unit used</text>
+<polyline points="640,68 640,148" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="646" y="110" text-anchor="start" font-size="9" font-weight="400" fill="#475569">locks unit</text>
+<rect x="570" y="270" width="140" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="640.0" y="287.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">SlotBlock</text>
+<text x="640.0" y="301.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">maintenance, events</text>
+<polyline points="640,270 640,200" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="195" y="270" width="140" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="265.0" y="287.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">Payment</text>
+<text x="265.0" y="301.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">paise, gateway ids</text>
+<rect x="10" y="270" width="140" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="80.0" y="287.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">Refund</text>
+<text x="80.0" y="301.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">auto or policy based</text>
+<rect x="380" y="270" width="150" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="455.0" y="287.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">LedgerEntry</text>
+<text x="455.0" y="301.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">advance, commission</text>
+<polyline points="265,198 265,268" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="271" y="236" text-anchor="start" font-size="9" font-weight="400" fill="#475569">1:n</text>
+<polyline points="193,294 152,294" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="171" y="288" text-anchor="middle" font-size="9" font-weight="400" fill="#475569">1:n</text>
+<polyline points="320,198 320,236 455,236 455,268" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="380" y="340" width="330" height="44" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1"/>
+<text x="545.0" y="355.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#4c1d95">PostgreSQL rule on Occupancy</text>
+<text x="545.0" y="369.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">EXCLUDE (unitId =, tsrange(startAt, endAt) &amp;&amp;) WHERE NOT released</text>
+<rect x="10" y="340" width="325" height="44" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="172.5" y="355.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">WebhookEvent</text>
+<text x="172.5" y="369.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">unique gateway event id: each webhook applied once</text></svg>
+<table>
+<tr><th>Area</th><th>Tables</th></tr>
+<tr><td>Identity</td><td>User (PLAYER / OWNER / ADMIN), OtpCode, DeviceToken (push), AuditLog</td></tr>
+<tr><td>Venues</td><td>City, Turf, OperatingHours, ResourceUnit, PitchConfig, PitchConfigUnit, PricingRule, TurfClaim, Review</td></tr>
+<tr><td>Bookings</td><td>Booking (HELD, CONFIRMED, CANCELLED, EXPIRED, COMPLETED, NO_SHOW; source ONLINE, WALK_IN, PHONE), Occupancy, SlotBlock, Dispute</td></tr>
+<tr><td>Money</td><td>Payment, Refund, WebhookEvent, LedgerEntry, Offer, PlatformSetting</td></tr>
+<tr><td>Community</td><td>Team, TeamMember, TeamEvent, MatchPlayer, MatchResult, PlayerPost, PlayerPostRequest</td></tr>
+<tr><td>Messaging</td><td>Conversation, Message, Notification, NotificationJob</td></tr>
+<tr><td>Planned (schema only)</td><td>Tournament, TournamentTeam, Fixture</td></tr>
+</table>
+
+</section>
+<section><h2>5 · Convertible pitch: how double booking is prevented</h2>
+
+<svg viewBox="0 0 720 200" width="100%" class="dia" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="20" y="20" width="250" height="150" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<line x1="145" y1="20" x2="145" y2="170" stroke="#16a34a" stroke-dasharray="6 4"/>
+<circle cx="145" cy="95" r="22" fill="none" stroke="#16a34a"/>
+<text x="82" y="99" text-anchor="middle" font-size="12" font-weight="600" fill="#14532d">Half A</text>
+<text x="208" y="99" text-anchor="middle" font-size="12" font-weight="600" fill="#14532d">Half B</text>
+<text x="145" y="190" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">One physical pitch, two resource units</text>
+<line x1="360.0" y1="30" x2="360.0" y2="150" stroke="#e2e8f0"/>
+<text x="360.0" y="24" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">5 PM</text>
+<line x1="428.0" y1="30" x2="428.0" y2="150" stroke="#e2e8f0"/>
+<text x="428.0" y="24" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">6 PM</text>
+<line x1="496.0" y1="30" x2="496.0" y2="150" stroke="#e2e8f0"/>
+<text x="496.0" y="24" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">7 PM</text>
+<line x1="564.0" y1="30" x2="564.0" y2="150" stroke="#e2e8f0"/>
+<text x="564.0" y="24" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">8 PM</text>
+<line x1="632.0" y1="30" x2="632.0" y2="150" stroke="#e2e8f0"/>
+<text x="632.0" y="24" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">9 PM</text>
+<line x1="700.0" y1="30" x2="700.0" y2="150" stroke="#e2e8f0"/>
+<text x="700.0" y="24" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">10 PM</text>
+<text x="350" y="74" text-anchor="end" font-size="10.5" font-weight="600" fill="#0f172a">Half A</text>
+<text x="350" y="124" text-anchor="end" font-size="10.5" font-weight="600" fill="#0f172a">Half B</text>
+<rect x="430.0" y="52" width="64.0" height="34" rx="5" fill="#ecfdf3" stroke="#12b76a"/><text x="462.0" y="73" text-anchor="middle" font-size="9.5" font-weight="400" fill="#05603a">Full 7s</text>
+<rect x="430.0" y="102" width="64.0" height="34" rx="5" fill="#ecfdf3" stroke="#12b76a"/><text x="462.0" y="123" text-anchor="middle" font-size="9.5" font-weight="400" fill="#05603a">Full 7s</text>
+<rect x="498.0" y="52" width="64.0" height="34" rx="5" fill="#f5f3ff" stroke="#7c3aed"/><text x="530.0" y="73" text-anchor="middle" font-size="9.5" font-weight="400" fill="#4c1d95">Pitch A</text>
+<rect x="566.0" y="102" width="64.0" height="34" rx="5" fill="#f5f3ff" stroke="#7c3aed"/><text x="598.0" y="123" text-anchor="middle" font-size="9.5" font-weight="400" fill="#4c1d95">Pitch B</text>
+<rect x="634.0" y="52" width="64.0" height="34" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="666.0" y="73" text-anchor="middle" font-size="9.5" font-weight="400" fill="#1e293b">Blocked</text>
+<rect x="634.0" y="102" width="64.0" height="34" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="666.0" y="123" text-anchor="middle" font-size="9.5" font-weight="400" fill="#1e293b">Blocked</text>
+<text x="530" y="172" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">Full 7s writes 2 occupancy rows; a 5s pitch writes 1</text>
+<text x="530" y="188" text-anchor="middle" font-size="10" font-weight="400" fill="#991b1b">7 PM Full 7s is impossible: Half A is taken</text></svg>
+<p>Each booking, hold or owner block writes one <code>Occupancy</code> row <b>per resource unit</b> it uses. PostgreSQL rejects any new row whose
+unit is the same and whose time range overlaps a live row:</p>
+<p><code>EXCLUDE USING gist ("unitId" WITH =, tsrange("startAt","endAt",'[)') WITH &amp;&amp;) WHERE (released = false)</code></p>
+<ul>
+<li>Ranges are half-open <code>[start, end)</code>, so 6 to 7 PM and 7 to 8 PM do not clash.</li>
+<li>Two players pressing "Book" at the same instant: both transactions try to insert; one commits, the other gets error <code>23P01</code>
+and sees "this slot was just taken". This holds even with several server instances.</li>
+<li>Releasing a hold or cancelling sets <code>released = true</code>, which frees the units instantly without deleting history.</li>
+<li>Owners can model other layouts (three 5s pitches merging into one 9s, a shared lock unit when halves can't run together) with the same tables.</li>
+</ul>
+<h3>Slots and prices</h3>
+<p><code>slots.ts</code> builds a 1-hour grid from operating hours (late-night hours past midnight belong to the previous day), then prices each slot from the base rate
+and <code>PricingRule</code> windows (peak evenings, weekends), prorated in 30-minute pieces when a slot crosses a boundary. <code>pricing.ts</code> splits the price into
+the ₹49 online advance, optional platform fee, discount and balance payable at the venue.</p>
+
+</section>
+<section><h2>6 · Sign-in</h2>
+
+<p>Phone OTP is the main sign-in; Google is optional when keys are configured.</p>
+<svg viewBox="0 0 720 420" width="100%" class="dia" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="15.0" y="6" width="150" height="40" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="90.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Phone</text>
+<text x="90.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">app or browser</text>
+<line x1="90" y1="46" x2="90" y2="414" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<rect x="195.0" y="6" width="150" height="40" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="270.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">Next.js</text>
+<text x="270.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">/api/auth/*</text>
+<line x1="270" y1="46" x2="270" y2="414" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<rect x="375.0" y="6" width="150" height="40" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1"/>
+<text x="450.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#4c1d95">PostgreSQL</text>
+<text x="450.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">OtpCode, User</text>
+<line x1="450" y1="46" x2="450" y2="414" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<rect x="555.0" y="6" width="150" height="40" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="630.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">MSG91</text>
+<text x="630.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">SMS</text>
+<line x1="630" y1="46" x2="630" y2="414" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<polyline points="90,78 266,78" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="180.0" y="73" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">1. POST /api/auth/otp {phone}</text>
+<polyline points="270,108 446,108" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360.0" y="103" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">2. count sends: phone, IP, global</text>
+<rect x="136.8" y="123" width="266.4" height="22" rx="5" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="270.0" y="138" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">limits: 5/h per phone, 30 s gap, 10/h per IP</text>
+<polyline points="270,168 446,168" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360.0" y="163" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">3. save HMAC(code), expires in 5 min</text>
+<polyline points="270,198 626,198" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="450.0" y="193" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">4. send 6-digit code</text>
+<rect x="100.4" y="213" width="339.2" height="22" rx="5" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="270.0" y="228" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">DEMO_MODE: code shown on screen (never for admins/owners)</text>
+<polyline points="90,258 266,258" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="180.0" y="253" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">5. signIn(&#x27;otp&#x27;, phone, code)</text>
+<polyline points="270,288 446,288" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360.0" y="283" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">6. match hash, ≤ 5 tries, consume once</text>
+<polyline points="270,318 446,318" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360.0" y="313" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">7. upsert User (role PLAYER)</text>
+<polyline points="270,348 94,348" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<text x="180.0" y="343" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">8. httpOnly JWT session cookie</text>
+<polyline points="90,378 266,378" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="180.0" y="373" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">9. every page: pageUser() / requireUser(role)</text></svg>
+<ul>
+<li>Codes are stored only as an HMAC hash, expire in 5 minutes, allow 5 attempts and are consumed atomically (a code works once).</li>
+<li>SMS abuse limits: per phone (5 per hour, 30 s between sends), per IP (10 per hour) and a global hourly cap (<code>OTP_GLOBAL_PER_HOUR</code>).</li>
+<li>The session is a signed JWT in an httpOnly, secure cookie. Role changes take effect on the next request because <code>currentUser()</code> reloads the user from the database; suspended accounts are refused.</li>
+</ul>
+
+</section>
+<section><h2>7 · Booking and payment</h2>
+
+<svg viewBox="0 0 720 570" width="100%" class="dia" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="15.0" y="6" width="150" height="40" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="90.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Player</text>
+<text x="90.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">app / browser</text>
+<line x1="90" y1="46" x2="90" y2="564" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<rect x="195.0" y="6" width="150" height="40" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="270.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">Next.js</text>
+<text x="270.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">API + engine</text>
+<line x1="270" y1="46" x2="270" y2="564" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<rect x="375.0" y="6" width="150" height="40" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1"/>
+<text x="450.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#4c1d95">PostgreSQL</text>
+<text x="450.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">bookings</text>
+<line x1="450" y1="46" x2="450" y2="564" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<rect x="555.0" y="6" width="150" height="40" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="630.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">Razorpay</text>
+<text x="630.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">gateway</text>
+<line x1="630" y1="46" x2="630" y2="564" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<polyline points="90,78 266,78" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="180.0" y="73" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">1. GET /api/turfs/:id/availability</text>
+<polyline points="270,108 446,108" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360.0" y="103" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">2. load occupancy, hours, pricing</text>
+<polyline points="270,138 94,138" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<text x="180.0" y="133" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">3. slot grid with prices</text>
+<polyline points="90,168 266,168" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="180.0" y="163" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">4. POST /api/bookings {config, date, hour}</text>
+<polyline points="270,198 446,198" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360.0" y="193" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">5. tx: Booking HELD + Occupancy rows</text>
+<rect x="200.0" y="213" width="320" height="22" rx="5" fill="#fef2f2" stroke="#ef4444"/>
+<text x="360.0" y="228" text-anchor="middle" font-size="10" font-weight="400" fill="#991b1b">EXCLUDE violation 23P01 → &#x27;slot just taken&#x27;</text>
+<polyline points="270,258 94,258" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<text x="180.0" y="253" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">6. booking id, holdExpiresAt</text>
+<polyline points="90,288 266,288" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="180.0" y="283" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">7. POST /api/payments/order</text>
+<polyline points="270,318 626,318" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="450.0" y="313" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">8. create order (amount from DB, paise)</text>
+<polyline points="630,348 274,348" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<text x="450.0" y="343" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">9. order_id</text>
+<polyline points="90,378 626,378" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360.0" y="373" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">10. Checkout.js: UPI / card / netbanking</text>
+<polyline points="90,408 266,408" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="180.0" y="403" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">11. POST /api/payments/verify (signature saved)</text>
+<polyline points="630,438 274,438" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="450.0" y="433" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">12. webhook payment.captured (HMAC-SHA256)</text>
+<polyline points="270,468 446,468" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360.0" y="463" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">13. dedupe event, HELD → CONFIRMED, ledger, jobs</text>
+<polyline points="90,498 266,498" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="180.0" y="493" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">14. poll GET /api/bookings/:id</text>
+<polyline points="270,528 94,528" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<text x="180.0" y="523" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">15. CONFIRMED + receipt, calendar, share</text></svg>
+<ul>
+<li><b>Holds:</b> a booking starts as HELD for 5 minutes with its occupancy rows already locked, so nobody can take the slot while the player pays.</li>
+<li><b>Order:</b> the amount is calculated on the server from the database; an open order for the same booking is reused instead of creating another.</li>
+<li><b>Webhook:</b> verified with HMAC-SHA256 over the raw body (constant-time compare), stored in <code>WebhookEvent</code> by gateway event id so retries are no-ops, amount checked against the order, then a conditional <code>UPDATE … WHERE status = 'HELD'</code> confirms.</li>
+<li><b>On confirm:</b> ledger rows (advance collected, commission), notification jobs, in-app + push notification to player and owner.</li>
+</ul>
+
+</section>
+<section><h2>8 · Booking lifecycle</h2>
+
+<svg viewBox="0 0 720 298" width="100%" class="dia" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="20" y="110" width="150" height="48" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="95.0" y="127.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">HELD</text>
+<text x="95.0" y="141.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">5-minute hold, rows locked</text>
+<rect x="270" y="110" width="150" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="345.0" y="127.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">CONFIRMED</text>
+<text x="345.0" y="141.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">₹49 advance captured</text>
+<rect x="540" y="30" width="160" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="620.0" y="47.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">COMPLETED</text>
+<text x="620.0" y="61.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">cron, after end time</text>
+<rect x="540" y="110" width="160" height="48" rx="7" fill="#fef2f2" stroke="#ef4444" stroke-width="1"/>
+<text x="620.0" y="127.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#991b1b">CANCELLED</text>
+<text x="620.0" y="141.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">refund by policy tier</text>
+<rect x="540" y="190" width="160" height="48" rx="7" fill="#fef2f2" stroke="#ef4444" stroke-width="1"/>
+<text x="620.0" y="207.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#991b1b">NO_SHOW</text>
+<text x="620.0" y="221.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">marked by owner</text>
+<rect x="20" y="236" width="150" height="48" rx="7" fill="#fef2f2" stroke="#ef4444" stroke-width="1"/>
+<text x="95.0" y="253.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#991b1b">EXPIRED</text>
+<text x="95.0" y="267.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">cron: unpaid after 5 min</text>
+<rect x="270" y="236" width="150" height="48" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="345.0" y="253.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">Auto refund</text>
+<text x="345.0" y="267.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">late pay, slot taken</text>
+<polyline points="170,134 268,134" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="219" y="127" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">webhook</text>
+<polyline points="420,124 480,124 480,54 538,54" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="420,134 538,134" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="420,144 480,144 480,214 538,214" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="95,158 95,234" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="170,260 268,260" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="150,236 150,206 330,206 330,160" fill="none" stroke="#64748b" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<text x="240" y="200" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">late pay, slot still free</text>
+<text x="20" y="24" text-anchor="start" font-size="10" font-weight="400" fill="#475569">Walk-in and phone bookings by the owner start directly as CONFIRMED.</text></svg>
+<table>
+<tr><th>Edge case</th><th>What happens</th></tr>
+<tr><td>Payment arrives after the hold expired, slot still free</td><td>Units are re-acquired and the booking is confirmed.</td></tr>
+<tr><td>Payment arrives after the hold expired, slot taken by someone else</td><td>Booking stays EXPIRED and the payment is refunded in full automatically.</td></tr>
+<tr><td>Second payment captured for the same booking</td><td>That extra payment is refunded automatically.</td></tr>
+<tr><td>Player cancels</td><td><code>policy.ts</code> tiers decide the refund (shown in plain words before paying); units released.</td></tr>
+<tr><td>Owner cancels</td><td>Refund of the owner-cancel percentage in the turf's policy (100% by default); player notified.</td></tr>
+<tr><td>Reschedule</td><td>Old units released and new ones locked in one transaction; if the new slot is taken the whole change rolls back.</td></tr>
+<tr><td>Dispute</td><td>Player raises it from the booking page; admin resolves it in the admin console.</td></tr>
+</table>
+
+</section>
+<section><h2>9 · Background work and notifications</h2>
+
+<svg viewBox="0 0 720 420" width="100%" class="dia" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="20" y="20" width="160" height="56" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="100.0" y="41.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">cron-loop.mjs</text>
+<text x="100.0" y="55.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">every 60 s</text>
+<polyline points="180,48 228,48" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="230" y="20" width="220" height="56" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="340.0" y="41.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">POST /api/cron/tick</text>
+<text x="340.0" y="55.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Authorization: Bearer CRON_SECRET</text>
+<rect x="230" y="100" width="470" height="44" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+<text x="240" y="115.0" text-anchor="start" dominant-baseline="central" font-size="12" font-weight="600" fill="#0f172a">1  releaseExpiredHolds()</text>
+<text x="240" y="129.0" text-anchor="start" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">one atomic CTE: HELD &gt; 5 min → EXPIRED, rows released</text>
+<rect x="230" y="154" width="470" height="44" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+<text x="240" y="169.0" text-anchor="start" dominant-baseline="central" font-size="12" font-weight="600" fill="#0f172a">2  completePastBookings()</text>
+<text x="240" y="183.0" text-anchor="start" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">CONFIRMED and ended → COMPLETED</text>
+<rect x="230" y="208" width="470" height="44" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+<text x="240" y="223.0" text-anchor="start" dominant-baseline="central" font-size="12" font-weight="600" fill="#0f172a">3  recover stuck jobs</text>
+<text x="240" y="237.0" text-anchor="start" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">SENDING for &gt; 10 min → PENDING again</text>
+<rect x="230" y="262" width="470" height="44" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+<text x="240" y="277.0" text-anchor="start" dominant-baseline="central" font-size="12" font-weight="600" fill="#0f172a">4  processDueJobs(50)</text>
+<text x="240" y="291.0" text-anchor="start" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">due NotificationJobs; failures retry after 1 min, 5 tries</text>
+<polyline points="340,76 340,98" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="20" y="116" text-anchor="start" font-size="10.5" font-weight="600" fill="#0f172a">Jobs created on confirm:</text>
+<text x="20" y="136" text-anchor="start" font-size="10" font-weight="400" fill="#475569">BOOKING_CONFIRMED  now</text>
+<text x="20" y="152" text-anchor="start" font-size="10" font-weight="400" fill="#475569">REMINDER_24H  start - 24 h</text>
+<text x="20" y="168" text-anchor="start" font-size="10" font-weight="400" fill="#475569">REMINDER_2H  start - 2 h</text>
+<text x="20" y="184" text-anchor="start" font-size="10" font-weight="400" fill="#475569">BALANCE_PENDING  start - 3 h</text>
+<text x="20" y="214" text-anchor="start" font-size="10" font-weight="400" fill="#475569">× each channel enabled in</text>
+<text x="20" y="228" text-anchor="start" font-size="10" font-weight="400" fill="#475569">admin settings</text>
+<rect x="20" y="340" width="124" height="48" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="82.0" y="357.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">In-app</text>
+<text x="82.0" y="371.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Notification row</text>
+<rect x="157" y="340" width="124" height="48" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="219.0" y="357.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">Push</text>
+<text x="219.0" y="371.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">FCM, if device token</text>
+<rect x="294" y="340" width="124" height="48" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="356.0" y="357.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">SMS</text>
+<text x="356.0" y="371.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">MSG91</text>
+<rect x="431" y="340" width="124" height="48" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="493.0" y="357.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">WhatsApp</text>
+<text x="493.0" y="371.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Cloud API template</text>
+<rect x="568" y="340" width="124" height="48" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="630.0" y="357.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">Email</text>
+<text x="630.0" y="371.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Resend</text>
+<polyline points="465,316 465,326 82,326 634,326" fill="none" stroke="#64748b" stroke-width="1.3"/>
+<polyline points="82,326 82,338" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="219,326 219,338" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="356,326 356,338" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="493,326 493,338" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="630,326 630,338" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360" y="410" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">Push is sent whenever an in-app notification is created (chat, booking, team events).</text></svg>
+<ul>
+<li>Jobs are rows in <code>NotificationJob</code> with a unique key per booking, template and channel, so scheduling twice never sends twice.</li>
+<li>Cancelling a booking cancels its pending jobs. A failed send is retried a minute later, up to 5 attempts, then marked FAILED with the error saved.</li>
+<li>In demo mode SMS, WhatsApp and email are logged instead of sent; in-app and push work normally.</li>
+</ul>
+
+</section>
+<section><h2>10 · Chat and owner analytics</h2>
+
+<h3>Player and owner chat</h3>
+<svg viewBox="0 0 720 330" width="100%" class="dia" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="15.0" y="6" width="150" height="40" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="90.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Player</text>
+<text x="90.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Messages page</text>
+<line x1="90" y1="46" x2="90" y2="324" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<rect x="195.0" y="6" width="150" height="40" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="270.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">Next.js</text>
+<text x="270.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">/api/conversations</text>
+<line x1="270" y1="46" x2="270" y2="324" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<rect x="375.0" y="6" width="150" height="40" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1"/>
+<text x="450.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#4c1d95">PostgreSQL</text>
+<text x="450.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Conversation, Message</text>
+<line x1="450" y1="46" x2="450" y2="324" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<rect x="555.0" y="6" width="150" height="40" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="630.0" y="19.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Owner</text>
+<text x="630.0" y="33.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Messages page</text>
+<line x1="630" y1="46" x2="630" y2="324" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+<polyline points="90,78 266,78" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="180.0" y="73" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">1. POST /api/conversations {turfId}</text>
+<polyline points="270,108 446,108" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360.0" y="103" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">2. find or create (unique turf + player)</text>
+<polyline points="90,138 266,138" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="180.0" y="133" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">3. POST …/messages {text ≤ 1000}</text>
+<rect x="159.2" y="153" width="221.6" height="22" rx="5" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="270.0" y="168" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">participant check, 20 msgs/min limit</text>
+<polyline points="270,198 446,198" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="360.0" y="193" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">4. insert Message, notify once per unread thread</text>
+<polyline points="630,228 274,228" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="450.0" y="223" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">5. poll every 3 s (thread), 8 s (inbox)</text>
+<polyline points="270,258 626,258" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<text x="450.0" y="253" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">6. new messages; push if app installed</text>
+<polyline points="630,288 274,288" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="450.0" y="283" text-anchor="middle" font-size="10" font-weight="400" fill="#0f172a">7. POST …/read</text></svg>
+<p>Only the player and the turf's current owner can read a conversation (admins cannot). Owners can only start chats with players who booked their
+turf. Names are shown, never phone numbers.</p>
+<h3>Owner analytics</h3>
+<p><code>analytics.ts</code> computes revenue, bookings, cancellations, lead time, repeat customers and utilisation for any date range, compared with the
+previous period of the same length. Utilisation counts <b>area-hours</b>: a full 7s hour uses both halves (2 area-hours); owner-blocked time is excluded
+from capacity. Charts are dependency-free SVG (<code>charts.tsx</code>) with accessible table views; CSV export is formula-injection safe.</p>
+
+</section>
+<section><h2>11 · Android app</h2>
+
+<svg viewBox="0 0 720 362" width="100%" class="dia" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="20" y="20" width="430" height="330" rx="12" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6 4"/><text x="32" y="36" font-size="11.5" font-weight="600" fill="#1e293b">Android phone</text>
+<rect x="36" y="46" width="398" height="290" rx="12" fill="none" stroke="#12b76a" stroke-width="1" stroke-dasharray="6 4"/><text x="48" y="62" font-size="11.5" font-weight="600" fill="#05603a">Turfly app  in.turfly.app  (Capacitor 8, API 24 to 36)</text>
+<rect x="52" y="78" width="366" height="70" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+<text x="235.0" y="99.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#0f172a">WebView: loads server.url over HTTPS</text>
+<text x="235.0" y="113.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">User agent adds TurflyApp/1.0.0 (and push=1 with Firebase)</text>
+<text x="235.0" y="127.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Only Turfly + Razorpay pages open inside the app</text>
+<rect x="52" y="160" width="176" height="72" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="140.0" y="182.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">Capacitor plugins</text>
+<text x="140.0" y="196.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">App: back button</text>
+<text x="140.0" y="210.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">PushNotifications: FCM token</text>
+<rect x="242" y="160" width="176" height="72" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="330.0" y="182.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">MainActivity.java</text>
+<text x="330.0" y="196.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">upi:// and intent:// to UPI apps</text>
+<text x="330.0" y="210.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">DownloadManager + cookie</text>
+<rect x="52" y="244" width="176" height="76" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="140.0" y="268.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">www/offline.html</text>
+<text x="140.0" y="282.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">shown with no network</text>
+<text x="140.0" y="296.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">retries the site</text>
+<rect x="242" y="244" width="176" height="76" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="330.0" y="268.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">NativeBridge.tsx</text>
+<text x="330.0" y="282.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">(web code) registers token</text>
+<text x="330.0" y="296.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">POST /api/devices</text>
+<rect x="500" y="40" width="200" height="56" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="600.0" y="61.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">Turfly server</text>
+<text x="600.0" y="75.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">same site as browsers</text>
+<rect x="500" y="160" width="200" height="56" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="600.0" y="181.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">UPI apps</text>
+<text x="600.0" y="195.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">GPay, PhonePe, Paytm</text>
+<rect x="500" y="268" width="200" height="56" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="600.0" y="289.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">Firebase Cloud Messaging</text>
+<text x="600.0" y="303.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">delivers push</text>
+<polyline points="418,104 450,104 450,68 498,68" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)" marker-start="url(#ah)"/>
+<polyline points="418,196 498,196" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="474" y="190" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">intent</text>
+<polyline points="498,296 452,296" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<text x="474" y="290" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">push</text></svg>
+<ul>
+<li>The app shows the live website, so every website change reaches the app without a Play Store update. Only native code changes need a new build.</li>
+<li>Payments: Razorpay's UPI buttons open <code>upi://</code> or <code>intent://</code> links, which <code>MainActivity</code> hands to the installed UPI app.</li>
+<li>Downloads (CSV, calendar file, "download my data") go through Android's DownloadManager with the session cookie.</li>
+<li>Push: with <code>google-services.json</code>, the app gets an FCM token; the website registers it at <code>/api/devices</code>; the server sends pushes with the FCM HTTP v1 API.</li>
+<li>Build: <code>mobile/scripts/build.mjs</code> writes the server URL, syncs Capacitor, generates icons and runs Gradle → debug APK or signed release AAB.</li>
+</ul>
+
+</section>
+<section><h2>12 · Security</h2>
+
+<table>
+<tr><th>Layer</th><th>Protection</th></tr>
+<tr><td>Transport</td><td>HTTPS everywhere (Cloudflare), HSTS, app allows HTTPS only.</td></tr>
+<tr><td>Browser</td><td>Content-Security-Policy (scripts only from self and Razorpay), X-Frame-Options DENY, strict referrer policy, Permissions-Policy.</td></tr>
+<tr><td>Sign-in</td><td>Hashed single-use OTPs, attempt and send limits per phone, IP and globally; no on-screen OTP for admins or real owners.</td></tr>
+<tr><td>Authorisation</td><td><code>pageUser()</code> on every protected page; <code>requireUser(role)</code> and <code>requireTurfAccess()</code> on every API call and server action.</td></tr>
+<tr><td>Input</td><td>zod validation; Prisma parameterised queries; message length and rate limits; CSV export escapes formulas.</td></tr>
+<tr><td>Payments</td><td>Server-side amounts, HMAC-verified webhooks, idempotent event handling, mock gateway refused when real keys exist.</td></tr>
+<tr><td>Privacy</td><td>Phone numbers hidden from teammates unless shared; chat closed to admins; account deletion and data export; Android backup excludes the session.</td></tr>
+<tr><td>Operations</td><td>Start-up env check (<code>instrumentation.ts</code>), <code>/api/health</code>, audit log for owner/admin actions, secrets only in <code>.env</code> (git-ignored).</td></tr>
+</table>
+
+</section>
+<section><h2>13 · Production layout (recommended next step)</h2>
+
+<svg viewBox="0 0 720 398" width="100%" class="dia" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="20" y="14" width="200" height="48" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="120.0" y="31.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Android app</text>
+<text x="120.0" y="45.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Play Store build</text>
+<rect x="260" y="14" width="200" height="48" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="360.0" y="31.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Browsers</text>
+<text x="360.0" y="45.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">turfly.in</text>
+<rect x="500" y="14" width="200" height="48" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="600.0" y="31.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">Razorpay webhooks</text>
+<text x="600.0" y="45.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">fixed URL</text>
+<polyline points="120,62 120,92" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="360,62 360,92" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<polyline points="600,62 600,92" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="20" y="94" width="680" height="48" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="360.0" y="118.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">Cloudflare: DNS for your domain, WAF, rate limiting, named tunnel (permanent hostname)</text>
+<polyline points="360,142 360,170" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)"/>
+<rect x="20" y="172" width="680" height="214" rx="12" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6 4"/><text x="32" y="188" font-size="11.5" font-weight="600" fill="#1e293b">Server: cloud VM or small always-on machine  (docker-compose.prod.yml)</text>
+<rect x="40" y="200" width="200" height="64" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="140.0" y="218.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">app container</text>
+<text x="140.0" y="232.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">Next.js standalone build</text>
+<text x="140.0" y="246.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">health check /api/health</text>
+<rect x="260" y="200" width="200" height="64" rx="7" fill="#ecfdf3" stroke="#12b76a" stroke-width="1"/>
+<text x="360.0" y="218.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#05603a">cron container</text>
+<text x="360.0" y="232.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">calls /api/cron/tick</text>
+<text x="360.0" y="246.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">every minute</text>
+<rect x="480" y="200" width="200" height="64" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+<text x="580.0" y="225.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#1e293b">cloudflared container</text>
+<text x="580.0" y="239.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">named tunnel token</text>
+<rect x="40" y="290" width="420" height="64" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1"/>
+<text x="250.0" y="308.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#4c1d95">PostgreSQL (managed: Neon, Supabase, RDS)</text>
+<text x="250.0" y="322.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">daily backups + point-in-time restore</text>
+<text x="250.0" y="336.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">or the db container with nightly pg_dump off-site</text>
+<rect x="480" y="290" width="200" height="64" rx="7" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+<text x="580.0" y="308.0" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#9a3412">Monitoring</text>
+<text x="580.0" y="322.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">uptime ping, error tracking</text>
+<text x="580.0" y="336.0" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="400" fill="#475569">log retention</text>
+<polyline points="140,264 140,288" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)" marker-start="url(#ah)"/>
+<polyline points="360,264 360,288" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#ah)" marker-start="url(#ah)"/></svg>
+<ul>
+<li><b>Domain + named tunnel:</b> a permanent hostname such as <code>turfly.in</code>; the Android app and Razorpay webhook URL never change again.</li>
+<li><b>Always-on server:</b> a small cloud VM (or always-on mini PC) running <code>docker-compose.prod.yml</code>; restarts automatically.</li>
+<li><b>Managed database with backups:</b> point-in-time recovery protects bookings and payments.</li>
+<li><b>Monitoring:</b> uptime checks on <code>/api/health</code> and error tracking so failures are noticed before customers report them.</li>
+<li>The code needs no changes for this move: only environment variables (<code>APP_URL</code>, <code>DATABASE_URL</code>, keys) differ.</li>
+</ul>
+
+</section>
+<section><h2>14 · Value-add features (research)</h2>
+
+<p>Compared with Indian booking apps (Playo, Hudle, KheloMore, Turf Town) and Playtomic, the player-side features most worth adding next are split payments,
+slot alerts and recurring bookings. On the owner side the priorities are automatic settlement and memberships. Kerala-specific additions are
+monsoon rain-out credits and a Malayalam interface. Effort: <span class="chip eS">S</span> days,
+<span class="chip eM">M</span> 1 to 2 weeks, <span class="chip eL">L</span> 3+ weeks.</p>
+<h3>Platform</h3><table class='feat'><tr><th>Feature</th><th>Why it adds value</th><th>Effort</th><th>Today</th></tr>
+<tr><td>Permanent domain + named tunnel or cloud host, nightly backups, uptime + error monitoring</td><td>Must-have before real customers; the quick tunnel URL changes and a PC can go offline</td><td class='c'><span class='chip eS'>S</span></td><td>Not built</td></tr>
+<tr><td>Real-time updates (Server-Sent Events) for chat and slot availability</td><td>Removes 3 s polling, instant &#x27;slot just taken&#x27; feedback</td><td class='c'><span class='chip eM'>M</span></td><td>Polling</td></tr>
+<tr><td>End-to-end tests of the booking + payment flow (Playwright)</td><td>Catches regressions in the money path before release</td><td class='c'><span class='chip eM'>M</span></td><td>Unit + DB tests only</td></tr>
+<tr><td>SEO pages per area (&quot;football turf in Manjeri&quot;) with structured data</td><td>Free discovery from Google search</td><td class='c'><span class='chip eS'>S</span></td><td>Sitemap only</td></tr>
+<tr><td>iPhone app from the same Capacitor project</td><td>Reaches iOS users; needs a Mac and Apple account</td><td class='c'><span class='chip eM'>M</span></td><td>Android only</td></tr>
+</table>
+<h3>Players</h3><table class='feat'><tr><th>Feature</th><th>Why it adds value</th><th>Effort</th><th>Today</th></tr>
+<tr><td>Split payment: each player pays a share by UPI link</td><td>Organiser no longer fronts the full cost; used by Playtomic</td><td class='c'><span class='chip eM'>M</span></td><td>Schema ready</td></tr>
+<tr><td>Slot alerts / waitlist: &#x27;tell me if 7 PM frees up&#x27;</td><td>Fills cancelled slots in minutes; a gap players ask for in other apps</td><td class='c'><span class='chip eS'>S</span></td><td>Not built</td></tr>
+<tr><td>Recurring weekly bookings (same slot every Tuesday)</td><td>Office groups and regular teams book once for the month</td><td class='c'><span class='chip eM'>M</span></td><td>Not built</td></tr>
+<tr><td>Rain-out credit for the monsoon (June to September)</td><td>Owner declares a washout → automatic credit or free reschedule; builds trust in Kerala</td><td class='c'><span class='chip eS'>S</span></td><td>Not built</td></tr>
+<tr><td>Turfly wallet: refunds and referral rewards as instant credit</td><td>No 5 to 7 day bank wait; brings players back</td><td class='c'><span class='chip eM'>M</span></td><td>Ledger ready</td></tr>
+<tr><td>Open matches with skill level and per-seat payment</td><td>Solo players join games; extends Find players</td><td class='c'><span class='chip eM'>M</span></td><td>Find players built</td></tr>
+<tr><td>Malayalam interface</td><td>Local language for owners, staff and many players</td><td class='c'><span class='chip eM'>M</span></td><td>English only</td></tr>
+<tr><td>Match stats, player profiles, man-of-the-match vote, leaderboards</td><td>Social reason to keep using the app after booking</td><td class='c'><span class='chip eM'>M</span></td><td>Schema ready</td></tr>
+<tr><td>Tournaments with entry fees and fixtures</td><td>Weekend leagues are a big turf revenue source</td><td class='c'><span class='chip eL'>L</span></td><td>Schema ready</td></tr>
+<tr><td>Weather forecast on the booking page (Open-Meteo, free, no key)</td><td>Players avoid rained-out evenings</td><td class='c'><span class='chip eS'>S</span></td><td>Not built</td></tr>
+<tr><td>Favourites and one-tap &#x27;book again&#x27;</td><td>Most bookings repeat the same turf and hour</td><td class='c'><span class='chip eS'>S</span></td><td>Not built</td></tr>
+</table>
+<h3>Owners</h3><table class='feat'><tr><th>Feature</th><th>Why it adds value</th><th>Effort</th><th>Today</th></tr>
+<tr><td>Automatic settlement with Razorpay Route (linked accounts)</td><td>Owners get paid without manual payouts; less admin work and risk</td><td class='c'><span class='chip eM'>M</span></td><td>Ledger ready</td></tr>
+<tr><td>Hour packs and memberships (e.g. 10 hours at 10% off)</td><td>Prepaid revenue, loyal regulars</td><td class='c'><span class='chip eM'>M</span></td><td>Not built</td></tr>
+<tr><td>Staff logins (manager, cashier) with limited rights</td><td>Owners stop sharing their own login with staff</td><td class='c'><span class='chip eS'>S</span></td><td>Owner only</td></tr>
+<tr><td>Add-ons and counter sales: ball, bibs, water, coaching</td><td>Extra revenue tracked in the same ledger</td><td class='c'><span class='chip eM'>M</span></td><td>Not built</td></tr>
+<tr><td>Last-minute deals: auto-discount unsold slots 3 h before</td><td>Turns empty hours into revenue</td><td class='c'><span class='chip eS'>S</span></td><td>Offers exist</td></tr>
+<tr><td>Pricing insights from the utilisation heatmap</td><td>Suggests peak / off-peak prices from real demand</td><td class='c'><span class='chip eS'>S</span></td><td>Analytics built</td></tr>
+<tr><td>Customer list: regulars, last visit, win-back offers by WhatsApp</td><td>Simple CRM for repeat business</td><td class='c'><span class='chip eM'>M</span></td><td>Not built</td></tr>
+<tr><td>GST invoices (GSTIN, tax lines on receipts)</td><td>Needed by registered businesses and corporate customers</td><td class='c'><span class='chip eS'>S</span></td><td>Plain receipt</td></tr>
+<tr><td>Expenses (electricity, staff, maintenance) and a profit view</td><td>Owners see profit, not just revenue</td><td class='c'><span class='chip eS'>S</span></td><td>Not built</td></tr>
+</table>
+<div class="note"><b>Suggested order:</b> 1) permanent hosting, backups and monitoring; 2) Razorpay Route settlement; 3) slot alerts + last-minute deals;
+4) split payments; 5) rain-out credits and the wallet; 6) Malayalam.</div>
+<p class="small muted">Sources: Playtomic help centre (open matches, split payment, level requests); Playo, Hudle and KheloMore store listings; Turf Town
+business model write-up (smarther.co); club-management software listings on Capterra India. Feature availability changes often; check before relying on it.</p>
+
+</section>
+</body></html>

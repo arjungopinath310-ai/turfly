@@ -8,9 +8,6 @@ export const whatsappShare = (text: string) => `https://wa.me/?text=${encodeURIC
 export const directionsUrl = (t: { lat: number; lng: number }) =>
   `https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}`;
 
-export const mapsUrl = (t: { lat: number; lng: number; name?: string }) =>
-  `https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}`;
-
 const gcalStamp = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
 export function googleCalendarUrl(b: { code: string; startAt: Date | string; endAt: Date | string; turfName: string; address: string; configName: string }) {

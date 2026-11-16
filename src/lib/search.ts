@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import { getAvailability } from "./engine/booking";
-import { istParts, isValidDate } from "./time";
+import { isValidDate } from "./time";
 
 export interface TurfFilters {
   q?: string;
@@ -105,8 +105,3 @@ export async function searchTurfs(f: TurfFilters) {
 }
 
 export type TurfCard = Awaited<ReturnType<typeof searchTurfs>>[number];
-
-export const nowIstTime = () => {
-  const p = istParts(new Date());
-  return `${String(Math.floor(p.minute / 60)).padStart(2, "0")}:00`;
-};

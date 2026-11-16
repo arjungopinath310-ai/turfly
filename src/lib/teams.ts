@@ -1,4 +1,4 @@
-import type { Team, TeamMember, User } from "@prisma/client";
+import type { TeamMember, User } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "./db";
 import { AppError } from "./errors";
@@ -62,5 +62,3 @@ export function publicMember(m: TeamMember & { user?: { shareContactWithTeams: b
     email: canSee ? m.email : null,
   };
 }
-
-export type TeamWithMembers = Team & { members: (TeamMember & { user: { shareContactWithTeams: boolean } | null })[] };
