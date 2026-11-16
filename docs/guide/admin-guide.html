@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Turfly admin guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+@page { size: A4; margin: 14mm 14mm 16mm; }
+:root { --g7:#027a48; --g6:#039855; --g5:#12b76a; --g0:#ecfdf3; --ink:#0f172a; --mut:#475569; --line:#e2e8f0; }
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); font-size: 10pt; line-height: 1.5; margin: 0; }
+h1 { font-size: 22pt; margin: 0 0 4mm; }
+h2 { font-size: 14.5pt; margin: 0 0 3mm; padding-bottom: 2mm; border-bottom: 2px solid var(--g5); }
+h3 { font-size: 11pt; margin: 4.5mm 0 1.5mm; color: var(--g7); }
+p { margin: 0 0 2.5mm; } ul, ol { margin: 0 0 3mm; padding-left: 5.5mm; } li { margin-bottom: 1mm; }
+section { page-break-before: always; }
+.avoid, tr, pre { page-break-inside: avoid; }
+table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9pt; }
+th { text-align: left; background: #f1f5f9; padding: 1.6mm 2mm; border-bottom: 1px solid var(--line); font-weight: 600; }
+td { padding: 1.6mm 2mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+code { font-family: Consolas, monospace; font-size: 8.7pt; background: #f1f5f9; padding: .2mm 1mm; border-radius: 1mm; }
+pre { font-family: Consolas, monospace; font-size: 8.8pt; background: #0f172a; color: #e2e8f0; padding: 2.5mm 3.5mm; border-radius: 2mm; margin: 1.5mm 0 3.5mm; white-space: pre-wrap; word-break: break-all; }
+pre .c { color: #86efac; }
+.note { border-left: 3px solid var(--g5); background: var(--g0); padding: 2.2mm 3.2mm; margin: 3mm 0; }
+.warn { border-left: 3px solid #f59e0b; background: #fffbeb; padding: 2.2mm 3.2mm; margin: 3mm 0; }
+.danger { border-left: 3px solid #ef4444; background: #fef2f2; padding: 2.2mm 3.2mm; margin: 3mm 0; }
+.cover { height: 262mm; display: flex; flex-direction: column; justify-content: space-between; background: #07130d; color: #fff; border-radius: 5mm; padding: 18mm 16mm; }
+.cover h1 { font-size: 38pt; line-height: 1.05; margin: 8mm 0 5mm; }
+.cover .tag { color: #a6f4c5; font-weight: 600; }
+.cover .logo { font-size: 18pt; font-weight: 800; }
+.cover .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; font-size: 9.5pt; color: #cbd5e1; }
+.cover .meta b { display: block; color: #fff; font-size: 10.5pt; }
+.toc { columns: 2; column-gap: 10mm; }
+.toc div { break-inside: avoid; padding: 1.2mm 0; border-bottom: 1px dotted var(--line); }
+.toc b { color: var(--g6); display: inline-block; width: 7mm; }
+.cmd td:first-child { width: 34%; font-weight: 600; }
+.ts td:first-child { width: 27%; font-weight: 600; }
+.ts td:nth-child(2) { width: 25%; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5mm; margin: 2mm 0 4mm; }
+.box { border: 1px solid var(--line); border-radius: 2.5mm; padding: 2.5mm; font-size: 8.8pt; }
+.box b { display: block; font-size: 9.5pt; color: var(--g7); }
+.big { font-size: 11pt; }
+</style></head>
+<body>
+
+<div class="cover">
+  <div class="logo">Turfly</div>
+  <div>
+    <div class="tag">Admin guide</div>
+    <h1>Start, stop, update<br>and fix Turfly yourself</h1>
+    <p style="color:#cbd5e1;max-width:140mm">Every command you need to run Turfly on this PC, what each window does, how to back up the data,
+    and a troubleshooting table for the problems you are most likely to meet. No developer or AI assistant needed.</p>
+  </div>
+  <div class="meta"><div><b>Applies to</b>Windows PC hosting (demo)</div><div><b>Project folder</b>Documents\Arjun Claude\turfly</div><div><b>Updated</b>16 Nov 2026</div></div>
+</div>
+
+<section>
+<h2>Contents</h2>
+<div class="toc">
+  <div><b>1</b>Quick reference</div>
+  <div><b>2</b>Before you type any command</div>
+  <div><b>3</b>What runs on the PC</div>
+  <div><b>4</b>Starting and stopping</div>
+  <div><b>5</b>When the public address changes</div>
+  <div><b>6</b>Updating Turfly to a new version</div>
+  <div><b>7</b>Admin work inside the app</div>
+  <div><b>8</b>Backups and restore</div>
+  <div><b>9</b>Troubleshooting</div>
+  <div><b>10</b>Where to find error messages</div>
+  <div><b>11</b>The settings file (.env)</div>
+  <div><b>12</b>Extra commands for emergencies</div>
+</div>
+<div class="note" style="margin-top:8mm">
+<b>The three commands you will use most</b> (run them in PowerShell inside the turfly folder, see section 2):
+<pre>powershell -ExecutionPolicy Bypass -File scripts\status.ps1      <span class="c"># is everything OK?</span>
+powershell -ExecutionPolicy Bypass -File scripts\stop-all.ps1    <span class="c"># stop Turfly</span>
+powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1   <span class="c"># start Turfly (prints the public address)</span></pre>
+Most problems are fixed by: <b>stop-all</b>, then <b>start-all</b>, then send people the new address it prints.
+</div>
+</section>
+
+<section>
+<h2>1 · Quick reference</h2>
+<p>Every command below is typed in PowerShell <b>after</b> going to the project folder (section 2). Commands are on one line each.</p>
+<table class="cmd">
+<tr><th>I want to…</th><th>Command</th></tr>
+<tr><td>Check that everything works</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\status.ps1</code></td></tr>
+<tr><td>Start Turfly (after the PC was off, or after stop)</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1</code></td></tr>
+<tr><td>Stop Turfly</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\stop-all.ps1</code></td></tr>
+<tr><td>Restart Turfly</td><td>stop-all, then start-all</td></tr>
+<tr><td>Start after changing the code (rebuild first)</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1 -Rebuild</code></td></tr>
+<tr><td>See the current public address</td><td><code>Select-String -Path .env -Pattern '^APP_URL'</code> (also shown by status.ps1)</td></tr>
+<tr><td>Save a new public address by hand</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\set-public-url.ps1 https://new-address.trycloudflare.com</code></td></tr>
+<tr><td>Back up the database</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1</code></td></tr>
+<tr><td>Get the latest code from GitHub</td><td><code>git pull</code> then section 6</td></tr>
+<tr><td>Apply database changes after an update</td><td><code>npm.cmd run db:migrate</code></td></tr>
+<tr><td>Run the automatic tests</td><td><code>npm.cmd test</code> and <code>npm.cmd run test:integration</code></td></tr>
+<tr><td>Rebuild the Android test app (APK)</td><td><code>cd mobile</code> then <code>npm.cmd run build:debug</code> (APK appears in <code>mobile\dist</code>)</td></tr>
+<tr><td>Start the database if it is stopped</td><td>PowerShell <b>as Administrator</b>: <code>Start-Service postgresql-x64-16</code></td></tr>
+<tr><td>Free port 3000 if something blocks it</td><td><code>Get-NetTCPConnection -LocalPort 3000 -State Listen</code> → note <i>OwningProcess</i> → <code>Stop-Process -Id NUMBER</code></td></tr>
+</table>
+<div class="warn"><b>Always <code>npm.cmd</code>, never plain <code>npm</code>.</b> Windows blocks <code>npm.ps1</code> by default ("running scripts is disabled on this system").
+<code>npm.cmd</code> does the same thing without that problem. The same is why every script is started with <code>powershell -ExecutionPolicy Bypass -File …</code>.</div>
+</section>
+
+<section>
+<h2>2 · Before you type any command</h2>
+<h3>Open PowerShell in the project folder</h3>
+<ol>
+<li>Press the <b>Windows key</b>, type <b>PowerShell</b>, press Enter. (For the database commands marked "as Administrator", right-click <b>Windows PowerShell</b> → <b>Run as administrator</b>.)</li>
+<li>Go to the project folder (copy exactly, including the quotes):
+<pre>cd "C:\Users\arjun\OneDrive\Documents\Arjun Claude\turfly"</pre></li>
+<li>The prompt now ends with <code>…\turfly&gt;</code>. Every command in this guide is typed here.</li>
+</ol>
+<h3>Reading the output</h3>
+<ul>
+<li>Green <code>[ OK ]</code> lines are good. Red <code>[FAIL]</code> lines always print a <b>Fix:</b> line with the next step.</li>
+<li>To stop a program running in a window, click the window and press <b>Ctrl + C</b> (answer <b>Y</b> if asked "Terminate batch job?").</li>
+<li>Copy text from PowerShell by selecting it with the mouse and pressing Enter; paste with a right-click.</li>
+</ul>
+<h3>Tools installed on this PC</h3>
+<table>
+<tr><th>Tool</th><th>Used for</th><th>Check it with</th></tr>
+<tr><td>Node.js 22</td><td>Runs the Turfly website</td><td><code>node -v</code></td></tr>
+<tr><td>PostgreSQL 16</td><td>The database (Windows service <code>postgresql-x64-16</code>, starts with Windows)</td><td><code>Get-Service postgresql-x64-16</code></td></tr>
+<tr><td>cloudflared</td><td>Gives the PC a public https address</td><td><code>&amp; 'C:\Program Files (x86)\cloudflared\cloudflared.exe' --version</code></td></tr>
+<tr><td>Git + GitHub CLI</td><td>Gets code from github.com/arjungopinath310-ai/turfly</td><td><code>git --version</code></td></tr>
+<tr><td>JDK 21 + Android SDK</td><td>Only for building the Android app</td><td>see <code>docs\ANDROID.md</code></td></tr>
+</table>
+</section>
+
+<section>
+<h2>3 · What runs on the PC</h2>
+<p>Turfly is four parts. <code>start-all</code> opens three windows; the database runs in the background.</p>
+<div class="grid4">
+  <div class="box"><b>Turfly public tunnel</b>cloudflared. Connects the PC to Cloudflare and prints the public <code>https://….trycloudflare.com</code> address.</div>
+  <div class="box"><b>Turfly server</b>The website and app back end on <code>http://localhost:3000</code>. Shows sign-in codes and messages.</div>
+  <div class="box"><b>Turfly reminders</b>Every minute: frees unpaid slot holds after 5 minutes, completes past matches, sends reminders.</div>
+  <div class="box"><b>PostgreSQL</b>All data. A Windows service that starts by itself; no window.</div>
+</div>
+<table>
+<tr><th>If this stops…</th><th>…this is what people notice</th></tr>
+<tr><td>Public tunnel</td><td>Nobody outside your Wi-Fi can open the site ("site can't be reached" or Cloudflare error). On the PC, <code>http://localhost:3000</code> still works.</td></tr>
+<tr><td>Server</td><td>Cloudflare shows "Bad gateway" / error 1033 / 502. Nothing works.</td></tr>
+<tr><td>Reminders</td><td>The site works, but unpaid holds block slots longer, finished matches don't become "completed" (no reviews), reminders aren't sent.</td></tr>
+<tr><td>Database</td><td>Pages show an error; <code>status.ps1</code> reports "Database is not running".</td></tr>
+<tr><td>The PC sleeps, restarts or loses internet</td><td>Everything stops. After a restart run <code>start-all</code> again (it gives a new public address).</td></tr>
+</table>
+<div class="note"><b>Keep the PC awake while it hosts Turfly.</b> Settings → System → Power → "When plugged in, put my device to sleep after": <b>Never</b>.
+Closing the laptop lid may also sleep it: Control Panel → Power Options → "Choose what closing the lid does" → <b>Do nothing</b> (when plugged in).</div>
+</section>
+
+<section>
+<h2>4 · Starting and stopping</h2>
+<h3>Start (after turning the PC on, or after stop-all)</h3>
+<pre>cd "C:\Users\arjun\OneDrive\Documents\Arjun Claude\turfly"
+powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1</pre>
+<p>It checks the database, starts the tunnel and waits for the public address, saves it in <code>.env</code>, opens the <b>Turfly server</b> and <b>Turfly reminders</b>
+windows and waits until the site answers. It ends with:</p>
+<pre>Turfly is running.
+Public address: https://some-random-words.trycloudflare.com</pre>
+<p>Share that address. It can take up to a minute to work on other devices. <b>Leave the three windows open</b> (you can minimise them).</p>
+<h3>Stop</h3>
+<pre>powershell -ExecutionPolicy Bypass -File scripts\stop-all.ps1</pre>
+<p>Stops the server, reminders and tunnel; the windows stay open showing their last lines, close them. The database keeps running (that's fine).</p>
+<h3>Check</h3>
+<pre>powershell -ExecutionPolicy Bypass -File scripts\status.ps1</pre>
+<p>Checks the database, the server, the reminders loop, the public address and free disk space, and prints a fix for anything that fails.</p>
+<h3>Doing it by hand (if a script fails)</h3>
+<p>Open three PowerShell windows, <code>cd</code> to the turfly folder in each, then:</p>
+<table>
+<tr><th>Window</th><th>Command</th></tr>
+<tr><td>1 · tunnel (start first)</td><td><code>&amp; 'C:\Program Files (x86)\cloudflared\cloudflared.exe' tunnel --url http://localhost:3000 --no-autoupdate</code><br>
+Copy the <code>https://….trycloudflare.com</code> address it prints, then in another window:<br>
+<code>powershell -ExecutionPolicy Bypass -File scripts\set-public-url.ps1 https://THE-ADDRESS.trycloudflare.com</code></td></tr>
+<tr><td>2 · server</td><td><code>npm.cmd start</code> (if there is no build yet or the code changed: <code>npm.cmd run build</code> first)</td></tr>
+<tr><td>3 · reminders</td><td><code>npm.cmd run cron:local</code></td></tr>
+</table>
+</section>
+
+<section>
+<h2>5 · When the public address changes</h2>
+<p>The free Cloudflare "quick tunnel" gets a <b>new random address every time it starts</b>, and Cloudflare can delete one at any time
+(the tunnel window then repeats <code>ERR … Tunnel not found</code>). <code>start-all</code> handles the website side automatically. After a change:</p>
+<ol>
+<li><b>Tell people the new address</b> (players, turf owners, testers). Old links stop working.</li>
+<li><b>Android app:</b> the address is built into the APK. Rebuild and reinstall:
+<pre>cd mobile
+npm.cmd run build:debug</pre>
+The new APK is <code>mobile\dist\turfly-1.0.0-debug.apk</code>; send it to the phones and install over the old one.</li>
+<li><b>Real Razorpay keys only:</b> Razorpay Dashboard → Settings → Webhooks → edit the webhook URL to <code>https://NEW-ADDRESS/api/payments/webhook</code>.
+Without this, payments are not confirmed. Razorpay retries failed webhooks for a while; once the URL is fixed, late payments are confirmed or refunded automatically.</li>
+<li><b>Google sign-in only (if configured):</b> Google Cloud Console → Credentials → OAuth client → add <code>https://NEW-ADDRESS/api/auth/callback/google</code>.</li>
+</ol>
+<div class="note"><b>Permanent fix:</b> buy a domain (e.g. turfly.in, about ₹800/year), add it to a free Cloudflare account and create a <b>named tunnel</b>.
+The address then never changes, and steps 1–4 are never needed again. Details: <code>docs\PRODUCTION.md</code>.</div>
+</section>
+
+<section>
+<h2>6 · Updating Turfly to a new version</h2>
+<p>When new code has been pushed to GitHub (by you, a developer or an assistant):</p>
+<pre>cd "C:\Users\arjun\OneDrive\Documents\Arjun Claude\turfly"
+powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1   <span class="c"># 1. safety copy of the data</span>
+powershell -ExecutionPolicy Bypass -File scripts\stop-all.ps1    <span class="c"># 2. stop (the build replaces files in use)</span>
+git pull                                                         <span class="c"># 3. get the new code</span>
+npm.cmd ci                                                       <span class="c"># 4. install exactly the listed packages</span>
+npm.cmd run db:migrate                                           <span class="c"># 5. apply database changes, if any</span>
+npm.cmd test                                                     <span class="c"># 6. optional: quick self-check</span>
+powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1 -Rebuild   <span class="c"># 7. build and start</span></pre>
+<ul>
+<li>Step 3 says <i>"Your local changes would be overwritten"</i>? Someone edited files on this PC. Run <code>git status</code> to see which; keep a copy, then <code>git stash</code> and pull again.</li>
+<li>Step 4 fails with <i>EPERM … query_engine</i>? Turfly is still running; run stop-all again and repeat step 4.</li>
+<li>If the new version misbehaves, go back to the previous one: <code>git log --oneline -5</code>, pick the previous commit id, <code>git checkout THAT-ID</code>,
+then steps 4 and 7. (Database changes are not undone; restore a backup only if really needed, section 8.)</li>
+</ul>
+<h3>Android app updates</h3>
+<p>Website changes appear in the app automatically (it shows the live site). Only changes inside <code>mobile\</code> or a changed address need a new APK
+(<code>cd mobile</code>, <code>npm.cmd run build:debug</code>). For Google Play builds see <code>docs\ANDROID.md</code>.</p>
+</section>
+
+<section>
+<h2>7 · Admin work inside the app</h2>
+<h3>Signing in as admin</h3>
+<ul>
+<li>Phone numbers listed in <code>ADMIN_PHONES</code> in <code>.env</code> become admin when they sign in.</li>
+<li>In demo mode the sign-in code is <b>not</b> shown on screen for admins and real turf owners (for safety). Look in the <b>Turfly server</b> window for a line like
+<code>[otp] +91XXXXXXXXXX → 123456</code>. With real SMS (MSG91 keys set) the code arrives by SMS.</li>
+</ul>
+<h3>Admin pages</h3>
+<table>
+<tr><th>Page</th><th>What you do there</th></tr>
+<tr><td><code>/admin</code></td><td>Overview: users, owners, turfs, pending approvals, money collected this month, open disputes.</td></tr>
+<tr><td><code>/admin/turfs</code></td><td>Approve or reject new turf listings and ownership claims, set a turf's commission, feature a turf, add an unclaimed listing.</td></tr>
+<tr><td><code>/admin/users</code></td><td>Find users, change roles, suspend abusive accounts.</td></tr>
+<tr><td><code>/admin/finance</code></td><td>Payments, refunds, webhook events and disputes; refund a booking or resolve a dispute.</td></tr>
+<tr><td><code>/admin/settings</code></td><td>Online advance amount, platform fee, hold time, default commission, default cancellation policy, reminders and channels, offer codes.</td></tr>
+</table>
+<p>Turf owners manage their own turfs at <code>/owner</code> (bookings, calendar, walk-ins, blocks, prices, analytics). Admins cannot read player–owner chats.</p>
+</section>
+
+<section>
+<h2>8 · Backups and restore</h2>
+<h3>Make a backup</h3>
+<pre>powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1</pre>
+<p>Saves <code>backups\turfly-YYYYMMDD-HHMM.dump</code> and keeps the newest 14. The turfly folder is inside OneDrive, so backups are also copied to your
+OneDrive cloud storage. They contain personal data (phone numbers, bookings): keep your Microsoft account secure and don't share the files.</p>
+<p><b>When:</b> before every update (section 6), and at least weekly while real people use the site.</p>
+<h3>Restore a backup (replaces ALL current data)</h3>
+<div class="danger">Restoring wipes everything that happened after the backup (bookings, payments, sign-ups). Make a fresh backup first in case you need to undo.</div>
+<pre>powershell -ExecutionPolicy Bypass -File scripts\stop-all.ps1
+powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1
+&amp; "C:\Program Files\PostgreSQL\16\bin\pg_restore.exe" --clean --if-exists --no-owner -d "postgresql://turfly@localhost:5432/turfly" backups\turfly-YYYYMMDD-HHMM.dump
+powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1</pre>
+<p>It asks for the database password: it is in <code>.env</code>, in <code>DATABASE_URL</code> between <code>turfly:</code> and <code>@localhost</code>.</p>
+<h3>Moving to another PC</h3>
+<ol>
+<li>Install the tools from section 2, then <code>git clone https://github.com/arjungopinath310-ai/turfly</code>.</li>
+<li>Copy <code>.env</code> from the old PC (it is not on GitHub; keep it private). Create the database user with <code>scripts\setup-local-db.ps1</code>.</li>
+<li><code>npm.cmd ci</code>, <code>npm.cmd run db:migrate</code>, restore the latest backup (above), then <code>start-all -Rebuild</code>.</li>
+</ol>
+</section>
+
+<section>
+<h2>9 · Troubleshooting</h2>
+<p>First run <code>status.ps1</code>; it names the broken part. Then find the symptom below.</p>
+<table class="ts">
+<tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+<tr><td>Public address: "This site can't be reached" / DNS error</td><td>Quick tunnel expired, or the PC is asleep or offline</td><td>Wake the PC, check internet, then stop-all → start-all. Share the new address (section 5).</td></tr>
+<tr><td>Tunnel window repeats <code>ERR … Tunnel not found</code></td><td>Cloudflare deleted the quick tunnel</td><td>stop-all → start-all.</td></tr>
+<tr><td>Cloudflare page "Bad gateway", error 502 or 1033</td><td>Tunnel is up but the server is not</td><td>stop-all → start-all. If it repeats, read the <b>Turfly server</b> window (section 10).</td></tr>
+<tr><td>start-all: "Port 3000 is already in use"</td><td>An old server is still running</td><td>stop-all, then start-all. Still blocked: <code>Get-NetTCPConnection -LocalPort 3000 -State Listen</code>, then <code>Stop-Process -Id OwningProcess-number</code>.</td></tr>
+<tr><td>status: "Database is not running"; pages show errors</td><td>PostgreSQL service stopped</td><td>PowerShell as Administrator: <code>Start-Service postgresql-x64-16</code>. If it won't start: check free disk space and the logs in <code>C:\Program Files\PostgreSQL\16\data\log</code>.</td></tr>
+<tr><td>Sign-in returns to the login page, or a "callback" error</td><td><code>NEXTAUTH_URL</code> in .env differs from the address in the browser</td><td><code>set-public-url.ps1</code> with the address in the browser bar, then restart (stop-all → start-all does both).</td></tr>
+<tr><td>No sign-in code</td><td>Demo mode: admins/owners get it in the server window. Real mode: SMS not configured</td><td>Read <code>[otp]</code> lines in the <b>Turfly server</b> window. For real SMS set the MSG91 keys (section 11).</td></tr>
+<tr><td>"Too many requests" when asking for a code</td><td>Anti-abuse limits: 5 codes/hour per phone, 30 s between codes, 10/hour per network</td><td>Wait up to an hour, or clear that phone's codes (section 12).</td></tr>
+<tr><td>Pages have no colours/layout, or errors mentioning <code>.next</code>, <code>EINVAL</code>, <code>readlink</code></td><td>OneDrive turned build files into online-only placeholders</td><td>stop-all, then <code>Remove-Item -Recurse -Force .next</code>, <code>New-Item -ItemType Directory .next</code>, <code>attrib +P -U .next</code>, then start-all -Rebuild.</td></tr>
+<tr><td>"npm.ps1 cannot be loaded… running scripts is disabled"</td><td>Windows script policy</td><td>Use <code>npm.cmd</code>; start scripts with <code>powershell -ExecutionPolicy Bypass -File …</code>.</td></tr>
+<tr><td><code>EPERM: operation not permitted … query_engine</code></td><td>The running server locks a file that install/update wants to replace</td><td>stop-all, then repeat the command.</td></tr>
+<tr><td>Slots stay "held"; no reminders; matches never "completed"</td><td>Reminders loop is not running</td><td>status.ps1; start it with <code>npm.cmd run cron:local</code> in a new window (or stop-all → start-all).</td></tr>
+<tr><td>Real payment taken but booking not confirmed</td><td>Razorpay webhook still points at an old address</td><td>Update the webhook URL (section 5, step 3). Razorpay retries; the booking confirms or is refunded automatically.</td></tr>
+<tr><td>Android app shows "You're offline" while the phone has internet</td><td>The app has the old address built in</td><td>Rebuild and reinstall the APK (section 5, step 2).</td></tr>
+<tr><td>Error after an update: "column … does not exist"</td><td>Database changes not applied</td><td><code>npm.cmd run db:migrate</code>, then restart.</td></tr>
+<tr><td><code>npm.cmd run build</code> fails</td><td>Broken code or missing packages</td><td><code>npm.cmd ci</code> and build again. Still failing: go back to the previous version (section 6) and report the red error text to the developer.</td></tr>
+<tr><td>Server window shows <code>[env] WARNING</code> lines</td><td>Information, not errors: demo mode on, business details missing</td><td>Fill those values in .env before real launch (section 11).</td></tr>
+<tr><td>Site is slow or stops at night</td><td>PC goes to sleep</td><td>Change the power settings (section 3).</td></tr>
+<tr><td>status: low disk space</td><td>Old builds/backups</td><td>Delete <code>.next-preview</code> / <code>.next-verify</code> folders and old files in <code>backups\</code>; empty the Recycle Bin.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>10 · Where to find error messages</h2>
+<table>
+<tr><th>Window / place</th><th>Normal</th><th>Worth acting on</th></tr>
+<tr><td><b>Turfly server</b></td><td><code>✓ Ready</code>, <code>[env] WARNING</code> lines, <code>[otp]</code> codes, <code>[sms:not-configured]</code> / <code>[whatsapp:not-configured]</code> (messages that would be sent in real mode)</td><td>Red text, <code>Error:</code>, <code>PrismaClient…Error</code>, <code>ECONNREFUSED 5432</code> (database down)</td></tr>
+<tr><td><b>Turfly reminders</b></td><td>One line per minute: <code>200 {"releasedOccupancyRows":0,…}</code></td><td><code>server not reachable</code> (server stopped), <code>401</code> (CRON_SECRET changed: restart both windows)</td></tr>
+<tr><td><b>Turfly public tunnel</b></td><td><code>INF Registered tunnel connection</code></td><td>Repeating <code>ERR</code> lines: <code>Tunnel not found</code>, <code>failed to connect to origin</code> (server down)</td></tr>
+<tr><td>Admin → Finance</td><td>Webhook events "processed"</td><td>Webhook events with an error; failed refunds</td></tr>
+<tr><td>Database logs</td><td colspan="2"><code>C:\Program Files\PostgreSQL\16\data\log</code> (needs Administrator to open)</td></tr>
+</table>
+<div class="note"><b>Asking someone for help?</b> Send them the output of <code>status.ps1</code> and the last 30 lines of the window that shows the problem
+(select with the mouse, Enter to copy). <b>Never send the .env file</b> or anything from it.</div>
+</section>
+
+<section>
+<h2>11 · The settings file (.env)</h2>
+<p><code>turfly\.env</code> holds addresses, passwords and keys. It is <b>never</b> uploaded to GitHub. Open it with Notepad: <code>notepad .env</code>.
+After changing it, restart (stop-all → start-all).</p>
+<table>
+<tr><th>Setting</th><th>Meaning</th></tr>
+<tr><td><code>DATABASE_URL</code></td><td>How to reach the database (contains its password).</td></tr>
+<tr><td><code>APP_URL</code>, <code>NEXTAUTH_URL</code></td><td>The public address. Set automatically by start-all / set-public-url.</td></tr>
+<tr><td><code>NEXTAUTH_SECRET</code>, <code>CRON_SECRET</code></td><td>Random secrets. Changing <code>NEXTAUTH_SECRET</code> signs everyone out.</td></tr>
+<tr><td><code>ADMIN_PHONES</code></td><td>Comma-separated <code>+91…</code> numbers that become admin when they sign in.</td></tr>
+<tr><td><code>DEMO_MODE</code></td><td><code>true</code>: codes shown on screen, simulated payments. Set <code>false</code> only with real SMS and Razorpay keys.</td></tr>
+<tr><td><code>MSG91_*</code></td><td>Real SMS for sign-in codes and booking messages (needs DLT registration in India).</td></tr>
+<tr><td><code>RAZORPAY_KEY_ID</code>, <code>_KEY_SECRET</code>, <code>_WEBHOOK_SECRET</code></td><td>Real online payments. Leave empty in demo.</td></tr>
+<tr><td><code>ALLOW_MOCK_PAYMENTS</code></td><td>Allows the "simulate payment" buttons. Must be off for real money.</td></tr>
+<tr><td><code>GOOGLE_CLIENT_*</code>, <code>WHATSAPP_*</code>, <code>RESEND_API_KEY</code>, <code>EMAIL_FROM</code></td><td>Optional: Google sign-in, WhatsApp messages, email.</td></tr>
+<tr><td><code>FCM_SERVICE_ACCOUNT_JSON</code></td><td>Optional: push notifications to the Android app (see <code>docs\ANDROID.md</code>).</td></tr>
+<tr><td><code>BUSINESS_NAME</code>, <code>SUPPORT_EMAIL</code>, <code>BUSINESS_ADDRESS</code></td><td>Shown on the legal pages. Required before real launch.</td></tr>
+</table>
+<div class="warn"><code>set-public-url.ps1</code> keeps the previous version as <code>.env.bak</code>. If an edit goes wrong: <code>Copy-Item .env.bak .env -Force</code>.</div>
+</section>
+
+<section>
+<h2>12 · Extra commands for emergencies</h2>
+<h3>Open the database console</h3>
+<pre>&amp; "C:\Program Files\PostgreSQL\16\bin\psql.exe" "postgresql://turfly@localhost:5432/turfly"</pre>
+<p>Password: see section 8. Type <code>\q</code> to leave. Commands end with a semicolon. Read-only examples:</p>
+<pre>SELECT count(*) FROM "Booking" WHERE status = 'CONFIRMED' AND "startAt" > now();   <span class="c">-- upcoming bookings</span>
+SELECT code, status, "startAt" FROM "Booking" ORDER BY "createdAt" DESC LIMIT 10;   <span class="c">-- latest bookings</span>
+SELECT phone, name, role FROM "User" WHERE role = 'ADMIN';                          <span class="c">-- admins</span></pre>
+<h3>Clear the sign-in code limit for one phone</h3>
+<pre>DELETE FROM "OtpCode" WHERE phone = '+91XXXXXXXXXX';</pre>
+<h3>Make someone admin (they must have signed in once)</h3>
+<pre>UPDATE "User" SET role = 'ADMIN' WHERE phone = '+91XXXXXXXXXX';</pre>
+<div class="danger">Change data in the console only when this guide says so. Never edit bookings or payments by hand: money records must stay consistent.
+Use the admin pages for cancellations and refunds.</div>
+<h3>Other useful commands</h3>
+<table class="cmd">
+<tr><td>Which programs use port 3000</td><td><code>Get-NetTCPConnection -LocalPort 3000 -State Listen</code></td></tr>
+<tr><td>Is the website answering on this PC?</td><td><code>Invoke-RestMethod http://localhost:3000/api/health</code> (expect <code>status ok, db ok</code>)</td></tr>
+<tr><td>Stop / start the database</td><td>Administrator: <code>Stop-Service postgresql-x64-16</code> / <code>Start-Service postgresql-x64-16</code></td></tr>
+<tr><td>See what changed in the code folder</td><td><code>git status</code> and <code>git log --oneline -10</code></td></tr>
+<tr><td>Discard accidental edits to one file</td><td><code>git checkout -- path\to\file</code></td></tr>
+<tr><td>Rebuild this guide / the architecture PDF</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\make-admin-pdf.ps1</code><br><code>powershell -ExecutionPolicy Bypass -File scripts\make-architecture-pdf.ps1</code></td></tr>
+</table>
+</section>
+
+</body></html>

@@ -18,3 +18,8 @@ mobile/android/app/google-services.json
 *.keystore
 *.jks
 mobile/keystore.properties
+
+# backups written by scripts/set-public-url.ps1 (contain secrets)
+.env*.bak
+# database backups (personal data)
+backups/

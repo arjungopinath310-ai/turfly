@@ -54,6 +54,16 @@ Reminders and hold expiry run from a cron endpoint:
 curl -X POST -H "authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/tick
 ```
 
+## Running it on this PC (admin)
+
+Start, stop, check, back up and troubleshoot without a developer: see **docs/Turfly-Admin-Guide.pdf**.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\status.ps1     # is everything OK?
+powershell -ExecutionPolicy Bypass -File scripts\stop-all.ps1   # stop
+powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1  # start (prints the public address)
+```
+
 ## Tests
 
 ```bash
