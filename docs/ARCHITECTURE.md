@@ -116,5 +116,8 @@ The browser never confirms anything; the checkout page polls `/api/bookings/:id`
 * Hours before 5 AM count towards the previous evening's operating day in the weekday x hour heatmap.
 * Every figure is compared with the previous period of equal length. CSV export at `/api/owner/analytics/export` (formula-injection safe).
 
+## Sign-in gate
+`src/middleware.ts` requires a valid session for every page. Public exceptions (`src/lib/access.ts`): `/`, `/login`, `/legal/*`, `/contact`, `/account/delete`, because Razorpay's website check, Google's OAuth verification and the Play Store review must reach them signed out. Signed-out visitors are redirected to `/login?next=<page>` and come back afterwards (`safeNext` only allows same-site paths). The Android app (user agent `TurflyApp/`) skips the landing page. API routes are not gated by the middleware: each one checks the user itself, and webhooks, cron and health must stay reachable. The middleware only checks that the session token is valid; roles, ownership and suspensions are still checked per page and per API call.
+
 ## Page-level authorization
 Every protected server page calls `pageUser()` itself (redirect to sign-in, or 404 for the wrong role). A layout check alone is not enough, because the App Router can render a page segment without re-running its layout.

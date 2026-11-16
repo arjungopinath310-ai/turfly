@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { safeNext } from "@/lib/access";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { currentUser, requireUser } from "@/lib/auth";
@@ -26,14 +27,15 @@ async function save(fd: FormData) {
   await prisma.teamMember.updateMany({ where: { userId: user.id }, data: { name: d.name } });
   revalidatePath("/", "layout");
   const next = String(fd.get("next") ?? "");
-  if (next.startsWith("/") && !next.startsWith("//")) redirect(next);
+  const dest = safeNext(next, "");
+  if (dest) redirect(dest);
 }
 
 export default async function Profile(props: { searchParams: Promise<{ welcome?: string; next?: string }> }) {
   const searchParams = await props.searchParams;
   const user = await currentUser();
   if (!user) redirect("/login?next=/profile");
-  const next = searchParams.next?.startsWith("/") && !searchParams.next.startsWith("//") ? searchParams.next : "";
+  const next = safeNext(searchParams.next, "");
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
       <PageHeader title={searchParams.welcome ? "Welcome to Turfly! 👋" : "Your profile"} subtitle={formatPhone(user.phone) ?? user.email ?? ""} />

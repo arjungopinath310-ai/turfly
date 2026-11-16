@@ -1,7 +1,7 @@
 # Saves a new public address (e.g. a new quick-tunnel URL) everywhere Turfly needs it:
 #   .env APP_URL and NEXTAUTH_URL, and mobile/.turfly-url (used by the next APK build).
 #   powershell -ExecutionPolicy Bypass -File scripts\set-public-url.ps1 https://example.trycloudflare.com
-# Afterwards restart the Turfly server window (Ctrl+C, then npm.cmd start). No rebuild is needed.
+# Afterwards restart the website server: scripts\restart-server.ps1 (no rebuild needed).
 param([Parameter(Mandatory = $true)][string]$Url)
 
 $Url = $Url.Trim().TrimEnd("/")
@@ -24,5 +24,5 @@ Copy-Item $envFile "$envFile.bak" -Force
 [IO.File]::WriteAllText((Join-Path $root "mobile\.turfly-url"), "$Url`n")
 
 Write-Host "Saved $Url in .env (backup: .env.bak) and mobile\.turfly-url"
-Write-Host "Next: restart the Turfly server window (Ctrl+C, then npm.cmd start)."
+Write-Host "Next: powershell -ExecutionPolicy Bypass -File scripts\restart-server.ps1"
 Write-Host "The Android app has the address built in: rebuild the APK (cd mobile; npm run build:debug) and reinstall it."

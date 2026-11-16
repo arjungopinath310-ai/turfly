@@ -400,7 +400,7 @@ LAYERS = """
   <div class="layer l-entry"><b>Server entry points</b>
     <span>/api/auth (OTP, next-auth)</span><span>/api/bookings (+ cancel, dispute, roster, ics)</span><span>/api/payments (order, verify, webhook, mock)</span><span>/api/turfs/[id] (availability, quote)</span><span>/api/teams · /api/player-posts · /api/reviews</span><span>/api/conversations</span><span>/api/bookings/[id]/split · /api/split/[token] (+ pay)</span><span>/api/notifications · /api/devices</span><span>/api/account · /api/owner/analytics/export</span><span>/api/cron/tick · /api/health</span><span>Server actions: owner/actions.ts, admin/actions.ts</span></div>
   <div class="layer l-guard"><b>Guards (every request)</b>
-    <span>auth.ts: pageUser · requireUser(role) · requireTurfAccess</span><span>zod schemas</span><span>errors.ts: AppError → JSON</span><span>http.ts: clientIp (rate limits)</span><span>next.config: CSP, HSTS, frame deny</span></div>
+    <span>middleware.ts: sign-in gate (access.ts)</span><span>auth.ts: pageUser · requireUser(role) · requireTurfAccess</span><span>zod schemas</span><span>errors.ts: AppError → JSON</span><span>http.ts: clientIp (rate limits)</span><span>next.config: CSP, HSTS, frame deny</span></div>
   <div class="layer l-domain"><b>Domain logic (src/lib)</b>
     <span><i>engine/</i> allocation · slots · pricing · policy · split · booking</span><span><i>payments/</i> razorpay · service · refunds</span><span><i>notifications/</i> providers · service</span><span>push</span><span>split</span><span>chat</span><span>analytics</span><span>teams</span><span>search</span><span>otp</span><span>account</span><span>owner · business · settings</span><span>time (IST) · format · share</span></div>
   <div class="layer l-data"><b>Data</b><span>db.ts: one Prisma client</span><span>PostgreSQL 16: 39 tables, 5 migrations</span><span>EXCLUDE + CHECK constraints</span><span>money in paise, times in UTC</span></div>
@@ -520,7 +520,7 @@ Everything else (payments, SMS, WhatsApp, email, push) is a third-party service 
 <tr><td>Notifications</td><td>Job table + cron; in-app, FCM push, MSG91 SMS, WhatsApp Cloud API, Resend email</td><td><code>src/lib/notifications/</code>, <code>src/lib/push.ts</code></td></tr>
 <tr><td>Maps</td><td>Leaflet + OpenStreetMap tiles; directions open Google Maps</td><td><code>TurfMap.tsx</code></td></tr>
 <tr><td>Validation</td><td>zod 4 on every API body and server action</td><td>each route</td></tr>
-<tr><td>Tests</td><td>Vitest: 34 unit tests, 27 database integration tests</td><td><code>tests/</code></td></tr>
+<tr><td>Tests</td><td>Vitest: 38 unit tests, 27 database integration tests</td><td><code>tests/</code></td></tr>
 <tr><td>Delivery</td><td>GitHub, Actions CI (type check, tests, build), Android APK workflow, Dockerfile</td><td><code>.github/workflows</code></td></tr>
 </table>
 <h3>Design rules the whole system follows</h3>
@@ -681,6 +681,7 @@ section("Security", """
 <tr><td>Transport</td><td>HTTPS everywhere (Cloudflare), HSTS, app allows HTTPS only.</td></tr>
 <tr><td>Browser</td><td>Content-Security-Policy (scripts only from self and Razorpay), X-Frame-Options DENY, strict referrer policy, Permissions-Policy.</td></tr>
 <tr><td>Sign-in</td><td>Hashed single-use OTPs, attempt and send limits per phone, IP and globally; no on-screen OTP for admins or real owners.</td></tr>
+<tr><td>Sign-in gate</td><td><code>middleware.ts</code>: every page needs a valid session except the landing, sign-in, legal, contact and account-deletion pages; signed-out visitors return to the page they asked for after signing in (same-site paths only).</td></tr>
 <tr><td>Authorisation</td><td><code>pageUser()</code> on every protected page; <code>requireUser(role)</code> and <code>requireTurfAccess()</code> on every API call and server action.</td></tr>
 <tr><td>Input</td><td>zod validation; Prisma parameterised queries; message length and rate limits; CSV export escapes formulas.</td></tr>
 <tr><td>Payments</td><td>Server-side amounts, HMAC-verified webhooks, idempotent event handling, mock gateway refused when real keys exist.</td></tr>

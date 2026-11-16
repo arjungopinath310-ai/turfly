@@ -84,12 +84,13 @@ Most problems are fixed by: <b>stop-all</b>, then <b>start-all</b>, then send pe
 <tr><td>Check that everything works</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\status.ps1</code></td></tr>
 <tr><td>Start Turfly (after the PC was off, or after stop)</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1</code></td></tr>
 <tr><td>Stop Turfly</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\stop-all.ps1</code></td></tr>
-<tr><td>Restart Turfly</td><td>stop-all, then start-all</td></tr>
+<tr><td>Restart only the website (address stays the same)</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\restart-server.ps1</code></td></tr>
+<tr><td>Install the latest version from GitHub (address stays the same)</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\restart-server.ps1 -Update</code></td></tr>
+<tr><td>Restart everything (new address)</td><td>stop-all, then start-all</td></tr>
 <tr><td>Start after changing the code (rebuild first)</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1 -Rebuild</code></td></tr>
 <tr><td>See the current public address</td><td><code>Select-String -Path .env -Pattern '^APP_URL'</code> (also shown by status.ps1)</td></tr>
 <tr><td>Save a new public address by hand</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\set-public-url.ps1 https://new-address.trycloudflare.com</code></td></tr>
 <tr><td>Back up the database</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1</code></td></tr>
-<tr><td>Get the latest code from GitHub</td><td><code>git pull</code> then section 6</td></tr>
 <tr><td>Apply database changes after an update</td><td><code>npm.cmd run db:migrate</code></td></tr>
 <tr><td>Run the automatic tests</td><td><code>npm.cmd test</code> and <code>npm.cmd run test:integration</code></td></tr>
 <tr><td>Rebuild the Android test app (APK)</td><td><code>cd mobile</code> then <code>npm.cmd run build:debug</code> (APK appears in <code>mobile\dist</code>)</td></tr>
@@ -195,17 +196,21 @@ The address then never changes, and steps 1–4 are never needed again. Details:
 
 <section>
 <h2>6 · Updating Turfly to a new version</h2>
-<p>When new code has been pushed to GitHub (by you, a developer or an assistant):</p>
+<p>When new code has been pushed to GitHub (by you, a developer or an assistant), one command does it all and keeps the public address:</p>
 <pre>cd "C:\Users\arjun\OneDrive\Documents\Arjun Claude\turfly"
-powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1   <span class="c"># 1. safety copy of the data</span>
-powershell -ExecutionPolicy Bypass -File scripts\stop-all.ps1    <span class="c"># 2. stop (the build replaces files in use)</span>
-git pull                                                         <span class="c"># 3. get the new code</span>
+powershell -ExecutionPolicy Bypass -File scripts\restart-server.ps1 -Update</pre>
+<p>It backs up the database, gets the new code (<code>git pull</code>), stops the website, installs packages (<code>npm.cmd ci</code>), applies database changes
+(<code>npm.cmd run db:migrate</code>), builds and starts the website again. The site is offline for about 2 minutes. If a step fails it stops and says so.
+The same steps by hand, if you ever need them:</p>
+<pre>powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1   <span class="c"># 1. safety copy of the data</span>
+git pull                                                         <span class="c"># 2. get the new code</span>
+powershell -ExecutionPolicy Bypass -File scripts\stop-all.ps1    <span class="c"># 3. stop (the build replaces files in use)</span>
 npm.cmd ci                                                       <span class="c"># 4. install exactly the listed packages</span>
 npm.cmd run db:migrate                                           <span class="c"># 5. apply database changes, if any</span>
 npm.cmd test                                                     <span class="c"># 6. optional: quick self-check</span>
-powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1 -Rebuild   <span class="c"># 7. build and start</span></pre>
+powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1 -Rebuild   <span class="c"># 7. build and start (new address)</span></pre>
 <ul>
-<li>Step 3 says <i>"Your local changes would be overwritten"</i>? Someone edited files on this PC. Run <code>git status</code> to see which; keep a copy, then <code>git stash</code> and pull again.</li>
+<li>Step 2 says <i>"Your local changes would be overwritten"</i>? Someone edited files on this PC. Run <code>git status</code> to see which; keep a copy, then <code>git stash</code> and pull again.</li>
 <li>Step 4 fails with <i>EPERM … query_engine</i>? Turfly is still running; run stop-all again and repeat step 4.</li>
 <li>If the new version misbehaves, go back to the previous one: <code>git log --oneline -5</code>, pick the previous commit id, <code>git checkout THAT-ID</code>,
 then steps 4 and 7. (Database changes are not undone; restore a backup only if really needed, section 8.)</li>
@@ -217,6 +222,11 @@ then steps 4 and 7. (Database changes are not undone; restore a backup only if r
 
 <section>
 <h2>7 · Admin work inside the app</h2>
+<h3>Everyone must sign in</h3>
+<p>Visitors must sign in (mobile number + code, or Google once it is set up) before they can see turfs, book or use anything else. Afterwards they
+return to the page they asked for, so shared links (split payments, team invites, turf claims) still work. These pages stay open without signing in,
+because Razorpay, Google and the Play Store check them: the landing page <code>/</code>, <code>/login</code>, <code>/legal/…</code>, <code>/contact</code>
+and <code>/account/delete</code>. The Android app skips the landing page and opens on sign-in. The rule lives in <code>src\lib\access.ts</code>.</p>
 <h3>Signing in as admin</h3>
 <ul>
 <li>Phone numbers listed in <code>ADMIN_PHONES</code> in <code>.env</code> become admin when they sign in.</li>
@@ -267,7 +277,8 @@ powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1</pre>
 <tr><td>Cloudflare page "Bad gateway", error 502 or 1033</td><td>Tunnel is up but the server is not</td><td>stop-all → start-all. If it repeats, read the <b>Turfly server</b> window (section 10).</td></tr>
 <tr><td>start-all: "Port 3000 is already in use"</td><td>An old server is still running</td><td>stop-all, then start-all. Still blocked: <code>Get-NetTCPConnection -LocalPort 3000 -State Listen</code>, then <code>Stop-Process -Id OwningProcess-number</code>.</td></tr>
 <tr><td>status: "Database is not running"; pages show errors</td><td>PostgreSQL service stopped</td><td>PowerShell as Administrator: <code>Start-Service postgresql-x64-16</code>. If it won't start: check free disk space and the logs in <code>C:\Program Files\PostgreSQL\16\data\log</code>.</td></tr>
-<tr><td>Sign-in returns to the login page, or a "callback" error</td><td><code>NEXTAUTH_URL</code> in .env differs from the address in the browser</td><td><code>set-public-url.ps1</code> with the address in the browser bar, then restart (stop-all → start-all does both).</td></tr>
+<tr><td>Every page sends you to "Sign in", even after signing in</td><td>Session cookie from an old address, or <code>NEXTAUTH_SECRET</code> missing in .env</td><td>Open the current public address (status.ps1 shows it), sign in again. Check <code>NEXTAUTH_SECRET</code> is set, then restart-server.ps1.</td></tr>
+<tr><td>Sign-in returns to the login page, or a "callback" error</td><td><code>NEXTAUTH_URL</code> in .env differs from the address in the browser</td><td><code>set-public-url.ps1</code> with the address in the browser bar, then <code>restart-server.ps1</code>.</td></tr>
 <tr><td>No sign-in code</td><td>Demo mode: admins/owners get it in the server window. Real mode: SMS not configured</td><td>Read <code>[otp]</code> lines in the <b>Turfly server</b> window. For real SMS set the MSG91 keys (section 11).</td></tr>
 <tr><td>"Too many requests" when asking for a code</td><td>Anti-abuse limits: 5 codes/hour per phone, 30 s between codes, 10/hour per network</td><td>Wait up to an hour, or clear that phone's codes (section 12).</td></tr>
 <tr><td>Pages have no colours/layout, or errors mentioning <code>.next</code>, <code>EINVAL</code>, <code>readlink</code></td><td>OneDrive turned build files into online-only placeholders</td><td>stop-all, then <code>Remove-Item -Recurse -Force .next</code>, <code>New-Item -ItemType Directory .next</code>, <code>attrib +P -U .next</code>, then start-all -Rebuild.</td></tr>
@@ -301,7 +312,7 @@ powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1</pre>
 <section>
 <h2>11 · The settings file (.env)</h2>
 <p><code>turfly\.env</code> holds addresses, passwords and keys. It is <b>never</b> uploaded to GitHub. Open it with Notepad: <code>notepad .env</code>.
-After changing it, restart (stop-all → start-all).</p>
+After changing it, restart the website: <code>powershell -ExecutionPolicy Bypass -File scripts\restart-server.ps1</code> (the address stays the same).</p>
 <table>
 <tr><th>Setting</th><th>Meaning</th></tr>
 <tr><td><code>DATABASE_URL</code></td><td>How to reach the database (contains its password).</td></tr>

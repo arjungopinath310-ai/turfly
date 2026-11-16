@@ -62,6 +62,7 @@ Start, stop, check, back up and troubleshoot without a developer: see **docs/Tur
 powershell -ExecutionPolicy Bypass -File scripts\status.ps1     # is everything OK?
 powershell -ExecutionPolicy Bypass -File scripts\stop-all.ps1   # stop
 powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1  # start (prints the public address)
+powershell -ExecutionPolicy Bypass -File scripts\restart-server.ps1 -Update  # install the latest version, same address
 ```
 
 ## Tests
