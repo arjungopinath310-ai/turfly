@@ -94,7 +94,7 @@ export default async function OwnerAnalytics(
         <Kpi label="Utilisation" value={fmtValue(k.utilisation, "percent")} cur={k.utilisation} prev={p.utilisation} hint="of open pitch time" />
         <Kpi label="Booked hours" value={fmtValue(k.bookedHours, "hours")} cur={k.bookedHours} prev={p.bookedHours} />
         <Kpi label="Bookings" value={String(k.bookings)} cur={k.bookings} prev={p.bookings} />
-        <Kpi label="Collected online (advances)" value={rupees(k.online)} cur={k.online} prev={p.online} />
+        <Kpi label="Collected online" value={rupees(k.online)} cur={k.online} prev={p.online} />
         <Kpi label="Collected at venue" value={rupees(k.atVenue)} cur={k.atVenue} prev={p.atVenue} />
         <Kpi label="Balance still pending" value={rupees(k.pending)} hint="to collect at the turf" />
         <Kpi label="Cancellation rate" value={fmtValue(k.cancelRate, "percent")} cur={k.cancelRate} prev={p.cancelRate} upIsGood={false} hint={`${k.cancelled} cancelled`} />

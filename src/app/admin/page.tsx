@@ -44,7 +44,7 @@ export default async function AdminHome() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="card overflow-x-auto p-5">
           <h2 className="h2 mb-3">Latest bookings</h2>
-          <table className="table">
+          <table className="table min-w-[640px]">
             <thead><tr><th>ID</th><th>Turf</th><th>Slot</th><th>Online</th><th>Status</th><th>Created</th></tr></thead>
             <tbody>
               {recent.map((b) => (
