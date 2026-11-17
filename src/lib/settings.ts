@@ -21,13 +21,20 @@ export const DEFAULT_SETTINGS: PlatformSettings = {
   reminders: { h24: true, h2: true, balance: true, channels: ["SMS", "WHATSAPP", "EMAIL"] },
 };
 
+// Settings are read on almost every request but change rarely: keep them in memory for a short time.
+// With several app servers, a change made on one reaches the others within SETTINGS_TTL_MS.
+const SETTINGS_TTL_MS = 30_000;
+let cache: { value: PlatformSettings; until: number } | null = null;
+
 export async function getSettings(): Promise<PlatformSettings> {
+  if (cache && cache.until > Date.now()) return structuredClone(cache.value);
   const rows = await prisma.platformSetting.findMany();
   const s: Record<string, unknown> = { ...DEFAULT_SETTINGS };
   for (const r of rows) s[r.key] = r.value;
   const out = s as unknown as PlatformSettings;
   out.defaultCancellationPolicy = parsePolicy(out.defaultCancellationPolicy);
-  return out;
+  cache = { value: out, until: Date.now() + SETTINGS_TTL_MS };
+  return structuredClone(out);
 }
 
 export async function setSetting<K extends keyof PlatformSettings>(key: K, value: PlatformSettings[K]) {
@@ -36,6 +43,7 @@ export async function setSetting<K extends keyof PlatformSettings>(key: K, value
     create: { key, value: value as never },
     update: { value: value as never },
   });
+  cache = null; // this server sees the change at once
 }
 
 export function turfPolicy(turf: { cancellationPolicy: unknown }, s: PlatformSettings) {

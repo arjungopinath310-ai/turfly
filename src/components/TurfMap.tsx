@@ -3,7 +3,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Link from "next/link";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import type { TurfCard } from "@/lib/search";
+import type { MapPoint } from "@/lib/search";
 import { rupees } from "@/lib/engine/pricing";
 
 const pin = (live: boolean) =>
@@ -14,7 +14,7 @@ const pin = (live: boolean) =>
     iconAnchor: [15, 30],
   });
 
-export default function TurfMap({ rows, center, height = 560 }: { rows: TurfCard[]; center: { lat: number; lng: number }; height?: number }) {
+export default function TurfMap({ rows, center, height = 560 }: { rows: MapPoint[]; center: { lat: number; lng: number }; height?: number }) {
   return (
     <div className="card overflow-hidden p-0" style={{ height }}>
       <MapContainer center={[center.lat, center.lng]} zoom={13} style={{ height: "100%", width: "100%" }} scrollWheelZoom>

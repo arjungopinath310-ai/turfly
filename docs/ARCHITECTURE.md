@@ -124,3 +124,7 @@ India requires every SMS to match a DLT-registered template. `src/lib/notificati
 
 ## Page-level authorization
 Every protected server page calls `pageUser()` itself (redirect to sign-in, or 404 for the wrong role). A layout check alone is not enough, because the App Router can render a page segment without re-running its layout.
+
+## Scaling
+
+How Turfly grows from one PC to several servers (what is already multi-server safe, the growth path, settings and a checklist): see [SCALING.md](SCALING.md).

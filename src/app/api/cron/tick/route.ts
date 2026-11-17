@@ -14,7 +14,17 @@ export async function POST(req: Request) {
   const completed = await completePastBookings();
   // recover jobs stuck in SENDING (worker crashed mid-send)
   await prisma.notificationJob.updateMany({ where: { status: "SENDING", sendAt: { lt: new Date(Date.now() - 10 * 60_000) } }, data: { status: "PENDING" } });
-  const jobs = await processDueJobs();
+  // Work through the queue in batches until it's empty or the time budget (under the 1-minute schedule) is used.
+  // Jobs are claimed one by one, so overlapping runs or several servers never send the same message twice.
+  const startedAt = Date.now();
+  const jobs = { processed: 0, sent: 0, batches: 0 };
+  for (;;) {
+    const r = await processDueJobs(100);
+    jobs.processed += r.processed;
+    jobs.sent += r.sent;
+    jobs.batches++;
+    if (r.processed < 100 || Date.now() - startedAt > 40_000) break;
+  }
   return NextResponse.json({ releasedOccupancyRows: expired, completed: completed.count, ...jobs });
 }
 export const GET = POST;

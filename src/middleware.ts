@@ -5,6 +5,23 @@ import { prisma } from "@/lib/db";
 
 const SESSION_COOKIES = ["__Secure-next-auth.session-token", "next-auth.session-token"];
 
+// Accounts confirmed active are remembered briefly, so a page view doesn't always cost a database lookup.
+// A suspension or deletion therefore takes effect within ACTIVE_TTL_MS here (pages and APIs re-check the user).
+const ACTIVE_TTL_MS = 30_000;
+const MAX_CACHED = 10_000;
+const active = new Map<string, number>(); // user id → valid until
+
+async function isActive(uid: string) {
+  const until = active.get(uid);
+  if (until && until > Date.now()) return true;
+  const ok = Boolean(await prisma.user.findFirst({ where: { id: uid, isSuspended: false }, select: { id: true } }));
+  if (ok) {
+    if (active.size >= MAX_CACHED) active.clear();
+    active.set(uid, Date.now() + ACTIVE_TTL_MS);
+  } else active.delete(uid);
+  return ok;
+}
+
 /**
  * Sign-in gate for every page, the home page included (see src/lib/access.ts for the public exceptions).
  * A page opens only with a valid session cookie whose account still exists and is not suspended;
@@ -23,8 +40,7 @@ export async function middleware(req: NextRequest) {
   const uid = typeof token?.uid === "string" ? token.uid : null;
   if (uid) {
     try {
-      const active = await prisma.user.findFirst({ where: { id: uid, isSuspended: false }, select: { id: true } });
-      if (active) return NextResponse.next();
+      if (await isActive(uid)) return NextResponse.next();
     } catch {
       // Database unreachable: don't sign everyone out over a blip; the page itself will show the error.
       return NextResponse.next();

@@ -25,6 +25,13 @@ export function checkEnv(env: NodeJS.ProcessEnv = process.env): EnvReport {
   const cron = env.CRON_SECRET ?? "";
   if (!cron || cron === "replace-me" || cron.length < 16) (prod ? errors : warnings).push("CRON_SECRET must be a random value of at least 16 characters");
 
+  // Photo storage: "s3" needs all bucket settings; "disk" only works while there is a single app server.
+  if (env.STORAGE_DRIVER === "s3") {
+    const missing = ["S3_ENDPOINT", "S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"].filter((k) => !set(k));
+    if (missing.length) errors.push(`STORAGE_DRIVER=s3 needs ${missing.join(", ")}`);
+    if (set("S3_PUBLIC_URL") && !env.S3_PUBLIC_URL!.startsWith("https://")) warnings.push("S3_PUBLIC_URL should be an https:// address");
+  } else if (env.STORAGE_DRIVER && env.STORAGE_DRIVER !== "disk") errors.push(`STORAGE_DRIVER must be "disk" or "s3" (got "${env.STORAGE_DRIVER}")`);
+
   const rzp = ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET"];
   const rzpSet = rzp.filter(set);
   if (rzpSet.length && rzpSet.length < rzp.length) errors.push(`Razorpay is half-configured: set all of ${rzp.join(", ")}`);

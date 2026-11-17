@@ -3,7 +3,7 @@
  * SMS-pumping limits, account deletion & export, push-token ownership.
  */
 import { beforeAll, describe, expect, it } from "vitest";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomInt } from "node:crypto";
 import type { User } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requestOtp } from "@/lib/otp";
@@ -13,7 +13,8 @@ import { addDays, todayIst } from "@/lib/time";
 
 const tag = randomBytes(3).toString("hex");
 let n = 0;
-const phone = () => `98${String(Date.now()).slice(-4)}${String(n++).padStart(4, "0")}`;
+// Random (not clock-based) so numbers never repeat across test runs in the shared test database.
+const phone = () => `9${randomInt(100_000_000, 1_000_000_000)}${(n++, "")}`;
 const mkUser = (data: Partial<User> = {}) => prisma.user.create({ data: { phone: `+91${phone()}`, name: `P${n}-${tag}`, ...data } });
 
 beforeAll(() => {

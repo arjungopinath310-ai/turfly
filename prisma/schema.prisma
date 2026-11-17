@@ -172,6 +172,8 @@ model Turf {
   conversations Conversation[]
 
   @@index([cityId, status])
+  @@index([status, availabilityMode])
+  @@index([lat, lng])
 }
 
 model OperatingHours {
@@ -312,6 +314,7 @@ model Booking {
   @@index([turfId, startAt])
   @@index([userId, startAt])
   @@index([status, holdExpiresAt])
+  @@index([status, endAt])
 }
 
 model SlotBlock {
@@ -712,6 +715,7 @@ model Notification {
   readAt    DateTime?
   createdAt DateTime  @default(now())
 
+  @@index([userId, readAt]) // unread counts in the top bar on every page
   @@index([userId, createdAt])
 }
 

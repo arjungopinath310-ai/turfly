@@ -2,13 +2,14 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { List, Map as MapIcon } from "lucide-react";
-import type { TurfCard } from "@/lib/search";
+import type { MapPoint, TurfCard } from "@/lib/search";
 import { TurfCardView } from "./TurfCard";
 import { Empty } from "./ui";
 
 const TurfMap = dynamic(() => import("./TurfMap"), { ssr: false, loading: () => <div className="card h-[560px] animate-pulse" /> });
 
-export function TurfResults({ rows, center, header }: { rows: TurfCard[]; center: { lat: number; lng: number }; header?: React.ReactNode }) {
+/** List (current page of cards) or map (every match, as light points). Paging links come from the page. */
+export function TurfResults({ rows, points, center, header, footer }: { rows: TurfCard[]; points: MapPoint[]; center: { lat: number; lng: number }; header?: React.ReactNode; footer?: React.ReactNode }) {
   const [view, setView] = useState<"list" | "map">("list");
   return (
     <div>
@@ -22,16 +23,19 @@ export function TurfResults({ rows, center, header }: { rows: TurfCard[]; center
           ))}
         </div>
       </div>
-      {rows.length === 0 ? (
+      {points.length === 0 ? (
         <Empty title="No turfs match">Try removing a filter or searching a nearby place.</Empty>
       ) : view === "list" ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-          {rows.map((t) => (
-            <TurfCardView key={t.id} t={t} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+            {rows.map((t) => (
+              <TurfCardView key={t.id} t={t} />
+            ))}
+          </div>
+          {footer}
+        </>
       ) : (
-        <TurfMap rows={rows} center={center} />
+        <TurfMap rows={points} center={center} />
       )}
     </div>
   );

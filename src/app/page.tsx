@@ -19,7 +19,7 @@ export default async function Home() {
       where: { isActive: true, turfs: { some: { status: { in: ["APPROVED", "UNCLAIMED"] } } } },
       include: { _count: { select: { turfs: { where: { status: { in: ["APPROVED", "UNCLAIMED"] } } } } } },
     }),
-    searchTurfs({}).then((r) => r.slice(0, 6)),
+    searchTurfs({}, { pageSize: 6 }).then((r) => r.cards),
     user
       ? prisma.booking.findFirst({ where: { userId: user.id, status: "CONFIRMED", startAt: { gte: new Date() } }, include: { turf: { select: { name: true } } }, orderBy: { startAt: "asc" } })
       : null,

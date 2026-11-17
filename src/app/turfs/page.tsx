@@ -9,7 +9,7 @@ import { LocateButton } from "@/components/LocateButton";
 import { NearMeChip } from "@/components/NearMeChip";
 import { BottomSheet } from "@/components/BottomSheet";
 
-type SP = TurfFilters & { amenity?: string | string[] };
+type SP = TurfFilters & { amenity?: string | string[]; page?: string };
 type City = { id: string; slug: string; name: string; lat: number; lng: number };
 
 const chip = "chip shrink-0 whitespace-nowrap px-3 py-1.5 text-[13px]";
@@ -20,14 +20,19 @@ const chipOn = `${chip} border-brand-600 bg-brand-600 text-white`;
 export default async function TurfsPage(props: { searchParams: Promise<SP> }) {
   const sp = await props.searchParams;
   const amenity = sp.amenity ? ([] as string[]).concat(sp.amenity).join(",") : undefined;
-  const f: TurfFilters = { ...sp, amenities: sp.amenities ?? amenity };
-  const [cities, rows] = await Promise.all([prisma.city.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }), searchTurfs(f)]);
+  const { page: pageParam, amenity: _a, ...filters } = sp;
+  const f: TurfFilters = { ...filters, amenities: sp.amenities ?? amenity };
+  const [cities, res] = await Promise.all([
+    prisma.city.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
+    searchTurfs(f, { page: Number(pageParam) || 1 }),
+  ]);
   const city = cities.find((c) => c.slug === f.city);
   const amen = new Set((f.amenities ?? "").split(",").filter(Boolean));
 
   // Links that change one filter and keep the rest.
   const base: Record<string, string> = {};
   for (const [k, v] of Object.entries(f)) if (typeof v === "string" && v) base[k] = v;
+  // Changing a filter starts again at page 1 ("page" is never part of base).
   const href = (changes: Record<string, string | null>) => {
     const p = new URLSearchParams(base);
     for (const [k, v] of Object.entries(changes)) (v ? p.set(k, v) : p.delete(k));
@@ -76,11 +81,21 @@ export default async function TurfsPage(props: { searchParams: Promise<SP> }) {
           <FilterForm f={f} cities={cities} amen={amen} />
         </div>
         <TurfResults
-          rows={rows}
+          rows={res.cards}
+          points={res.points}
           center={city ? { lat: city.lat, lng: city.lng } : { lat: 11.09, lng: 76.09 }}
+          footer={
+            res.pageCount > 1 && (
+              <nav className="mt-5 flex items-center justify-between gap-2" aria-label="Pages">
+                {res.page > 1 ? <Link href={href({ page: String(res.page - 1) })} className="btn-ghost">← Previous</Link> : <span />}
+                <span className="text-sm text-slate-500">Page {res.page} of {res.pageCount}</span>
+                {res.page < res.pageCount ? <Link href={href({ page: String(res.page + 1) })} className="btn-primary">Next →</Link> : <span />}
+              </nav>
+            )
+          }
           header={
             <div className="flex items-baseline gap-3">
-              <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">{rows.length} turf{rows.length === 1 ? "" : "s"}{city ? ` in ${city.name}` : ""}</h1>
+              <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">{res.total} turf{res.total === 1 ? "" : "s"}{city ? ` in ${city.name}` : ""}</h1>
               {anyFilter && <Link href="/turfs" className="flex shrink-0 items-center gap-0.5 text-sm font-medium text-slate-500 hover:text-slate-800"><X size={14} /> Clear</Link>}
             </div>
           }
