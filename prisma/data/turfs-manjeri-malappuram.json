@@ -1,0 +1,20 @@
+{
+  "about": "Football turfs within about 10 km of Manjeri and Malappuram towns, added as UNCLAIMED listings (contact and directions only, no booking). Names and exact map positions come from OpenStreetMap (c) OpenStreetMap contributors, licensed ODbL; localities and PIN codes from OpenStreetMap Nominatim and India Post. Checked 17 Nov 2026. Not yet confirmed with the turfs. Import: npx tsx scripts/import-turfs.ts prisma/data/turfs-manjeri-malappuram.json [--dry-run]",
+  "checked": "17 Nov 2026",
+  "turfs": [
+    { "name": "Rock Arena Football Turf", "city": "manjeri", "addressLine": "22nd Mile, Tirur-Manjeri Road", "locality": "Kacherippadi", "pincode": "676121", "lat": 11.1037, "lng": 76.12219, "osm": "way/962819376", "alsoListed": "Justdial" },
+    { "name": "KL10 Soccer Live Football Turf", "city": "manjeri", "addressLine": "Pandalur", "locality": "Payyanad", "pincode": "676122", "lat": 11.0828, "lng": 76.1523, "osm": "way/980857844" },
+    { "name": "Club 7 Football Turf", "city": "manjeri", "addressLine": "Moochikkal", "locality": "Pullara", "pincode": "673642", "lat": 11.11738, "lng": 76.06775, "osm": "way/982439577", "alsoListed": "Justdial" },
+    { "name": "B Circle Football Turf", "city": "manjeri", "addressLine": "Valluvambram-Mongam Bypass, Alungapatta", "locality": "Valluvambram", "pincode": "673642", "lat": 11.13138, "lng": 76.04363, "osm": "way/982383232", "alsoListed": "Facebook (Bcircle Valluvambram)" },
+    { "name": "Crown Football Turf", "city": "manjeri", "addressLine": "Areacode-Manjeri Road, Elayur", "locality": "Kavanur", "pincode": "673639", "lat": 11.17021, "lng": 76.07716, "osm": "way/845820577" },
+    { "name": "Anfield Arena Football Turf", "city": "manjeri", "addressLine": "Areacode-Manjeri Road", "locality": "Kavanur", "pincode": "673639", "lat": 11.18607, "lng": 76.06498, "osm": "way/1073470073", "description": "Synthetic turf football pitch." },
+    { "name": "Club One Football Turf", "city": "malappuram", "addressLine": "Ahamed Kurikkal Road", "locality": "Kottappadi", "pincode": "676505", "lat": 11.04488, "lng": 76.07603, "osm": "way/371923614", "description": "Artificial turf football pitch in Malappuram town." },
+    { "name": "B-Square Football Turf", "city": "malappuram", "addressLine": "Keerankundu, Calicut-Palakkad Highway (NH 966)", "locality": "Koottilangadi", "pincode": "676506", "lat": 11.027, "lng": 76.10842, "osm": "way/799083854", "alsoListed": "its own website", "description": "Sevens (7-a-side) football turf." },
+    { "name": "Pilakkal Turf", "city": "malappuram", "addressLine": "Calicut-Palakkad Highway (NH 966)", "locality": "Pilakkal", "pincode": "673642", "lat": 11.09199, "lng": 76.06557, "osm": "way/982383229" },
+    { "name": "Al Maidan Football Turf", "city": "malappuram", "addressLine": "Koombara, New Bazar", "locality": "Pookkottur", "pincode": "676517", "lat": 11.10601, "lng": 76.05326, "osm": "way/982383230" },
+    { "name": "Goal Point Turf", "city": "malappuram", "addressLine": "Chattiparamba-Manjeri Road, Nooradi", "locality": "Vadakkemanna", "pincode": "676504", "lat": 11.01597, "lng": 76.0809, "osm": "way/1202744883" },
+    { "name": "Kick Off", "city": "malappuram", "addressLine": "Vengara-Navodaya-Malappuram Road", "locality": "Kottumala", "pincode": "676519", "lat": 11.05805, "lng": 76.01855, "osm": "way/958146938", "description": "Football turf." },
+    { "name": "Strikers Football Turf", "city": "malappuram", "addressLine": "Malappuram-Parappanangadi Road", "locality": null, "pincode": "676519", "lat": 11.06051, "lng": 76.00604, "osm": "way/886959568" },
+    { "name": "FUT OUT Football Turf", "city": "malappuram", "addressLine": "Calicut-Palakkad Highway (NH 966), Kavungaparamba", "locality": "Makkaraparamba", "pincode": "676507", "lat": 11.00692, "lng": 76.12673, "osm": "way/922799944" }
+  ]
+}

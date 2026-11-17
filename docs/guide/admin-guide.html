@@ -244,6 +244,14 @@ When Razorpay or Google asks for your website or home page, give the <code>/abou
 <tr><td><code>/admin/settings</code></td><td>Online advance amount, platform fee, hold time, default commission, default cancellation policy, reminders and channels, offer codes.</td></tr>
 </table>
 <p>Turf owners manage their own turfs at <code>/owner</code> (bookings, calendar, walk-ins, blocks, prices, analytics). Admins cannot read player–owner chats.</p>
+<h3>Real turfs added from public information</h3>
+<p>Real Manjeri and Malappuram turfs are listed as <b>unclaimed</b>: players see the name, address and a Directions button, but cannot book. Each listing names its
+source (OpenStreetMap). When an owner gets in touch, send them the turf's claim link from <code>/admin/turfs</code>; after you approve the claim they manage it and
+can turn on bookings. To add or correct many at once, edit <code>prisma\data\turfs-manjeri-malappuram.json</code> (exact map position needed) and run:</p>
+<pre>npx.cmd tsx scripts/import-turfs.ts prisma/data/turfs-manjeri-malappuram.json --dry-run   <span class="c"># shows what would change</span>
+npx.cmd tsx scripts/import-turfs.ts prisma/data/turfs-manjeri-malappuram.json             <span class="c"># writes it</span></pre>
+<p>It is safe to run again: it never touches turfs that have been claimed, and it skips a turf that is already listed at the same spot. Make a backup first (section 8).
+To add a single turf, use "Add unclaimed listing" on <code>/admin/turfs</code> instead.</p>
 </section>
 
 <section>
