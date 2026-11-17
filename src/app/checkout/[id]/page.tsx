@@ -6,6 +6,8 @@ import { describePolicy, parsePolicy, refundabilityLabel } from "@/lib/engine/po
 import { formatDateLong, formatTimeRange } from "@/lib/time";
 import { mockAllowed } from "@/lib/payments/razorpay";
 import { Checkout } from "@/components/Checkout";
+import { DigipinChip } from "@/components/DigipinChip";
+import { encodeDigipin } from "@/lib/digipin";
 
 /** Phones: what you're booking → what you pay (with the Pay button on the first screen) → refund rules. */
 export default async function CheckoutPage(props: { params: Promise<{ id: string }> }) {
@@ -16,6 +18,7 @@ export default async function CheckoutPage(props: { params: Promise<{ id: string
   if (!b || b.userId !== user.id) notFound();
   if (b.status === "CONFIRMED") redirect(`/bookings/${b.id}?new=1`);
   const policy = parsePolicy(b.policySnapshot);
+  const digipin = encodeDigipin(b.turf.lat, b.turf.lng);
 
   return (
     <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 px-4 py-5 sm:gap-6 sm:py-10 md:grid-cols-[1fr_360px]">
@@ -24,7 +27,8 @@ export default async function CheckoutPage(props: { params: Promise<{ id: string
         <div className="card space-y-1 p-4 sm:p-5">
           <div className="text-xs font-medium text-slate-500">Booking {b.code}</div>
           <div className="text-lg font-bold leading-tight">{b.turf.name}</div>
-          <div className="text-sm text-slate-600">{b.turf.addressLine}, {b.turf.city.name}</div>
+          <div className="text-sm text-slate-600">{b.turf.locality ?? b.turf.addressLine}, {b.turf.city.name}</div>
+          {digipin && <DigipinChip pin={digipin} className="mt-1" />}
           <div className="pt-2 font-semibold">{formatDateLong(b.startAt)} · {formatTimeRange(b.startAt, b.endAt)}</div>
           <div className="text-sm text-slate-600">{b.config.name} · {b.durationMinutes} min{b.team ? ` · Team ${b.teamName ?? b.team.name}` : ""}</div>
         </div>

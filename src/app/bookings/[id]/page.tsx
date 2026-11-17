@@ -12,6 +12,8 @@ import { RosterEditor } from "@/components/RosterEditor";
 import { BookingActions } from "@/components/BookingActions";
 import { MessageButton } from "@/components/MessageButton";
 import { SplitPanel } from "@/components/SplitPanel";
+import { DigipinChip } from "@/components/DigipinChip";
+import { encodeDigipin, formatDigipin } from "@/lib/digipin";
 
 export default async function BookingPage(
   props: { params: Promise<{ id: string }>; searchParams: Promise<{ new?: string }> }
@@ -38,7 +40,9 @@ export default async function BookingPage(
   const policy = parsePolicy(b.policySnapshot);
   const played = b.status === "COMPLETED" || (b.status === "CONFIRMED" && b.endAt < new Date());
   const share = bookingShareText({ ...b, turfName: b.turf.name, configName: b.config.name, teamName: b.teamName ?? b.team?.name, lat: b.turf.lat, lng: b.turf.lng });
-  const address = `${b.turf.addressLine}, ${b.turf.city.name} ${b.turf.pincode}`;
+  const digipin = encodeDigipin(b.turf.lat, b.turf.lng);
+  // Area, town and DIGIPIN instead of a street address (calendar entries get the same text).
+  const address = `${b.turf.locality ?? b.turf.addressLine}, ${b.turf.city.name} ${b.turf.pincode}${digipin ? ` · DIGIPIN ${formatDigipin(digipin)}` : ""}`;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -57,7 +61,8 @@ export default async function BookingPage(
               <StatusBadge status={b.status} />
             </div>
             <h1 className="mt-2 text-2xl font-bold">{b.turf.name}</h1>
-            <p className="text-sm text-slate-600">{address}</p>
+            <p className="text-sm text-slate-600">{b.turf.locality ?? b.turf.addressLine}, {b.turf.city.name} {b.turf.pincode}</p>
+            {digipin && <DigipinChip pin={digipin} className="mt-1.5" />}
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Info k="Date" v={formatDateLong(b.startAt)} />
               <Info k="Time" v={formatTimeRange(b.startAt, b.endAt)} />

@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { slugify, token } from "@/lib/ids";
+import { decodeDigipin } from "@/lib/digipin";
 import { normalizePhone } from "@/lib/otp";
 import { policySchema } from "@/lib/engine/policy";
 import { refundBooking } from "@/lib/payments/refunds";
@@ -87,25 +88,27 @@ export async function setReportedPrice(_: ActionState, fd: FormData): Promise<Ac
 export async function addUnclaimedTurf(_: ActionState, fd: FormData): Promise<ActionState> {
   return run(async () => {
     const a = await admin();
-    const d = z
+    const { digipin, ...d } = z
       .object({
         name: z.string().trim().min(3).max(80),
         cityId: z.string(),
-        addressLine: z.string().trim().min(5),
-        locality: z.string().optional(),
-        pincode: z.string().regex(/^\d{6}$/),
-        lat: z.coerce.number(),
-        lng: z.coerce.number(),
+        locality: z.string().trim().min(2, "Enter the area or a landmark").max(80),
+        pincode: z.string().regex(/^\d{6}$/, "PIN code must be 6 digits"),
+        digipin: z.string(),
         phone: z.string().optional(),
         sourceNote: z.string().trim().min(5, "Record where this public information came from").max(300),
       })
       .parse(Object.fromEntries(fd));
+    const pos = decodeDigipin(digipin);
+    if (!pos) throw new AppError(400, "Enter the turf's DIGIPIN (10 characters)");
     let slug = slugify(d.name);
     if (await prisma.turf.findUnique({ where: { slug } })) slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
     const t = await prisma.turf.create({
       data: {
         ...d,
-        locality: d.locality || null,
+        addressLine: d.locality, // the DIGIPIN replaces the street address
+        lat: pos.lat,
+        lng: pos.lng,
         phone: d.phone ? normalizePhone(d.phone) ?? d.phone : null,
         slug,
         status: "UNCLAIMED",

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { AMENITIES } from "@/lib/brand";
 import { ActionForm } from "@/components/ActionForm";
 import { StatusBadge } from "@/components/ui";
+import { DigipinField } from "@/components/DigipinField";
 import { addUnclaimedTurf, reviewClaim, reviewTurf, setReportedPrice, updateTurfAdmin } from "../actions";
 
 export default async function AdminTurfs(props: { searchParams: Promise<{ status?: string }> }) {
@@ -72,15 +73,13 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
 
       <section className="card p-5">
         <h2 className="h2">Add unclaimed listing</h2>
-        <p className="muted mb-4">Only publicly identifiable business information (signboard name, address, public phone, map location). The listing shows “Call to check availability” and never shows slots until the owner claims it.</p>
+        <p className="muted mb-4">Only publicly identifiable business information (signboard name, area, public phone, DIGIPIN). The listing shows “Call to book” and never shows slots until the owner claims it.</p>
         <ActionForm action={addUnclaimedTurf} className="grid grid-cols-1 gap-2 sm:grid-cols-3" submit="Add listing" submitClass="btn-dark sm:col-span-3 w-fit">
           <input name="name" placeholder="Turf name" className="input" />
           <select name="cityId" className="input">{cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
-          <input name="locality" placeholder="Locality" className="input" />
-          <input name="addressLine" placeholder="Address" className="input sm:col-span-2" />
-          <input name="pincode" placeholder="PIN" className="input" />
-          <input name="lat" placeholder="Latitude" className="input" />
-          <input name="lng" placeholder="Longitude" className="input" />
+          <input name="locality" placeholder="Area / landmark" className="input" />
+          <div className="sm:col-span-2"><DigipinField /></div>
+          <input name="pincode" placeholder="PIN code" inputMode="numeric" maxLength={6} className="input self-end" />
           <input name="phone" placeholder="Public phone" className="input" />
           <input name="sourceNote" placeholder="Source of info (e.g. Google Maps listing, signboard visit on 12 Nov)" className="input sm:col-span-3" />
           <div className="flex flex-wrap gap-2 text-xs sm:col-span-3">

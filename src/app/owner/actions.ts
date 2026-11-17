@@ -11,6 +11,7 @@ import { convertiblePitchLayout, singlePitchLayout, type Layout } from "@/lib/en
 import { cancelBooking, createBlock, createManualBooking, removeBlock, rescheduleBooking } from "@/lib/engine/booking";
 import { policySchema } from "@/lib/engine/policy";
 import { istToUtc } from "@/lib/time";
+import { decodeDigipin } from "@/lib/digipin";
 
 export type ActionState = { ok?: string; error?: string } | null;
 
@@ -40,11 +41,14 @@ const turfFields = z.object({
   name: z.string().trim().min(3).max(80),
   description: z.string().max(1500).optional(),
   cityId: z.string(),
-  addressLine: z.string().trim().min(5).max(200),
-  locality: z.string().max(80).optional(),
+  addressLine: z.string().trim().max(200).optional(),
+  locality: z.string().trim().min(2, "Enter the area or a landmark").max(80),
   pincode: z.string().regex(/^\d{6}$/, "PIN code must be 6 digits"),
-  lat: z.coerce.number().min(-90).max(90),
-  lng: z.coerce.number().min(-180).max(180),
+  digipin: z.string().transform((v, ctx) => {
+    const pos = decodeDigipin(v);
+    if (!pos) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Enter the turf's DIGIPIN (10 characters) or tap “Use my location”" });
+    return pos ?? { lat: 0, lng: 0 };
+  }),
   phone: z.string().max(16).optional(),
   whatsapp: z.string().max(16).optional(),
   email: z.string().email().optional().or(z.literal("")),
@@ -58,11 +62,12 @@ function parseTurf(fd: FormData) {
     name: d.name,
     description: d.description || null,
     cityId: d.cityId,
-    addressLine: d.addressLine,
-    locality: d.locality || null,
+    // The form no longer asks for a street address (the DIGIPIN pinpoints the turf); an existing one is kept.
+    addressLine: d.addressLine || undefined,
+    locality: d.locality,
     pincode: d.pincode,
-    lat: d.lat,
-    lng: d.lng,
+    lat: d.digipin.lat,
+    lng: d.digipin.lng,
     phone: d.phone ? normalizePhone(d.phone) ?? d.phone : null,
     whatsapp: d.whatsapp ? normalizePhone(d.whatsapp) : null,
     email: d.email || null,
@@ -84,7 +89,7 @@ export async function registerTurf(_: ActionState, fd: FormData): Promise<Action
     let slug = slugify(data.name);
     if (await prisma.turf.findUnique({ where: { slug } })) slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
     const turf = await prisma.$transaction(async (tx) => {
-      const t = await tx.turf.create({ data: { ...data, slug, ownerId: user.id, status: "DRAFT", availabilityMode: "LIVE" } });
+      const t = await tx.turf.create({ data: { ...data, addressLine: data.addressLine ?? data.locality, slug, ownerId: user.id, status: "DRAFT", availabilityMode: "LIVE" } });
       await tx.operatingHours.createMany({ data: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ turfId: t.id, weekday, openMinute: 360, closeMinute: 1440 })) });
       await applyLayout(tx, t.id, layout);
       if (user.role === "PLAYER") await tx.user.update({ where: { id: user.id }, data: { role: "OWNER" } });

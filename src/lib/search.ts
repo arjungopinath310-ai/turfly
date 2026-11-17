@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import { getAvailability } from "./engine/booking";
 import { isValidDate } from "./time";
+import { decodeDigipin } from "./digipin";
 
 export interface TurfFilters {
   q?: string;
@@ -28,7 +29,10 @@ export function haversineKm(a: { lat: number; lng: number }, b: { lat: number; l
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
-export async function searchTurfs(f: TurfFilters) {
+export async function searchTurfs(input: TurfFilters) {
+  // A DIGIPIN typed into the search box means "turfs near this spot": nearest first, no text filter.
+  const near = input.q ? decodeDigipin(input.q) : null;
+  const f: TurfFilters = near ? { ...input, q: undefined, lat: String(near.lat), lng: String(near.lng), sort: input.sort ?? "distance" } : input;
   const where: Prisma.TurfWhereInput = { status: { in: ["APPROVED", "UNCLAIMED"] } };
   const and: Prisma.TurfWhereInput[] = [];
   if (f.q) and.push({ OR: [{ name: { contains: f.q, mode: "insensitive" } }, { locality: { contains: f.q, mode: "insensitive" } }, { addressLine: { contains: f.q, mode: "insensitive" } }, { pincode: f.q }] });

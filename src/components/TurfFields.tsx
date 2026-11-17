@@ -1,5 +1,7 @@
 import type { City, Turf } from "@prisma/client";
 import { AMENITIES } from "@/lib/brand";
+import { encodeDigipin } from "@/lib/digipin";
+import { DigipinField } from "./DigipinField";
 
 /** Shared turf detail inputs for registration, owner settings and admin "add unclaimed listing". */
 export function TurfFields({ cities, turf }: { cities: City[]; turf?: Partial<Turf> }) {
@@ -22,28 +24,17 @@ export function TurfFields({ cities, turf }: { cities: City[]; turf?: Partial<Tu
         </select>
       </div>
       <div>
-        <label className="label">Locality / area</label>
-        <input name="locality" defaultValue={turf?.locality ?? ""} className="input" />
+        <label className="label">Area / landmark</label>
+        <input name="locality" required defaultValue={turf?.locality ?? ""} className="input" placeholder="e.g. Kacherippadi" />
       </div>
+      {/* The DIGIPIN replaces the street address and map coordinates: it pinpoints the turf to about 4 m. */}
       <div className="sm:col-span-2">
-        <label className="label">Address</label>
-        <input name="addressLine" required defaultValue={turf?.addressLine} className="input" />
+        <DigipinField defaultValue={turf?.lat != null && turf?.lng != null ? encodeDigipin(turf.lat, turf.lng) : null} />
       </div>
       <div>
         <label className="label">PIN code</label>
-        <input name="pincode" required pattern="\d{6}" defaultValue={turf?.pincode} className="input" />
+        <input name="pincode" required pattern="\d{6}" inputMode="numeric" maxLength={6} defaultValue={turf?.pincode} className="input" />
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="label">Latitude</label>
-          <input name="lat" required type="number" step="any" defaultValue={turf?.lat ?? 11.1203} className="input" />
-        </div>
-        <div>
-          <label className="label">Longitude</label>
-          <input name="lng" required type="number" step="any" defaultValue={turf?.lng ?? 76.1199} className="input" />
-        </div>
-      </div>
-      <p className="-mt-2 text-[11px] text-slate-500 sm:col-span-2">Tip: in Google Maps, long-press your pitch and copy the coordinates.</p>
       <div>
         <label className="label">Public phone</label>
         <input name="phone" defaultValue={turf?.phone ?? ""} className="input" />

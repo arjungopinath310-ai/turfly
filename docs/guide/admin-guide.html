@@ -272,6 +272,11 @@ npx.cmd tsx scripts/import-turfs.ts prisma/data/turfs-manjeri-malappuram.json   
 <p>It is safe to run again: it never touches turfs that have been claimed, matches a turf already listed at the same spot instead of adding it twice, and keeps
 phone numbers and reported prices entered in the admin pages. Make a backup first (section 8).
 To add a single turf, use "Add unclaimed listing" on <code>/admin/turfs</code> instead.</p>
+<h3>Turf locations use DIGIPIN</h3>
+<p>Turfly uses India Post's <b>DIGIPIN</b> instead of a street address or latitude/longitude: a 10-character code (for example <code>MC9 4P82 MJK</code>)
+for a spot of about 4 m × 4 m. Owners and admins type it, or stand on the pitch and tap <b>Use my location</b>; "Check it on the map" confirms the spot.
+A turf's DIGIPIN can be found at <code>app.indiapost.gov.in/digipin</code>. Turf, booking and checkout pages show the area, town and DIGIPIN (tap to copy),
+Directions still open the exact spot, and typing a DIGIPIN into the turf search lists the nearest turfs first.</p>
 </section>
 
 <section>

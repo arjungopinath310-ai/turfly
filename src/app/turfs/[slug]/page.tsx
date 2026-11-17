@@ -10,6 +10,8 @@ import { getSettings, turfPolicy } from "@/lib/settings";
 import { directionsUrl, mapsSearchUrl, turfShareText, whatsappShare } from "@/lib/share";
 import { currentView } from "@/lib/view";
 import { BackButton } from "@/components/BackButton";
+import { DigipinChip } from "@/components/DigipinChip";
+import { encodeDigipin } from "@/lib/digipin";
 import { formatDateLong, formatMinute, todayIst } from "@/lib/time";
 import { AvailabilityBadge, DemoBadge, Stars } from "@/components/ui";
 import { BookingWidget } from "@/components/BookingWidget";
@@ -37,6 +39,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
   // cancellation policy; point players to the turf's phone and its Google Maps listing instead.
   const contactOnly = turf.availabilityMode === "NONE";
   const mapsUrl = mapsSearchUrl(turf);
+  const digipin = encodeDigipin(turf.lat, turf.lng);
   const avg = (k: "turfQuality" | "cleanliness" | "lighting" | "parking") =>
     turf.reviews.length ? turf.reviews.reduce((a, r) => a + r[k], 0) / turf.reviews.length : 0;
 
@@ -74,7 +77,9 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
             </div>
             <h1 className="mt-2 text-2xl font-extrabold leading-tight tracking-tight sm:mt-3 sm:text-3xl">{turf.name}</h1>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
-              <span className="flex items-center gap-1"><MapPin size={15} className="shrink-0" /> {turf.addressLine}, {turf.locality && turf.locality !== turf.addressLine ? `${turf.locality}, ` : ""}{turf.city.name} {turf.pincode}</span>
+              {/* DIGIPIN instead of a street address: it pinpoints the turf (about 4 m) and works with India Post. */}
+              <span className="flex items-center gap-1"><MapPin size={15} className="shrink-0" /> {turf.locality ?? turf.addressLine}, {turf.city.name} {turf.pincode}</span>
+              {digipin && <DigipinChip pin={digipin} />}
               {turf.ratingCount > 0 && <span className="flex items-center gap-1"><Stars value={turf.ratingAvg} /> {turf.ratingAvg.toFixed(1)} ({turf.ratingCount})</span>}
             </div>
             <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto whitespace-nowrap px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0 [&>*]:shrink-0">

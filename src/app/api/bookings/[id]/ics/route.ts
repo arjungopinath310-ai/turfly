@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { AppError, handle } from "@/lib/errors";
+import { encodeDigipin } from "@/lib/digipin";
 
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 const esc = (s: string) => s.replace(/[,;\\]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
@@ -19,8 +20,9 @@ export const GET = handle(async (_req, { params }) => {
     `DTSTART:${stamp(b.startAt)}`,
     `DTEND:${stamp(b.endAt)}`,
     `SUMMARY:${esc(`Football · ${b.turf.name} (${b.config.name})`)}`,
-    `LOCATION:${esc(`${b.turf.addressLine}, ${b.turf.city.name}`)}`,
-    `DESCRIPTION:${esc(`Booking ${b.code}`)}`,
+    `LOCATION:${esc(`${b.turf.name}, ${b.turf.locality ?? b.turf.addressLine}, ${b.turf.city.name}`)}`,
+    `GEO:${b.turf.lat};${b.turf.lng}`, // calendar apps can open the exact spot
+    `DESCRIPTION:${esc(`Booking ${b.code}${encodeDigipin(b.turf.lat, b.turf.lng) ? ` · DIGIPIN ${encodeDigipin(b.turf.lat, b.turf.lng)}` : ""}`)}`,
     "BEGIN:VALARM",
     "TRIGGER:-PT2H",
     "ACTION:DISPLAY",
