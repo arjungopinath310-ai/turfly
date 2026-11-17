@@ -90,7 +90,7 @@ export function LoginForm({ next, google, initialView }: { next: string; google:
               <span className="grid place-items-center rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-sm text-slate-500">+91</span>
               <input className="input rounded-l-none" inputMode="numeric" autoComplete="tel-national" maxLength={10} value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))} placeholder="98XXXXXXXX" />
             </div>
-            <p className="mt-1 text-xs text-slate-500">We&apos;ll send a 6-digit code by SMS.</p>
+            <p className="mt-1 text-xs text-slate-500">We&apos;ll send you a sign-in code.</p>
           </div>
           <button className="btn-primary w-full" disabled={busy || phone.length !== 10} onClick={send}>
             {busy && <Loader2 size={16} className="animate-spin" />} Send code
@@ -100,11 +100,11 @@ export function LoginForm({ next, google, initialView }: { next: string; google:
         <>
           <div>
             <label className="label">Enter the code sent to +91 {phone}</label>
-            <input className="input text-center text-2xl tracking-[0.5em]" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} autoFocus />
-            {devCode && <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">Demo mode: your code is <b>{devCode}</b> (SMS sending isn&apos;t set up yet).</p>}
+            <input className="input text-center text-2xl tracking-[0.3em]" inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} autoFocus />
+            {devCode && <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">Demo mode: use code <b>{devCode}</b> (SMS sending isn&apos;t set up yet).</p>}
             {!devCode && serverLog && <p className="mt-2 rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-700">For admin and turf-owner accounts the code is not shown here. It is printed in the server terminal of the person running Turfly.</p>}
           </div>
-          <button className="btn-primary w-full" disabled={busy || code.length !== 6} onClick={verify}>
+          <button className="btn-primary w-full" disabled={busy || code.length < 6} onClick={verify}>
             {busy && <Loader2 size={16} className="animate-spin" />} Verify & continue
           </button>
           <button className="w-full text-sm text-slate-500 hover:underline" onClick={() => { setStep("phone"); setCode(""); }}>Change number / resend</button>

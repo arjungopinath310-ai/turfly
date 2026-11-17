@@ -37,6 +37,8 @@ export function checkEnv(env: NodeJS.ProcessEnv = process.env): EnvReport {
 
   if (prod) {
     if (env.DEMO_MODE === "true") warnings.push("DEMO_MODE is on: OTPs are shown on screen and payments are simulated. Turn it off before real launch.");
+    if (set("DEMO_OTP") && env.DEMO_MODE === "true" && !(set("MSG91_AUTH_KEY") && set("MSG91_OTP_TEMPLATE_ID")))
+      warnings.push(`DEMO_OTP is on: anyone can sign in to player and turf-owner accounts with code ${env.DEMO_OTP}${env.DEMO_OTP_ADMINS === "true" ? " (admins too)" : " (not admins)"}. Remove it before real launch.`);
     if (!rzpSet.length && env.DEMO_MODE !== "true" && env.ALLOW_MOCK_PAYMENTS !== "true") warnings.push("No payment gateway configured: online booking will be unavailable");
     if (!set("MSG91_AUTH_KEY") && env.DEMO_MODE !== "true") warnings.push("No SMS provider (MSG91): players will not receive OTPs");
     for (const k of ["BUSINESS_NAME", "SUPPORT_EMAIL", "BUSINESS_ADDRESS"])
