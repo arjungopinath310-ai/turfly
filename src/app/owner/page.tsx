@@ -47,13 +47,13 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="h1">{turf.name}</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{turf.name}</h1>
           <div className="mt-1 flex gap-2"><StatusBadge status={turf.status} /><StatusBadge status={turf.availabilityMode} /></div>
         </div>
-        <div className="flex gap-2">
-          <TurfSwitcher turfs={turfs} current={turf.id} />
-          <Link href={`/owner/calendar?turf=${turf.id}`} className="btn-dark">Open calendar</Link>
+        <div className="flex w-full gap-2 sm:w-auto">
+          {turfs.length > 1 && <TurfSwitcher turfs={turfs} current={turf.id} />}
+          <Link href={`/owner/calendar?turf=${turf.id}`} className="btn-primary flex-1 sm:flex-none">Open calendar</Link>
         </div>
       </div>
       {turf.status !== "APPROVED" && (
@@ -61,6 +61,25 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
           This turf is <b>{turf.status.replace("_", " ").toLowerCase()}</b>. Customers can&apos;t book online until an admin approves it. <Link href={`/owner/turfs/${turf.id}`} className="underline">Complete setup →</Link>
         </div>
       )}
+
+      <div className="card p-4 sm:p-5">
+        <h2 className="h2 mb-2">Today&apos;s bookings</h2>
+        {todays.length === 0 ? (
+          <p className="muted">No bookings today.</p>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {todays.map((b) => (
+              <li key={b.id} className="flex items-center justify-between py-2.5 text-sm">
+                <span>
+                  <b>{formatTimeRange(b.startAt, b.endAt)}</b> · {b.config.name}
+                  <span className="block text-xs text-slate-500">{b.teamName ?? b.team?.name ?? b.customerName ?? b.user?.name ?? "Customer"} · {b.code} · {b.source.toLowerCase().replace("_", "-")}</span>
+                </span>
+                <span className="text-right text-xs">{b.balanceCollectedAt ? <span className="text-brand-700">Paid ✓</span> : `${rupees(b.balanceDue)} due`}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Today's bookings" value={todays.length} />
@@ -73,25 +92,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
         <Stat label="Cancellations" value={`${cancelled}`} hint={`${cancelRate}% this month`} />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_1fr]">
-        <div className="card p-5">
-          <h2 className="h2 mb-3">Today</h2>
-          {todays.length === 0 ? (
-            <p className="muted">No bookings today.</p>
-          ) : (
-            <ul className="divide-y divide-slate-100">
-              {todays.map((b) => (
-                <li key={b.id} className="flex items-center justify-between py-2.5 text-sm">
-                  <span>
-                    <b>{formatTimeRange(b.startAt, b.endAt)}</b> · {b.config.name}
-                    <span className="block text-xs text-slate-500">{b.teamName ?? b.team?.name ?? b.customerName ?? b.user?.name ?? "Customer"} · {b.code} · {b.source.toLowerCase().replace("_", "-")}</span>
-                  </span>
-                  <span className="text-right text-xs">{b.balanceCollectedAt ? <span className="text-brand-700">Paid ✓</span> : `${rupees(b.balanceDue)} due`}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      <div className="grid grid-cols-1 gap-6">
         <div className="card p-5">
           <h2 className="h2 mb-1">Peak booking hours</h2>
           <p className="muted mb-4">Last 90 days, by start time</p>

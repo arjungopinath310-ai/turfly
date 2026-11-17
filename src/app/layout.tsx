@@ -34,12 +34,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <NativeBridge signedIn={Boolean(user)} />
           <Navbar />
           {mockAllowed() && (
-            <div className="bg-violet-600 px-4 py-1.5 text-center text-xs font-medium text-white">
-              Demo version: payments are simulated, so no real money is charged.
+            <div className="bg-violet-600 px-4 py-1 text-center text-[11px] font-medium text-white sm:py-1.5 sm:text-xs">
+              <span className="sm:hidden">Demo: payments are simulated</span>
+              <span className="hidden sm:inline">Demo version: payments are simulated, so no real money is charged.</span>
             </div>
           )}
-          <main>{children}</main>
-          <footer className={`mt-24 border-t border-slate-200 bg-white ${user ? "pb-16 md:pb-0" : "safe-bottom"}`}>
+          {/* Signed in on a phone: room for the bottom tab bar / action bar; the web footer is replaced by the account menu. */}
+          <main className={user ? "pb-24 md:pb-0" : ""}>{children}</main>
+          <footer className={`mt-24 border-t border-slate-200 bg-white ${user ? "hidden md:block" : "safe-bottom"}`}>
             <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-slate-500">
               <nav className="flex flex-wrap gap-x-5 gap-y-2">
                 {view !== "owner" && <Link href="/about" className="hover:text-slate-800">About</Link>}

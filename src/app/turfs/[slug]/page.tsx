@@ -9,6 +9,7 @@ import { describePolicy, refundabilityLabel } from "@/lib/engine/policy";
 import { getSettings, turfPolicy } from "@/lib/settings";
 import { directionsUrl, mapsSearchUrl, turfShareText, whatsappShare } from "@/lib/share";
 import { currentView } from "@/lib/view";
+import { BackButton } from "@/components/BackButton";
 import { formatDateLong, formatMinute, todayIst } from "@/lib/time";
 import { AvailabilityBadge, DemoBadge, Stars } from "@/components/ui";
 import { BookingWidget } from "@/components/BookingWidget";
@@ -40,15 +41,16 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
     turf.reviews.length ? turf.reviews.reduce((a, r) => a + r[k], 0) / turf.reviews.length : 0;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="grid grid-cols-1 gap-2 overflow-hidden rounded-3xl sm:grid-cols-[2fr_1fr]">
-        <div className="relative aspect-[16/9] bg-gradient-to-br from-brand-700 to-brand-950 sm:aspect-auto sm:h-[360px]">
+    <div className="mx-auto max-w-6xl px-4 pb-8 sm:py-8">
+      <div className="-mx-4 grid grid-cols-1 gap-2 overflow-hidden sm:mx-0 sm:grid-cols-[2fr_1fr] sm:rounded-3xl">
+        <div className="relative aspect-[2/1] bg-gradient-to-br from-brand-700 to-brand-950 sm:aspect-auto sm:h-[360px]">
           {turf.photos[0] ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={turf.photos[0]} alt={turf.name} className="h-full w-full object-cover" />
           ) : (
-            <div className="grid h-full place-items-center text-7xl opacity-50">⚽</div>
+            <div className="grid h-full place-items-center text-6xl opacity-50 sm:text-7xl">⚽</div>
           )}
+          <BackButton />
         </div>
         <div className="hidden grid-rows-2 gap-2 sm:grid">
           {[1, 2].map((i) =>
@@ -62,29 +64,68 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]">
-        <div className="space-y-8">
-          <div>
+      {/* Phones: name → booking → details. Wide screens: booking panel in a sticky right column. */}
+      <div className="mt-4 grid grid-cols-1 gap-6 sm:mt-6 lg:grid-cols-[1fr_400px] lg:gap-8">
+        <div className="lg:col-start-1 lg:row-start-1">
             <div className="flex flex-wrap items-center gap-2">
               <AvailabilityBadge mode={turf.availabilityMode} updatedAt={turf.availabilityUpdatedAt} />
               {turf.isDemo && <DemoBadge />}
               {turf.status === "UNCLAIMED" && <span className="chip border-sky-200 bg-sky-50 text-sky-700">Unclaimed listing</span>}
             </div>
-            <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{turf.name}</h1>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
-              <span className="flex items-center gap-1"><MapPin size={15} /> {turf.addressLine}, {turf.locality && turf.locality !== turf.addressLine ? `${turf.locality}, ` : ""}{turf.city.name} {turf.pincode}</span>
+            <h1 className="mt-2 text-2xl font-extrabold leading-tight tracking-tight sm:mt-3 sm:text-3xl">{turf.name}</h1>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
+              <span className="flex items-center gap-1"><MapPin size={15} className="shrink-0" /> {turf.addressLine}, {turf.locality && turf.locality !== turf.addressLine ? `${turf.locality}, ` : ""}{turf.city.name} {turf.pincode}</span>
               {turf.ratingCount > 0 && <span className="flex items-center gap-1"><Stars value={turf.ratingAvg} /> {turf.ratingAvg.toFixed(1)} ({turf.ratingCount})</span>}
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <a href={directionsUrl(turf)} target="_blank" className="btn-ghost btn-sm"><Navigation size={14} /> Directions</a>
-              {turf.phone && <a href={`tel:${turf.phone}`} className="btn-ghost btn-sm"><Phone size={14} /> {turf.phone}</a>}
-              {contactOnly && <a href={mapsUrl} target="_blank" rel="noopener" className="btn-ghost btn-sm"><MapPin size={14} /> Google Maps</a>}
+            <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto whitespace-nowrap px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0 [&>*]:shrink-0">
+
+              <a href={directionsUrl(turf)} target="_blank" className="btn-ghost btn-sm shrink-0"><Navigation size={14} /> Directions</a>
+              {turf.phone && <a href={`tel:${turf.phone}`} className="btn-ghost btn-sm shrink-0"><Phone size={14} /> {turf.phone}</a>}
+              {contactOnly && <a href={mapsUrl} target="_blank" rel="noopener" className="btn-ghost btn-sm shrink-0"><MapPin size={14} /> Google Maps</a>}
               {turf.status === "APPROVED" && turf.ownerId && turf.ownerId !== user?.id && <MessageButton turfId={turf.id} signedIn={Boolean(user)} />}
-              <a href={whatsappShare(turfShareText(turf))} target="_blank" className="btn-ghost btn-sm"><Share2 size={14} /> Share on WhatsApp</a>
-              <Link href={`/compare?ids=${turf.id}`} className="btn-ghost btn-sm">Compare</Link>
+              <a href={whatsappShare(turfShareText(turf))} target="_blank" className="btn-ghost btn-sm shrink-0"><Share2 size={14} /> Share</a>
+              <Link href={`/compare?ids=${turf.id}`} className="btn-ghost btn-sm shrink-0">Compare</Link>
             </div>
-            {turf.description && <p className="mt-4 max-w-2xl text-slate-700">{turf.description}</p>}
-          </div>
+            {turf.description && <p className="mt-3 max-w-2xl text-slate-700">{turf.description}</p>}
+        </div>
+
+        <aside id="book" className="scroll-mt-20 lg:sticky lg:top-20 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-fit">
+          {turf.availabilityMode === "NONE" ? (
+            <div className="card space-y-3 p-5">
+              <h3 className="h2">Booking</h3>
+              <p className="muted">
+                This turf isn&apos;t taking bookings on {"Turfly"} yet, so we can&apos;t show free slots.{turf.phone ? " Call the turf to book." : ""}
+              </p>
+              {turf.reportedPriceFrom != null && (
+                <p className="text-sm">Reported price: from <b>{rupees(turf.reportedPriceFrom)}</b> / hour (not confirmed; ask when you call).</p>
+              )}
+              {turf.phone ? (
+                <a href={`tel:${turf.phone}`} className="btn-primary w-full"><Phone size={16} /> Call {turf.phone}</a>
+              ) : (
+                <p className="text-sm text-slate-600">We don&apos;t have this turf&apos;s phone number yet. Its Google Maps listing usually has it, with photos and reviews.</p>
+              )}
+              <a href={mapsUrl} target="_blank" rel="noopener" className={`${turf.phone ? "btn-ghost" : "btn-primary"} w-full`}><MapPin size={16} /> Open in Google Maps</a>
+              {/* Owner options only on the owner side; players never see them. */}
+              {turf.status === "UNCLAIMED" && view === "owner" && (
+                <Link href={`/owner/claim?q=${encodeURIComponent(turf.name)}`} className="btn-dark w-full">This is my turf: manage it</Link>
+              )}
+              {turf.sourceNote && <p className="text-xs text-slate-400">Listing info source: {turf.sourceNote}</p>}
+            </div>
+          ) : (
+            <BookingWidget
+              turfId={turf.id}
+              durations={turf.allowedDurations}
+              today={todayIst()}
+              maxDays={Math.min(turf.maxAdvanceDays, 30)}
+              bookable={bookable}
+              signedIn={Boolean(user)}
+              advance={settings.advanceAmountPaise}
+              fullOnline={turf.fullOnlinePaymentEnabled}
+            />
+          )}
+        </aside>
+
+        <div className="space-y-8 lg:col-start-1 lg:row-start-2">
 
           <section>
             <h2 className="h2 mb-3">Pitches & pricing</h2>
@@ -186,43 +227,21 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
             </div>
           </section>
         </div>
-
-        <aside className="lg:sticky lg:top-20 lg:h-fit">
-          {turf.availabilityMode === "NONE" ? (
-            <div className="card space-y-3 p-5">
-              <h3 className="h2">Booking</h3>
-              <p className="muted">
-                This turf isn&apos;t taking bookings on {"Turfly"} yet, so we can&apos;t show free slots.{turf.phone ? " Call the turf to book." : ""}
-              </p>
-              {turf.reportedPriceFrom != null && (
-                <p className="text-sm">Reported price: from <b>{rupees(turf.reportedPriceFrom)}</b> / hour (not confirmed; ask when you call).</p>
-              )}
-              {turf.phone ? (
-                <a href={`tel:${turf.phone}`} className="btn-primary w-full"><Phone size={16} /> Call {turf.phone}</a>
-              ) : (
-                <p className="text-sm text-slate-600">We don&apos;t have this turf&apos;s phone number yet. Its Google Maps listing usually has it, with photos and reviews.</p>
-              )}
-              <a href={mapsUrl} target="_blank" rel="noopener" className={`${turf.phone ? "btn-ghost" : "btn-primary"} w-full`}><MapPin size={16} /> Open in Google Maps</a>
-              {/* Owner options only on the owner side; players never see them. */}
-              {turf.status === "UNCLAIMED" && view === "owner" && (
-                <Link href={`/owner/claim?q=${encodeURIComponent(turf.name)}`} className="btn-dark w-full">This is my turf: manage it</Link>
-              )}
-              {turf.sourceNote && <p className="text-xs text-slate-400">Listing info source: {turf.sourceNote}</p>}
-            </div>
-          ) : (
-            <BookingWidget
-              turfId={turf.id}
-              durations={turf.allowedDurations}
-              today={todayIst()}
-              maxDays={Math.min(turf.maxAdvanceDays, 30)}
-              bookable={bookable}
-              signedIn={Boolean(user)}
-              advance={settings.advanceAmountPaise}
-              fullOnline={turf.fullOnlinePaymentEnabled}
-            />
-          )}
-        </aside>
       </div>
+      {contactOnly && (
+        // Phones: the two things a player does with a contact-only turf, always within thumb reach.
+        <div className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur md:hidden">
+          <div className="flex gap-2 p-3">
+            {turf.phone ? (
+              <a href={`tel:${turf.phone}`} className="btn-primary flex-1 py-3 text-base"><Phone size={18} /> Call</a>
+            ) : (
+              <a href={mapsUrl} target="_blank" rel="noopener" className="btn-primary flex-1 py-3 text-base"><MapPin size={18} /> Google Maps</a>
+            )}
+            <a href={directionsUrl(turf)} target="_blank" className="btn-ghost flex-1 py-3 text-base"><Navigation size={18} /> Directions</a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

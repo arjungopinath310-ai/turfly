@@ -15,8 +15,8 @@ export function Stat({ label, value, hint }: { label: string; value: React.React
 export function AvailabilityBadge({ mode, updatedAt }: { mode: string; updatedAt?: Date | null }) {
   if (mode === "LIVE")
     return (
-      <span className="chip border-brand-200 bg-brand-50 text-brand-700">
-        <BadgeCheck size={14} /> Live availability
+      <span className="chip border-brand-200 bg-brand-50 text-brand-700" title="Free slots are live; book and pay the advance here">
+        <BadgeCheck size={14} /> Book online
       </span>
     );
   if (mode === "OWNER_REPORTED")
@@ -26,8 +26,8 @@ export function AvailabilityBadge({ mode, updatedAt }: { mode: string; updatedAt
       </span>
     );
   return (
-    <span className="chip border-slate-200 bg-slate-50 text-slate-600">
-      <HelpCircle size={14} /> Call to check availability
+    <span className="chip border-slate-200 bg-slate-50 text-slate-600" title="This turf doesn't take bookings on Turfly yet">
+      <HelpCircle size={14} /> Call to book
     </span>
   );
 }

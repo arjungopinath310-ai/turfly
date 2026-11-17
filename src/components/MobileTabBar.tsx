@@ -23,8 +23,12 @@ const TABS: Record<View, Tab[]> = {
   ],
 };
 
+/** Detail and payment screens have their own bottom action bar (Book / Call / Pay) and a back button instead. */
+const HIDE_ON = [/^\/turfs\/[^/]+$/, /^\/checkout\//, /^\/split\//];
+
 export function MobileTabBar({ view, admin }: { view: View; admin: boolean }) {
   const path = usePathname() ?? "/";
+  if (HIDE_ON.some((r) => r.test(path))) return null;
   const tabs: Tab[] = admin ? [...TABS[view].slice(0, 4), { href: "/admin", label: "Admin", icon: Shield }] : TABS[view];
   return (
     <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur md:hidden" aria-label="Main">

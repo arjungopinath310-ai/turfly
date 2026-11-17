@@ -17,6 +17,7 @@ export interface TurfFilters {
   date?: string;
   time?: string; // "HH:MM"
   sort?: string; // distance | price | rating
+  bookable?: string; // "1" = only turfs that take bookings on Turfly
 }
 
 export function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -36,6 +37,7 @@ export async function searchTurfs(f: TurfFilters) {
   if (f.amenities) and.push({ amenities: { hasEvery: f.amenities.split(",").filter(Boolean) } });
   if (f.minRating) and.push({ ratingAvg: { gte: Number(f.minRating) } });
   if (f.format) and.push({ configs: { some: { isActive: true, playersPerSide: Number(f.format) } } });
+  if (f.bookable === "1") and.push({ status: "APPROVED", availabilityMode: "LIVE" });
   if (and.length) where.AND = and;
 
   const turfs = await prisma.turf.findMany({
@@ -94,13 +96,17 @@ export async function searchTurfs(f: TurfFilters) {
     rows = checked.filter((r) => r.openSlot);
   }
 
-  const sort = f.sort ?? (origin ? "distance" : "rating");
+  const sort = f.sort ?? (origin ? "distance" : "best");
+  const live = (r: (typeof rows)[number]) => Number(r.availabilityMode === "LIVE");
   rows.sort((a, b) =>
     sort === "distance" && origin
       ? a.distanceKm! - b.distanceKm!
       : sort === "price"
-        ? (a.minPrice ?? 1e12) - (b.minPrice ?? 1e12)
-        : Number(b.isFeatured) - Number(a.isFeatured) || b.ratingAvg - a.ratingAvg,
+        ? (a.minPrice ?? a.reportedPriceFrom ?? 1e12) - (b.minPrice ?? b.reportedPriceFrom ?? 1e12)
+        : sort === "rating"
+          ? b.ratingAvg - a.ratingAvg || b.ratingCount - a.ratingCount
+          : // Best match: featured, then turfs you can book here, then the best rated.
+            Number(b.isFeatured) - Number(a.isFeatured) || live(b) - live(a) || b.ratingAvg - a.ratingAvg,
   );
   return rows;
 }

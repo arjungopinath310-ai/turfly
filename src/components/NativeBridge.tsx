@@ -57,7 +57,8 @@ export function NativeBridge({ signedIn }: { signedIn: boolean }) {
     if (P.App)
       subs.push(
         P.App.addListener("backButton", ({ canGoBack }) => {
-          if (canGoBack && location.pathname !== "/") history.back();
+          // Each side's home ("/" for players, "/owner" for turf owners) and the sign-in page close the app.
+          if (canGoBack && !["/", "/owner", "/login"].includes(location.pathname)) history.back();
           else P.App!.exitApp();
         }),
       );

@@ -66,7 +66,7 @@ export default async function BookingPage(
             <div className="mt-5 flex flex-wrap gap-2">
               <a className="btn-ghost btn-sm" href={directionsUrl(b.turf)} target="_blank"><Navigation size={14} /> Directions</a>
               <a className="btn-ghost btn-sm" target="_blank" href={googleCalendarUrl({ ...b, turfName: b.turf.name, configName: b.config.name, address })}><CalendarPlus size={14} /> Google Calendar</a>
-              <a className="btn-ghost btn-sm" href={`/api/bookings/${b.id}/ics`}><Download size={14} /> .ics</a>
+              <a className="btn-ghost btn-sm" href={`/api/bookings/${b.id}/ics`}><Download size={14} /> Calendar file</a>
               <a className="btn-ghost btn-sm" href={whatsappShare(share)} target="_blank"><MessageCircle size={14} /> Share on WhatsApp</a>
               {b.turf.ownerId && b.turf.status === "APPROVED" && <MessageButton turfId={b.turfId} bookingId={b.id} label="Message the turf" />}
             </div>

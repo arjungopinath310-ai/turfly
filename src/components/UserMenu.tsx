@@ -26,6 +26,12 @@ export function UserMenu({ name, hasName, role, view }: { name: string; hasName:
           <Link className={item} href="/messages">Messages</Link>
           <Link className={item} href="/notifications">Notifications</Link>
           {role === "ADMIN" && <Link className={`${item} md:hidden`} href="/admin">Admin</Link>}
+          {/* On phones the web footer is hidden for signed-in users, so its links live here. */}
+          <div className="border-t border-slate-100 md:hidden">
+            <Link className={item} href="/contact">Help &amp; contact</Link>
+            <Link className={item} href="/legal/refunds">Cancellation &amp; refunds</Link>
+            <Link className={item} href="/legal/terms">Terms &amp; privacy</Link>
+          </div>
           {canSwitch && (
             <form action={switchView} className="border-t border-slate-100">
               <input type="hidden" name="to" value={view === "owner" ? "player" : "owner"} />
