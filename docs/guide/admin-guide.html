@@ -48,7 +48,7 @@ pre .c { color: #86efac; }
     <p style="color:#cbd5e1;max-width:140mm">Every command you need to run Turfly on this PC, what each window does, how to back up the data,
     and a troubleshooting table for the problems you are most likely to meet. No developer or AI assistant needed.</p>
   </div>
-  <div class="meta"><div><b>Applies to</b>Windows PC hosting (demo)</div><div><b>Project folder</b>Documents\Arjun Claude\turfly</div><div><b>Updated</b>16 Nov 2026</div></div>
+  <div class="meta"><div><b>Applies to</b>Windows PC hosting (demo)</div><div><b>Project folder</b>Documents\Arjun Claude\turfly</div><div><b>Updated</b>17 Nov 2026</div></div>
 </div>
 
 <section>
@@ -245,12 +245,20 @@ When Razorpay or Google asks for your website or home page, give the <code>/abou
 </table>
 <p>Turf owners manage their own turfs at <code>/owner</code> (bookings, calendar, walk-ins, blocks, prices, analytics). Admins cannot read player–owner chats.</p>
 <h3>Real turfs added from public information</h3>
-<p>Real Manjeri and Malappuram turfs are listed as <b>unclaimed</b>: players see the name, address and a Directions button, but cannot book. Each listing names its
-source (OpenStreetMap). When an owner gets in touch, send them the turf's claim link from <code>/admin/turfs</code>; after you approve the claim they manage it and
-can turn on bookings. To add or correct many at once, edit <code>prisma\data\turfs-manjeri-malappuram.json</code> (exact map position needed) and run:</p>
+<p>Real turfs within about 20 km of Manjeri and Malappuram are listed as <b>unclaimed</b>: players see the name, address, phone, opening hours, facilities and a
+Directions button, but cannot book. Each listing names its sources (TapTurf, OpenStreetMap). When an owner gets in touch, send them the turf's claim link from
+<code>/admin/turfs</code>; after you approve the claim they manage it and can turn on bookings.</p>
+<ul>
+<li><b>Reported price:</b> on <code>/admin/turfs</code>, fill "Reported price" (lowest ₹ per hour, plus a note such as "₹1,200 after 6 PM") for turfs that don't
+manage bookings here, for example after calling the turf or reading recent reviews. It shows as "~₹… reported / hour" with the date, never as a confirmed price,
+and is ignored once the owner sets real prices. Leave it empty and press Save to remove it.</li>
+<li><b>Closed or wrong listing:</b> type a reason and press <b>Hide</b>; it disappears from search. "Show again" brings it back.</li>
+</ul>
+<p>To add or correct many at once, edit <code>prisma\data\turfs-manjeri-malappuram.json</code> (exact map position needed) and run:</p>
 <pre>npx.cmd tsx scripts/import-turfs.ts prisma/data/turfs-manjeri-malappuram.json --dry-run   <span class="c"># shows what would change</span>
 npx.cmd tsx scripts/import-turfs.ts prisma/data/turfs-manjeri-malappuram.json             <span class="c"># writes it</span></pre>
-<p>It is safe to run again: it never touches turfs that have been claimed, and it skips a turf that is already listed at the same spot. Make a backup first (section 8).
+<p>It is safe to run again: it never touches turfs that have been claimed, matches a turf already listed at the same spot instead of adding it twice, and keeps
+phone numbers and reported prices entered in the admin pages. Make a backup first (section 8).
 To add a single turf, use "Add unclaimed listing" on <code>/admin/turfs</code> instead.</p>
 </section>
 

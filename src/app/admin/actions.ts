@@ -36,9 +36,14 @@ const audit = (actorId: string, action: string, entity: string, entityId: string
 export async function reviewTurf(_: ActionState, fd: FormData): Promise<ActionState> {
   return run(async () => {
     const a = await admin();
-    const { turfId, decision, reason } = z.object({ turfId: z.string(), decision: z.enum(["APPROVED", "REJECTED", "SUSPENDED"]), reason: z.string().max(300).optional() }).parse(Object.fromEntries(fd));
-    if (decision !== "APPROVED" && !reason) throw new AppError(400, "Give a reason so the owner can fix it");
-    const t = await prisma.turf.update({ where: { id: turfId }, data: { status: decision, rejectionReason: decision === "APPROVED" ? null : reason } });
+    const { turfId, decision, reason } = z
+      .object({ turfId: z.string(), decision: z.enum(["APPROVED", "REJECTED", "SUSPENDED", "UNCLAIMED"]), reason: z.string().max(300).optional() })
+      .parse(Object.fromEntries(fd));
+    // UNCLAIMED = put a hidden public-info listing back; only for turfs nobody owns yet.
+    if (decision === "UNCLAIMED" && (await prisma.turf.findUnique({ where: { id: turfId }, select: { ownerId: true } }))?.ownerId)
+      throw new AppError(400, "This turf has an owner; approve or suspend it instead");
+    if (decision !== "APPROVED" && decision !== "UNCLAIMED" && !reason) throw new AppError(400, "Give a reason so the owner can fix it");
+    const t = await prisma.turf.update({ where: { id: turfId }, data: { status: decision, rejectionReason: decision === "APPROVED" || decision === "UNCLAIMED" ? null : reason } });
     if (t.ownerId) await notifyInApp(prisma, t.ownerId, decision === "APPROVED" ? `${t.name} is live! 🎉` : `${t.name}: ${decision.toLowerCase()}`, reason ?? "Customers can now find and book your turf.", `/owner/turfs/${t.id}`);
     await audit(a.id, `TURF_${decision}`, "Turf", t.id, { reason });
     revalidatePath("/admin/turfs");
@@ -54,6 +59,27 @@ export async function updateTurfAdmin(_: ActionState, fd: FormData): Promise<Act
     await prisma.turf.update({ where: { id: d.turfId }, data: { commissionPercent, isFeatured: fd.get("featured") === "on" } });
     await audit(a.id, "TURF_COMMERCIALS", "Turf", d.turfId, { commissionPercent, featured: fd.get("featured") === "on" });
     revalidatePath("/admin/turfs");
+  });
+}
+
+/** Reported hourly price for a turf without its own prices (shown as "reported", never charged). Empty clears it. */
+export async function setReportedPrice(_: ActionState, fd: FormData): Promise<ActionState> {
+  return run(async () => {
+    const a = await admin();
+    const d = z
+      .object({ turfId: z.string(), priceFrom: z.string().trim(), note: z.string().trim().max(200, "Keep the note under 200 characters").optional() })
+      .parse(Object.fromEntries(fd));
+    const rupeesFrom = d.priceFrom === "" ? null : z.coerce.number().int("Whole rupees only").min(100, "At least ₹100").max(20000, "At most ₹20,000").parse(d.priceFrom);
+    await prisma.turf.update({
+      where: { id: d.turfId },
+      data:
+        rupeesFrom == null
+          ? { reportedPriceFrom: null, reportedPriceNote: null, reportedPriceAt: null }
+          : { reportedPriceFrom: rupeesFrom * 100, reportedPriceNote: d.note || null, reportedPriceAt: new Date() },
+    });
+    await audit(a.id, "TURF_REPORTED_PRICE", "Turf", d.turfId, { rupeesFrom, note: d.note });
+    revalidatePath("/admin/turfs");
+    return rupeesFrom == null ? "Reported price cleared" : "Reported price saved";
   });
 }
 

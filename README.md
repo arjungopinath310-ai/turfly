@@ -75,4 +75,4 @@ npm run typecheck
 ```
 
 ## Seed data honesty
-All seeded turfs are **fictional and labelled “Demo listing”**. Real Manjeri turfs should be added by the admin as *unclaimed listings* from public information (with a source note) or registered by their owners. The app never claims live availability unless the owner manages bookings on the platform.
+The development seed (`prisma/seed.ts`) creates turfs that are **fictional and labelled “Demo listing”**; the live site has none. Real turfs around Manjeri and Malappuram are *unclaimed listings* built from public information, each with a source note: `prisma/data/turfs-manjeri-malappuram.json`, loaded with `npx tsx scripts/import-turfs.ts <file> [--dry-run]`. Owners claim them or register their own. The app never claims live availability unless the owner manages bookings on the platform, and a price an admin records for an unclaimed turf is always shown as *reported*, never as a confirmed rate.

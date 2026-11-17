@@ -66,7 +66,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
             </div>
             <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{turf.name}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
-              <span className="flex items-center gap-1"><MapPin size={15} /> {turf.addressLine}, {turf.locality ? `${turf.locality}, ` : ""}{turf.city.name} {turf.pincode}</span>
+              <span className="flex items-center gap-1"><MapPin size={15} /> {turf.addressLine}, {turf.locality && turf.locality !== turf.addressLine ? `${turf.locality}, ` : ""}{turf.city.name} {turf.pincode}</span>
               {turf.ratingCount > 0 && <span className="flex items-center gap-1"><Stars value={turf.ratingAvg} /> {turf.ratingAvg.toFixed(1)} ({turf.ratingCount})</span>}
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -167,6 +167,15 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
             <div className="card space-y-3 p-5">
               <h3 className="h2">Booking</h3>
               <p className="muted">This turf has not connected its booking calendar, so we can&apos;t show availability. Please call the turf directly.</p>
+              {turf.reportedPriceFrom != null && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+                  <div className="font-semibold">Reported price: from {rupees(turf.reportedPriceFrom)} / hour</div>
+                  {turf.reportedPriceNote && <div className="mt-0.5 text-slate-600">{turf.reportedPriceNote}</div>}
+                  <div className="mt-1 text-xs text-slate-500">
+                    Not confirmed by the turf{turf.reportedPriceAt ? `; reported ${formatDateLong(turf.reportedPriceAt)}` : ""}. Ask the price when you call.
+                  </div>
+                </div>
+              )}
               {turf.phone && <a href={`tel:${turf.phone}`} className="btn-primary w-full"><Phone size={16} /> Call {turf.phone}</a>}
               {turf.status === "UNCLAIMED" && (
                 <p className="text-xs text-slate-500">Are you the owner? Ask us for your claim link, or <Link href="/owner/turfs/new" className="underline">register</Link>.</p>

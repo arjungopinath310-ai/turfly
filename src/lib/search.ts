@@ -66,6 +66,7 @@ export async function searchTurfs(f: TurfFilters) {
       amenities: t.amenities,
       formats: Array.from(new Set(t.configs.map((c) => c.playersPerSide))).sort(),
       minPrice: prices.length ? Math.min(...prices) : null,
+      reportedPriceFrom: prices.length ? null : t.reportedPriceFrom, // only for turfs without their own prices
       ratingAvg: t.ratingAvg,
       ratingCount: t.ratingCount,
       distanceKm: origin ? haversineKm(origin, t) : null,

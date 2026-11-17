@@ -25,11 +25,18 @@ export function TurfCardView({ t }: { t: TurfCard }) {
       <div className="space-y-2 p-4">
         <div className="flex items-start justify-between gap-2">
           <Link href={`/turfs/${t.slug}`} className="font-semibold leading-tight hover:underline">{t.name}</Link>
-          {t.minPrice != null && (
+          {t.minPrice != null ? (
             <div className="shrink-0 text-right">
               <div className="font-bold">{rupees(t.minPrice)}</div>
               <div className="text-[11px] text-slate-500">from / hour</div>
             </div>
+          ) : (
+            t.reportedPriceFrom != null && (
+              <div className="shrink-0 text-right" title="Reported price, not confirmed by the turf">
+                <div className="font-bold text-slate-600">~{rupees(t.reportedPriceFrom)}</div>
+                <div className="text-[11px] text-slate-500">reported / hour</div>
+              </div>
+            )
           )}
         </div>
         <div className="flex items-center gap-1 text-sm text-slate-500">

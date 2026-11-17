@@ -1,20 +1,2551 @@
 {
-  "about": "Football turfs within about 10 km of Manjeri and Malappuram towns, added as UNCLAIMED listings (contact and directions only, no booking). Names and exact map positions come from OpenStreetMap (c) OpenStreetMap contributors, licensed ODbL; localities and PIN codes from OpenStreetMap Nominatim and India Post. Checked 17 Nov 2026. Not yet confirmed with the turfs. Import: npx tsx scripts/import-turfs.ts prisma/data/turfs-manjeri-malappuram.json [--dry-run]",
-  "checked": "17 Nov 2026",
-  "turfs": [
-    { "name": "Rock Arena Football Turf", "city": "manjeri", "addressLine": "22nd Mile, Tirur-Manjeri Road", "locality": "Kacherippadi", "pincode": "676121", "lat": 11.1037, "lng": 76.12219, "osm": "way/962819376", "alsoListed": "Justdial" },
-    { "name": "KL10 Soccer Live Football Turf", "city": "manjeri", "addressLine": "Pandalur", "locality": "Payyanad", "pincode": "676122", "lat": 11.0828, "lng": 76.1523, "osm": "way/980857844" },
-    { "name": "Club 7 Football Turf", "city": "manjeri", "addressLine": "Moochikkal", "locality": "Pullara", "pincode": "673642", "lat": 11.11738, "lng": 76.06775, "osm": "way/982439577", "alsoListed": "Justdial" },
-    { "name": "B Circle Football Turf", "city": "manjeri", "addressLine": "Valluvambram-Mongam Bypass, Alungapatta", "locality": "Valluvambram", "pincode": "673642", "lat": 11.13138, "lng": 76.04363, "osm": "way/982383232", "alsoListed": "Facebook (Bcircle Valluvambram)" },
-    { "name": "Crown Football Turf", "city": "manjeri", "addressLine": "Areacode-Manjeri Road, Elayur", "locality": "Kavanur", "pincode": "673639", "lat": 11.17021, "lng": 76.07716, "osm": "way/845820577" },
-    { "name": "Anfield Arena Football Turf", "city": "manjeri", "addressLine": "Areacode-Manjeri Road", "locality": "Kavanur", "pincode": "673639", "lat": 11.18607, "lng": 76.06498, "osm": "way/1073470073", "description": "Synthetic turf football pitch." },
-    { "name": "Club One Football Turf", "city": "malappuram", "addressLine": "Ahamed Kurikkal Road", "locality": "Kottappadi", "pincode": "676505", "lat": 11.04488, "lng": 76.07603, "osm": "way/371923614", "description": "Artificial turf football pitch in Malappuram town." },
-    { "name": "B-Square Football Turf", "city": "malappuram", "addressLine": "Keerankundu, Calicut-Palakkad Highway (NH 966)", "locality": "Koottilangadi", "pincode": "676506", "lat": 11.027, "lng": 76.10842, "osm": "way/799083854", "alsoListed": "its own website", "description": "Sevens (7-a-side) football turf." },
-    { "name": "Pilakkal Turf", "city": "malappuram", "addressLine": "Calicut-Palakkad Highway (NH 966)", "locality": "Pilakkal", "pincode": "673642", "lat": 11.09199, "lng": 76.06557, "osm": "way/982383229" },
-    { "name": "Al Maidan Football Turf", "city": "malappuram", "addressLine": "Koombara, New Bazar", "locality": "Pookkottur", "pincode": "676517", "lat": 11.10601, "lng": 76.05326, "osm": "way/982383230" },
-    { "name": "Goal Point Turf", "city": "malappuram", "addressLine": "Chattiparamba-Manjeri Road, Nooradi", "locality": "Vadakkemanna", "pincode": "676504", "lat": 11.01597, "lng": 76.0809, "osm": "way/1202744883" },
-    { "name": "Kick Off", "city": "malappuram", "addressLine": "Vengara-Navodaya-Malappuram Road", "locality": "Kottumala", "pincode": "676519", "lat": 11.05805, "lng": 76.01855, "osm": "way/958146938", "description": "Football turf." },
-    { "name": "Strikers Football Turf", "city": "malappuram", "addressLine": "Malappuram-Parappanangadi Road", "locality": null, "pincode": "676519", "lat": 11.06051, "lng": 76.00604, "osm": "way/886959568" },
-    { "name": "FUT OUT Football Turf", "city": "malappuram", "addressLine": "Calicut-Palakkad Highway (NH 966), Kavungaparamba", "locality": "Makkaraparamba", "pincode": "676507", "lat": 11.00692, "lng": 76.12673, "osm": "way/922799944" }
-  ]
+ "about": "Football turfs within about 20 km of Manjeri and Malappuram, added as UNCLAIMED listings (contact, hours and directions only, no booking). Sources: TapTurf (tapturf.in) for names, map pins, phone numbers, opening hours and facilities; OpenStreetMap (c) OpenStreetMap contributors, ODbL, for turfs TapTurf doesn't list and for addresses (Nominatim). Not yet confirmed with the turfs. Import: npx tsx scripts/import-turfs.ts prisma/data/turfs-manjeri-malappuram.json [--dry-run]",
+ "checked": "17 Nov 2026",
+ "cities": [
+  {
+   "slug": "manjeri",
+   "name": "Manjeri",
+   "lat": 11.1203,
+   "lng": 76.1199,
+   "pincodes": [
+    "676121",
+    "676122",
+    "676123"
+   ]
+  },
+  {
+   "slug": "malappuram",
+   "name": "Malappuram",
+   "lat": 11.051,
+   "lng": 76.0711,
+   "pincodes": [
+    "676505",
+    "676519"
+   ]
+  },
+  {
+   "slug": "kondotty",
+   "name": "Kondotty",
+   "lat": 11.1457,
+   "lng": 75.9644,
+   "pincodes": [
+    "673638"
+   ]
+  },
+  {
+   "slug": "kottakkal",
+   "name": "Kottakkal",
+   "lat": 11.0005,
+   "lng": 76.0048,
+   "pincodes": [
+    "676503"
+   ]
+  },
+  {
+   "slug": "perinthalmanna",
+   "name": "Perinthalmanna",
+   "lat": 10.9762,
+   "lng": 76.2254,
+   "pincodes": [
+    "679322"
+   ]
+  },
+  {
+   "slug": "areekode",
+   "name": "Areekode",
+   "lat": 11.2346,
+   "lng": 76.0492,
+   "pincodes": [
+    "673639"
+   ]
+  },
+  {
+   "slug": "edavanna",
+   "name": "Edavanna",
+   "lat": 11.2133,
+   "lng": 76.1385,
+   "pincodes": [
+    "676541"
+   ]
+  },
+  {
+   "slug": "pandikkad",
+   "name": "Pandikkad",
+   "lat": 11.1187,
+   "lng": 76.2308,
+   "pincodes": [
+    "676521"
+   ]
+  },
+  {
+   "slug": "wandoor",
+   "name": "Wandoor",
+   "lat": 11.1955,
+   "lng": 76.236,
+   "pincodes": [
+    "679328"
+   ]
+  },
+  {
+   "slug": "vengara",
+   "name": "Vengara",
+   "lat": 11.0516,
+   "lng": 75.9857,
+   "pincodes": [
+    "676304"
+   ]
+  }
+ ],
+ "turfs": [
+  {
+   "name": "Mullampara Turf Football Ground",
+   "city": "manjeri",
+   "addressLine": "Mullampara Rd",
+   "locality": "Mullampara Town",
+   "pincode": "676121",
+   "lat": 11.104182,
+   "lng": 76.108206,
+   "amenities": [
+    "drinking_water",
+    "washroom"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Club Arena Football Turf",
+   "city": "manjeri",
+   "addressLine": "Ring Rd",
+   "locality": "Kacherippadi",
+   "pincode": "676121",
+   "lat": 11.109207,
+   "lng": 76.117281,
+   "phone": "+919645471111",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 300,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "slug": "rock-arena-football-turf",
+   "name": "Rock Arena Football Turf",
+   "city": "manjeri",
+   "addressLine": "22nd Mile, Tirur-Manjeri Road",
+   "locality": "Kacherippadi",
+   "pincode": "676121",
+   "lat": 11.1037,
+   "lng": 76.12219,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/962819376"
+    },
+    {
+     "name": "Justdial"
+    }
+   ]
+  },
+  {
+   "slug": "club-7-football-turf",
+   "name": "Club 7 Football Turf",
+   "city": "manjeri",
+   "addressLine": "Moochikkal",
+   "locality": "Pullara",
+   "pincode": "673642",
+   "lat": 11.11738,
+   "lng": 76.06775,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/982439577"
+    },
+    {
+     "name": "Justdial"
+    }
+   ]
+  },
+  {
+   "name": "Godha - Mud Turf",
+   "city": "manjeri",
+   "addressLine": "Erambra Bridge, Ramankulam - Kidangazhi Rd",
+   "locality": "Pullur",
+   "pincode": "676123",
+   "lat": 11.138695,
+   "lng": 76.095837,
+   "phone": "+917560805080",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "drinking_water",
+    "washroom"
+   ],
+   "description": "Mud football turf.",
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Nou Camp Turf",
+   "city": "manjeri",
+   "addressLine": "Areekode - Manjeri Rd, South Puthalam, Pullur",
+   "locality": "Pulpatta",
+   "pincode": "676123",
+   "lat": 11.139669,
+   "lng": 76.100865,
+   "amenities": [
+    "changing_room"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Hill Land Soccer City Kallettikkal",
+   "city": "manjeri",
+   "addressLine": "Pullancheri",
+   "locality": "Pullancheri",
+   "pincode": "676509",
+   "lat": 11.08792,
+   "lng": 76.152166,
+   "phone": "+919048749000",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "floodlights",
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "slug": "kl10-soccer-live-football-turf",
+   "name": "KL10 Soccer Live Football Turf",
+   "city": "manjeri",
+   "addressLine": "Pandalur",
+   "locality": "Payyanad",
+   "pincode": "676122",
+   "lat": 11.0828,
+   "lng": 76.1523,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/980857844"
+    }
+   ]
+  },
+  {
+   "name": "Grant Soccer Turf",
+   "city": "manjeri",
+   "addressLine": "Kozhikode - Nilmbur - Gudallur Road",
+   "locality": null,
+   "pincode": "676121",
+   "lat": 11.14693,
+   "lng": 76.11928,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "node/7083539211"
+    }
+   ]
+  },
+  {
+   "slug": "b-circle-football-turf",
+   "name": "B Circle Football Turf",
+   "city": "manjeri",
+   "addressLine": "Valluvambram-Mongam Bypass, Alungapatta",
+   "locality": "Valluvambram",
+   "pincode": "673642",
+   "lat": 11.13138,
+   "lng": 76.04363,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/982383232"
+    },
+    {
+     "name": "Facebook (Bcircle Valluvambram)"
+    }
+   ]
+  },
+  {
+   "name": "Club7 Turf",
+   "city": "manjeri",
+   "addressLine": "Near Kuttippara",
+   "locality": "Kuttippara",
+   "pincode": "676122",
+   "lat": 11.117802,
+   "lng": 76.168246,
+   "amenities": [
+    "changing_room",
+    "drinking_water",
+    "floodlights"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "slug": "crown-football-turf",
+   "name": "Crown Football Turf",
+   "city": "manjeri",
+   "addressLine": "Areacode-Manjeri Road, Elayur",
+   "locality": "Kavanur",
+   "pincode": "673639",
+   "lat": 11.17021,
+   "lng": 76.07716,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/845820577"
+    }
+   ]
+  },
+  {
+   "name": "Soccer Point Karuvancheri Paramp",
+   "city": "malappuram",
+   "addressLine": "Malappuram",
+   "locality": null,
+   "pincode": "676509",
+   "lat": 11.07633,
+   "lng": 76.09306,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "node/8998042117"
+    }
+   ]
+  },
+  {
+   "name": "Ma'din Turf",
+   "city": "malappuram",
+   "addressLine": "Muttipadi",
+   "locality": "Melmuri",
+   "pincode": "676517",
+   "lat": 11.067213,
+   "lng": 76.077266,
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "slug": "pilakkal-turf",
+   "name": "Pilakkal Turf",
+   "city": "malappuram",
+   "addressLine": "Pookkottur",
+   "locality": "Pookkottur",
+   "pincode": "676517",
+   "lat": 11.09196,
+   "lng": 76.065744,
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/982383229"
+    }
+   ]
+  },
+  {
+   "name": "Legend Soccer Club",
+   "city": "malappuram",
+   "addressLine": "Downhill",
+   "locality": "Downhill",
+   "pincode": "676505",
+   "lat": 11.05557,
+   "lng": 76.08193,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "node/8756163220"
+    }
+   ]
+  },
+  {
+   "slug": "club-one-football-turf",
+   "name": "Club One Football Turf",
+   "city": "malappuram",
+   "addressLine": "Ahamed Kurikkal Road",
+   "locality": "Kottappadi",
+   "pincode": "676505",
+   "lat": 11.04488,
+   "lng": 76.07603,
+   "description": "Artificial turf football pitch in Malappuram town.",
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/371923614"
+    }
+   ]
+  },
+  {
+   "slug": "al-maidan-football-turf",
+   "name": "Al Maidan Football Turf",
+   "city": "malappuram",
+   "addressLine": "Koombara, New Bazar",
+   "locality": "Pookkottur",
+   "pincode": "676517",
+   "lat": 11.10601,
+   "lng": 76.05326,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/982383230"
+    }
+   ]
+  },
+  {
+   "name": "Touch Down Turf",
+   "city": "malappuram",
+   "addressLine": "Panakkad",
+   "locality": "Panakkad",
+   "pincode": "676519",
+   "lat": 11.04914,
+   "lng": 76.047431,
+   "phone": "+919605234977",
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "slug": "b-square-football-turf",
+   "name": "B-Square FUT Turf",
+   "city": "malappuram",
+   "addressLine": "Kozhikode - Palakkad Hwy",
+   "locality": "Keeramkund",
+   "pincode": "676507",
+   "lat": 11.026906,
+   "lng": 76.109136,
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "cafe",
+    "washroom"
+   ],
+   "description": "Sevens (7-a-side) football turf.",
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/799083854"
+    }
+   ]
+  },
+  {
+   "slug": "goal-point-turf",
+   "name": "Goal Point Football Turf",
+   "city": "malappuram",
+   "addressLine": "Chemmankadavu-west road",
+   "locality": "Kodur",
+   "pincode": "676504",
+   "lat": 11.015785,
+   "lng": 76.080831,
+   "phone": "+919846887878",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1202744883"
+    }
+   ]
+  },
+  {
+   "name": "Coop Arena Football Turf",
+   "city": "malappuram",
+   "addressLine": "Vellila",
+   "locality": "Kozhikottuparamba",
+   "pincode": "679324",
+   "lat": 11.041916,
+   "lng": 76.153106,
+   "phone": "+918943121358",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "floodlights"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "slug": "fut-out-football-turf",
+   "name": "FUT OUT Football Turf",
+   "city": "malappuram",
+   "addressLine": "Calicut-Palakkad Highway (NH 966), Kavungaparamba",
+   "locality": "Makkaraparamba",
+   "pincode": "676507",
+   "lat": 11.00692,
+   "lng": 76.12673,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/922799944"
+    }
+   ]
+  },
+  {
+   "name": "Club Catamount Soccer Turf Court Chattiparamba",
+   "city": "malappuram",
+   "addressLine": "West Bus Stop, Kottakkal - Perinthalmanna Rd",
+   "locality": "Cherukulamba",
+   "pincode": "676504",
+   "lat": 10.99701,
+   "lng": 76.093562,
+   "phone": "+916282399449",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "cafe"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "C Square Sports Meadow",
+   "city": "kondotty",
+   "addressLine": "Thadaparamba",
+   "locality": "Mongam",
+   "pincode": "673642",
+   "lat": 11.122347,
+   "lng": 76.031783,
+   "phone": "+919745504500",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "changing_room",
+    "drinking_water",
+    "first_aid",
+    "floodlights",
+    "parking",
+    "washroom"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Atlantis Football Turf",
+   "city": "kondotty",
+   "addressLine": "Mongam",
+   "locality": "Mongam",
+   "pincode": "673642",
+   "lat": 11.135769,
+   "lng": 76.026948,
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "drinking_water",
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/933562394"
+    }
+   ]
+  },
+  {
+   "name": "Soccer Field Turf",
+   "city": "kondotty",
+   "addressLine": "Ozhukur Rd",
+   "locality": "Morayur",
+   "pincode": "673642",
+   "lat": 11.135364,
+   "lng": 76.016329,
+   "phone": "+919645111143",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/958467239"
+    }
+   ]
+  },
+  {
+   "name": "Uptown Mud Turf",
+   "city": "kondotty",
+   "addressLine": "Uptown, Musliyarangadi",
+   "locality": "Nediyiruppu",
+   "pincode": "673638",
+   "lat": 11.13771,
+   "lng": 75.999767,
+   "description": "Mud football turf.",
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Luca Soccer Club Malappuram",
+   "city": "kondotty",
+   "addressLine": "La Casa Campus, Dharmagiri, Cherekkad",
+   "locality": "Kannamangalam West",
+   "pincode": "673638",
+   "lat": 11.106765,
+   "lng": 75.978255,
+   "phone": "+919633916521",
+   "amenities": [
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Magic Land",
+   "city": "kondotty",
+   "addressLine": "Koottapparambu Akkapparambu Puliyacode",
+   "locality": "Koottapparambu Akkapparambu Puliyacode",
+   "pincode": "673641",
+   "lat": 11.185125,
+   "lng": 76.031065,
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 480,
+     "closeMinute": 1170
+    },
+    {
+     "weekday": 1,
+     "openMinute": 540,
+     "closeMinute": 1200
+    },
+    {
+     "weekday": 2,
+     "openMinute": 540,
+     "closeMinute": 1320
+    },
+    {
+     "weekday": 3,
+     "openMinute": 540,
+     "closeMinute": 1320
+    },
+    {
+     "weekday": 4,
+     "openMinute": 540,
+     "closeMinute": 1320
+    },
+    {
+     "weekday": 5,
+     "openMinute": 540,
+     "closeMinute": 1320
+    },
+    {
+     "weekday": 6,
+     "openMinute": 540,
+     "closeMinute": 1320
+    }
+   ],
+   "amenities": [
+    "changing_room",
+    "drinking_water",
+    "first_aid",
+    "floodlights",
+    "parking",
+    "seating"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Golfit Premium Football Turf",
+   "city": "kondotty",
+   "addressLine": "Kuzhimanna",
+   "locality": "Kizhisseri",
+   "pincode": "673641",
+   "lat": 11.174428,
+   "lng": 76.002564,
+   "phone": "+917503600600",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/958199405"
+    }
+   ]
+  },
+  {
+   "name": "Goalz Soccer City Turf Stadium",
+   "city": "kondotty",
+   "addressLine": "Pallikkal Panchayat, Karuvankallu",
+   "locality": "Peruvallur",
+   "pincode": "673638",
+   "lat": 11.115475,
+   "lng": 75.960226,
+   "phone": "+917902412222",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "changing_room",
+    "drinking_water",
+    "first_aid",
+    "floodlights",
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Ricks Arena",
+   "city": "kondotty",
+   "addressLine": "Pallikkal Bazar - Airport Road",
+   "locality": "Melengadi",
+   "pincode": "673638",
+   "lat": 11.1414,
+   "lng": 75.96072,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1409526448"
+    }
+   ]
+  },
+  {
+   "name": "Landster Sports Hub",
+   "city": "kondotty",
+   "addressLine": "Padikkal - Karuvankallu Rd",
+   "locality": "Peruvallur",
+   "pincode": "673638",
+   "lat": 11.113368,
+   "lng": 75.948288,
+   "phone": "+919526556611",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 300,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "changing_room",
+    "drinking_water",
+    "first_aid",
+    "floodlights",
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Ask Turf Ground",
+   "city": "kondotty",
+   "addressLine": "Kumminiparamba",
+   "locality": "Karipur",
+   "pincode": "673647",
+   "lat": 11.14911,
+   "lng": 75.941259,
+   "phone": "+919745581010",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 360,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/749799112"
+    }
+   ]
+  },
+  {
+   "name": "Fifo Turf",
+   "city": "kondotty",
+   "addressLine": "Edavannappara, Edavannappara - Airport Rd",
+   "locality": "Vettukad",
+   "pincode": "673638",
+   "lat": 11.194558,
+   "lng": 75.963386,
+   "phone": "+919207252555",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Varappara Turf",
+   "city": "kondotty",
+   "addressLine": "Varappara",
+   "locality": "Peruvallur",
+   "pincode": "676306",
+   "lat": 11.099178,
+   "lng": 75.91959,
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1023392968"
+    }
+   ]
+  },
+  {
+   "name": "Game On Football Turf Court",
+   "city": "kottakkal",
+   "addressLine": "Vattapparamba - Jaaram Rd, Vattapparamba Mahallu",
+   "locality": "Chappanangadi",
+   "pincode": "676504",
+   "lat": 10.999243,
+   "lng": 76.077181,
+   "phone": "+919142507777",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "cafe"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "BASE Turf Ground",
+   "city": "kottakkal",
+   "addressLine": "Ponmala",
+   "locality": "Ponmala",
+   "pincode": "676528",
+   "lat": 11.018508,
+   "lng": 76.036138,
+   "phone": "+919747700020",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Pioneer Court Football Turf Othukkungal",
+   "city": "kottakkal",
+   "addressLine": "Main Road",
+   "locality": "Othukkungal",
+   "pincode": "676528",
+   "lat": 11.025118,
+   "lng": 76.025723,
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 360,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 360,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Sevens International Turf Court",
+   "city": "kottakkal",
+   "addressLine": "Paringimoochikkal",
+   "locality": "Paringimoochikkal",
+   "pincode": "676503",
+   "lat": 10.99118,
+   "lng": 76.04666,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/954978229"
+    }
+   ]
+  },
+  {
+   "name": "KTown Turf Kottakkal",
+   "city": "kottakkal",
+   "addressLine": "Kottakkal Ateeri Road, Main Rd",
+   "locality": "Kuzhippuram",
+   "pincode": "676503",
+   "lat": 11.003745,
+   "lng": 76.005893,
+   "phone": "+918157964964",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 300,
+     "closeMinute": 1560
+    },
+    {
+     "weekday": 1,
+     "openMinute": 300,
+     "closeMinute": 1500
+    },
+    {
+     "weekday": 2,
+     "openMinute": 300,
+     "closeMinute": 1500
+    },
+    {
+     "weekday": 3,
+     "openMinute": 300,
+     "closeMinute": 1500
+    },
+    {
+     "weekday": 4,
+     "openMinute": 300,
+     "closeMinute": 1500
+    },
+    {
+     "weekday": 5,
+     "openMinute": 300,
+     "closeMinute": 1500
+    },
+    {
+     "weekday": 6,
+     "openMinute": 300,
+     "closeMinute": 1560
+    }
+   ],
+   "amenities": [
+    "changing_room",
+    "drinking_water",
+    "first_aid",
+    "floodlights",
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Sports Zilla Football Arena",
+   "city": "kottakkal",
+   "addressLine": "Aanakuzhiyal",
+   "locality": "Aanakuzhiyal",
+   "pincode": "676553",
+   "lat": 10.955,
+   "lng": 76.05658,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1226465320"
+    }
+   ]
+  },
+  {
+   "name": "Catamount Football Turf",
+   "city": "kottakkal",
+   "addressLine": "Swagathamad",
+   "locality": "Swagathamad",
+   "pincode": "676510",
+   "lat": 10.98058,
+   "lng": 76.000758,
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Play Turf Edarikode",
+   "city": "kottakkal",
+   "addressLine": "Edarikode",
+   "locality": "Edarikode",
+   "pincode": "676501",
+   "lat": 10.994607,
+   "lng": 75.981796,
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 300,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 1320,
+     "closeMinute": 1380
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "node/8852756409"
+    }
+   ]
+  },
+  {
+   "name": "Pattakke Turf",
+   "city": "kottakkal",
+   "addressLine": "Mavandiyoor - Karekad Road",
+   "locality": "Chengundan Padi",
+   "pincode": "676553",
+   "lat": 10.941382,
+   "lng": 76.08275,
+   "phone": "+919037387600",
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1225838059"
+    }
+   ]
+  },
+  {
+   "name": "Soccerx Sevens International Turf Court",
+   "city": "kottakkal",
+   "addressLine": "Muduka Paramba - Chittani Rd, Muduka Paramba",
+   "locality": "Kamalapuram",
+   "pincode": "676510",
+   "lat": 10.966674,
+   "lng": 75.996895,
+   "phone": "+918848500651",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "changing_room"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/895511780"
+    }
+   ]
+  },
+  {
+   "name": "Two Star Football Turf",
+   "city": "kottakkal",
+   "addressLine": "Neeradi",
+   "locality": "Neeradi",
+   "pincode": "676553",
+   "lat": 10.93684,
+   "lng": 76.0441,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1221938897"
+    }
+   ]
+  },
+  {
+   "name": "Sevens Football Turf Kurukathani",
+   "city": "kottakkal",
+   "addressLine": "Kurukathani",
+   "locality": "Perumanna Klari",
+   "pincode": "676551",
+   "lat": 10.970869,
+   "lng": 75.979183,
+   "phone": "+919745575557",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/895419924"
+    }
+   ]
+  },
+  {
+   "name": "Soccer Arena",
+   "city": "kottakkal",
+   "addressLine": "Chali Bazar",
+   "locality": "Chali Bazar",
+   "pincode": "676103",
+   "lat": 10.93653,
+   "lng": 75.97694,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1060233204"
+    }
+   ]
+  },
+  {
+   "name": "Aspire City Football Turf",
+   "city": "perinthalmanna",
+   "addressLine": "Angadipuram",
+   "locality": "Angadipuram",
+   "pincode": "679321",
+   "lat": 10.97666,
+   "lng": 76.2025,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1324117385"
+    }
+   ]
+  },
+  {
+   "name": "Lakana Football Turf",
+   "city": "perinthalmanna",
+   "addressLine": "Karyavattom Manathumangalam Road",
+   "locality": "Kunnumpuram",
+   "pincode": "679322",
+   "lat": 10.99754,
+   "lng": 76.23601,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1065761411"
+    }
+   ]
+  },
+  {
+   "name": "Socur City Turf Tripanachi",
+   "city": "areekode",
+   "addressLine": "Povanchal Pochiyangal road",
+   "locality": null,
+   "pincode": "673644",
+   "lat": 11.16591,
+   "lng": 76.04109,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "node/8887540717"
+    }
+   ]
+  },
+  {
+   "slug": "anfield-arena-football-turf",
+   "name": "Anfield Arena Football Turf",
+   "city": "areekode",
+   "addressLine": "Areacode-Manjeri Road",
+   "locality": "Kavanur",
+   "pincode": "673639",
+   "lat": 11.18607,
+   "lng": 76.06498,
+   "description": "Synthetic turf football pitch.",
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1073470073"
+    }
+   ]
+  },
+  {
+   "name": "Lagana Football Turf",
+   "city": "areekode",
+   "addressLine": "Quilandy - Thamarassery - Edavanna Road",
+   "locality": "Irunnakuzhi",
+   "pincode": "673639",
+   "lat": 11.23057,
+   "lng": 76.05372,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/719465527"
+    }
+   ]
+  },
+  {
+   "name": "Beauchamp Football Arena Areekode",
+   "city": "areekode",
+   "addressLine": "Koyilandy -gudallur - Edavanna Road",
+   "locality": "Nelerimmal",
+   "pincode": "673639",
+   "lat": 11.24313,
+   "lng": 76.04564,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/803587734"
+    }
+   ]
+  },
+  {
+   "name": "Soccerzone Turf",
+   "city": "areekode",
+   "addressLine": "Kavanakkallu-Areekode Road",
+   "locality": "Ambala kulam",
+   "pincode": "673639",
+   "lat": 11.23804,
+   "lng": 76.01119,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/1324116872"
+    }
+   ]
+  },
+  {
+   "name": "El Clasico Turf Thottintakkara",
+   "city": "edavanna",
+   "addressLine": "Mampad",
+   "locality": "Mampad",
+   "pincode": "676542",
+   "lat": 11.240438,
+   "lng": 76.175562,
+   "phone": "+919656895206",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Al Hilal - Soccer City",
+   "city": "pandikkad",
+   "addressLine": "Manjeri - Pandikkad Rd",
+   "locality": "Moorippadam",
+   "pincode": "676521",
+   "lat": 11.096374,
+   "lng": 76.202005,
+   "phone": "+917736172111",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "floodlights",
+    "parking",
+    "washroom"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Alrayan Soccer City",
+   "city": "pandikkad",
+   "addressLine": "Kalamkavu",
+   "locality": "Kalamkavu",
+   "pincode": "676521",
+   "lat": 11.112622,
+   "lng": 76.22963,
+   "phone": "+916235497697",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Club Arena - Football Turf",
+   "city": "pandikkad",
+   "addressLine": "Perumbilavu-Nilambur Road",
+   "locality": "Oravampuram Colony",
+   "pincode": "676522",
+   "lat": 11.06472,
+   "lng": 76.26929,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "node/13063546402"
+    }
+   ],
+   "slug": "club-arena-football-turf-pandikkad"
+  },
+  {
+   "name": "Thrillox Park And Football Turf",
+   "city": "wandoor",
+   "addressLine": "Manjeri Edavanna Thiruvali Road",
+   "locality": null,
+   "pincode": "679328",
+   "lat": 11.19719,
+   "lng": 76.223139,
+   "phone": "+916235010101",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/958857606"
+    }
+   ]
+  },
+  {
+   "name": "Hill Top Turf",
+   "city": "wandoor",
+   "addressLine": "Wandoor - Nilambur Road",
+   "locality": null,
+   "pincode": "679328",
+   "lat": 11.1982,
+   "lng": 76.23511,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/958856007"
+    }
+   ]
+  },
+  {
+   "name": "Match Box Turf",
+   "city": "wandoor",
+   "addressLine": "Wandoor",
+   "locality": null,
+   "pincode": "679328",
+   "lat": 11.19246,
+   "lng": 76.24589,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "node/9779121322"
+    }
+   ]
+  },
+  {
+   "slug": "kick-off",
+   "name": "Kick Off",
+   "city": "vengara",
+   "addressLine": "Vengara-Navodaya-Malappuram Road",
+   "locality": "Kottumala",
+   "pincode": "676519",
+   "lat": 11.05805,
+   "lng": 76.01855,
+   "description": "Football turf.",
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/958146938"
+    }
+   ]
+  },
+  {
+   "slug": "strikers-football-turf",
+   "name": "Strikers Football Turf",
+   "city": "vengara",
+   "addressLine": "Malappuram-Parappanangadi Road",
+   "locality": "Valiyangadi",
+   "pincode": "676519",
+   "lat": 11.06051,
+   "lng": 76.00604,
+   "sources": [
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/886959568"
+    }
+   ]
+  },
+  {
+   "name": "5's Club International Football Court",
+   "city": "vengara",
+   "addressLine": "Vengara",
+   "locality": null,
+   "pincode": "676304",
+   "lat": 11.048795,
+   "lng": 75.988839,
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "Tiki Taka Soccer Turf",
+   "city": "vengara",
+   "addressLine": "Near AMLP school, Thottasseriyara",
+   "locality": "Kannamangalam",
+   "pincode": "676305",
+   "lat": 11.091583,
+   "lng": 75.952929,
+   "phone": "+917994381010",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/891936712"
+    }
+   ]
+  },
+  {
+   "name": "OLE Turf Park",
+   "city": "vengara",
+   "addressLine": "Near HP Petrol Pump",
+   "locality": "Venniyour",
+   "pincode": "676508",
+   "lat": 11.022711,
+   "lng": 75.94833,
+   "phone": "+919061923333",
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "amenities": [
+    "changing_room",
+    "drinking_water",
+    "first_aid",
+    "floodlights",
+    "parking"
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    }
+   ]
+  },
+  {
+   "name": "AGF Turf Court, Aspire Green Field",
+   "city": "vengara",
+   "addressLine": "Irumbuchola",
+   "locality": "Abdul Rahiman Nagar",
+   "pincode": "676305",
+   "lat": 11.063863,
+   "lng": 75.929734,
+   "hours": [
+    {
+     "weekday": 0,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 1,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 2,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 3,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 4,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 5,
+     "openMinute": 0,
+     "closeMinute": 1440
+    },
+    {
+     "weekday": 6,
+     "openMinute": 0,
+     "closeMinute": 1440
+    }
+   ],
+   "sources": [
+    {
+     "name": "TapTurf"
+    },
+    {
+     "name": "OpenStreetMap",
+     "ref": "way/981979390"
+    }
+   ]
+  }
+ ]
 }

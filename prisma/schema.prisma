@@ -149,6 +149,11 @@ model Turf {
   ratingAvg                Float            @default(0)
   ratingCount              Int              @default(0)
   sourceNote               String?          // where public info came from (unclaimed listings)
+  // Price players report for a turf that doesn't manage bookings here (no pitch prices of its own).
+  // Shown as "reported", never used for charging. Set by an admin; cleared once the owner sets real prices.
+  reportedPriceFrom        Int?             // paise per hour, lowest reported
+  reportedPriceNote        String?          // e.g. "₹1,000 after 6 PM; source: called the turf"
+  reportedPriceAt          DateTime?
   claimToken               String?          @unique
   createdAt                DateTime         @default(now())
   updatedAt                DateTime         @updatedAt

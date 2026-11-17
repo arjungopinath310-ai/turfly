@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { AMENITIES } from "@/lib/brand";
 import { ActionForm } from "@/components/ActionForm";
 import { StatusBadge } from "@/components/ui";
-import { addUnclaimedTurf, reviewClaim, reviewTurf, updateTurfAdmin } from "../actions";
+import { addUnclaimedTurf, reviewClaim, reviewTurf, setReportedPrice, updateTurfAdmin } from "../actions";
 
 export default async function AdminTurfs(props: { searchParams: Promise<{ status?: string }> }) {
   const searchParams = await props.searchParams;
@@ -96,8 +96,8 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
             <Link key={s} href={`/admin/turfs${s ? `?status=${s}` : ""}`} className={`chip ${String(searchParams.status ?? "") === s ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200"}`}>{s ? s.replace("_", " ").toLowerCase() : "all"}</Link>
           ))}
         </div>
-        <table className="table min-w-[900px]">
-          <thead><tr><th>Turf</th><th>Status</th><th>Owner</th><th>Bookings</th><th>Commission % / featured</th><th>Actions</th></tr></thead>
+        <table className="table min-w-[1100px]">
+          <thead><tr><th>Turf</th><th>Status</th><th>Owner</th><th>Bookings</th><th>Commission % / featured</th><th>Reported price (₹/hour)</th><th>Actions</th></tr></thead>
           <tbody>
             {turfs.map((t) => (
               <tr key={t.id}>
@@ -117,6 +117,31 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
                   </ActionForm>
                 </td>
                 <td>
+                  {/* Only for turfs that don't manage bookings here; once an owner sets real prices this is not shown. */}
+                  {t.availabilityMode === "NONE" ? (
+                    <ActionForm action={setReportedPrice} className="flex items-center gap-1" submit="Save" submitClass="btn-ghost btn-sm">
+                      <input type="hidden" name="turfId" value={t.id} />
+                      <input name="priceFrom" type="number" min={100} max={20000} step={50} defaultValue={t.reportedPriceFrom != null ? t.reportedPriceFrom / 100 : ""} placeholder="from" className="input w-20 py-1" />
+                      <input name="note" defaultValue={t.reportedPriceNote ?? ""} placeholder="note, e.g. ₹1,200 after 6 PM" className="input w-44 py-1 text-xs" />
+                    </ActionForm>
+                  ) : (
+                    <span className="text-xs text-slate-400">Owner sets prices</span>
+                  )}
+                </td>
+                <td>
+                  {t.status === "UNCLAIMED" && (
+                    <ActionForm action={reviewTurf} className="flex gap-1" submit={null}>
+                      <input type="hidden" name="turfId" value={t.id} />
+                      <input name="reason" placeholder="why (e.g. closed)" className="input w-28 py-1" />
+                      <button name="decision" value="REJECTED" className="btn-danger btn-sm">Hide</button>
+                    </ActionForm>
+                  )}
+                  {t.status === "REJECTED" && !t.ownerId && (
+                    <ActionForm action={reviewTurf} submit={null}>
+                      <input type="hidden" name="turfId" value={t.id} />
+                      <button name="decision" value="UNCLAIMED" className="btn-ghost btn-sm">Show again</button>
+                    </ActionForm>
+                  )}
                   {t.status === "APPROVED" && (
                     <ActionForm action={reviewTurf} className="flex gap-1" submit={null}>
                       <input type="hidden" name="turfId" value={t.id} />

@@ -32,7 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Navbar />
           {mockAllowed() && (
             <div className="bg-violet-600 px-4 py-1.5 text-center text-xs font-medium text-white">
-              Demo version: payments are simulated (no real money is charged) and turfs marked “Demo listing” are fictional.
+              Demo version: payments are simulated, so no real money is charged.
             </div>
           )}
           <main>{children}</main>
