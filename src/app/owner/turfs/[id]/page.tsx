@@ -9,6 +9,7 @@ import { getSettings } from "@/lib/settings";
 import { formatMinute } from "@/lib/time";
 import { ActionButton, ActionForm } from "@/components/ActionForm";
 import { TurfFields } from "@/components/TurfFields";
+import { TurfPhotoManager } from "@/components/TurfPhotoManager";
 import { StatusBadge } from "@/components/ui";
 import {
   addPricingRule, addUnit, applyPreset, deletePricingRule, deleteUnit, saveConfig, saveHours, savePolicy, setAvailabilityMode, submitForReview, updateTurf,
@@ -237,6 +238,10 @@ export default async function TurfSettings(
             <p className="text-xs text-slate-500">Leave all tiers empty to make the advance non-refundable. Turf-initiated cancellations always refund 100%.</p>
             <input name="note" placeholder="Extra note (optional, e.g. rain policy)" defaultValue={effective.note} className="input" />
           </ActionForm>
+        </Section>
+
+        <Section id="photos" title="Photos" sub="Players see these first. The cover photo is the thumbnail in search results.">
+          <TurfPhotoManager turfId={turf.id} initial={turf.photos} />
         </Section>
 
         <Section id="details" title="Details & booking rules">

@@ -11,6 +11,7 @@ import { directionsUrl, mapsSearchUrl, turfShareText, whatsappShare } from "@/li
 import { currentView } from "@/lib/view";
 import { BackButton } from "@/components/BackButton";
 import { DigipinChip } from "@/components/DigipinChip";
+import { TurfThumb } from "@/components/TurfThumb";
 import { encodeDigipin } from "@/lib/digipin";
 import { formatDateLong, formatMinute, todayIst } from "@/lib/time";
 import { AvailabilityBadge, DemoBadge, Stars } from "@/components/ui";
@@ -45,26 +46,32 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-8 sm:py-8">
-      <div className="-mx-4 grid grid-cols-1 gap-2 overflow-hidden sm:mx-0 sm:grid-cols-[2fr_1fr] sm:rounded-3xl">
-        <div className="relative aspect-[2/1] bg-gradient-to-br from-brand-700 to-brand-950 sm:aspect-auto sm:h-[360px]">
-          {turf.photos[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={turf.photos[0]} alt={turf.name} className="h-full w-full object-cover" />
+      {/* Photos: swipe through them on phones; main + two smaller on wide screens; a drawn pitch until there are any. */}
+      <div className={`-mx-4 grid grid-cols-1 gap-2 overflow-hidden sm:mx-0 sm:rounded-3xl ${turf.photos.length >= 3 ? "sm:grid-cols-[2fr_1fr]" : ""}`}>
+        <div className="relative aspect-[2/1] bg-brand-800 sm:aspect-auto sm:h-[360px]">
+          {turf.photos.length > 1 ? (
+            <div className="flex h-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] sm:block sm:overflow-hidden">
+              {turf.photos.map((p, i) => (
+                <div key={p} className={`h-full w-full shrink-0 snap-center ${i > 0 ? "sm:hidden" : ""}`}>
+                  <TurfThumb photo={p} name={turf.name} eager={i === 0} />
+                </div>
+              ))}
+            </div>
           ) : (
-            <div className="grid h-full place-items-center text-6xl opacity-50 sm:text-7xl">⚽</div>
+            <TurfThumb photo={turf.photos[0]} name={turf.name} eager />
+          )}
+          {turf.photos.length > 1 && (
+            <span className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white sm:hidden">{turf.photos.length} photos · swipe</span>
           )}
           <BackButton />
         </div>
-        <div className="hidden grid-rows-2 gap-2 sm:grid">
-          {[1, 2].map((i) =>
-            turf.photos[i] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={turf.photos[i]} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <div key={i} className="bg-gradient-to-br from-brand-600/70 to-brand-900" />
-            ),
-          )}
-        </div>
+        {turf.photos.length >= 3 && (
+          <div className="hidden grid-rows-2 gap-2 sm:grid">
+            {[1, 2].map((i) => (
+              <TurfThumb key={i} photo={turf.photos[i]} name={turf.name} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Phones: name → booking → details. Wide screens: booking panel in a sticky right column. */}

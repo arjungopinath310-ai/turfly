@@ -4,6 +4,7 @@ import type { TurfCard } from "@/lib/search";
 import { rupees } from "@/lib/engine/pricing";
 import { AvailabilityBadge, DemoBadge } from "./ui";
 import { CompareToggle } from "./CompareBar";
+import { TurfThumb } from "./TurfThumb";
 
 /**
  * Phones: a compact row (small picture left, facts right) so a whole list fits on screen, like booking apps.
@@ -14,13 +15,8 @@ export function TurfCardView({ t }: { t: TurfCard }) {
   return (
     <div className="card group relative flex gap-3 overflow-hidden p-3 transition active:scale-[.99] sm:block sm:p-0 sm:hover:-translate-y-0.5 sm:hover:shadow-lg">
       <Link href={`/turfs/${t.slug}`} className="absolute inset-0 z-0" aria-label={t.name} />
-      <div className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-brand-700 to-brand-950 sm:aspect-[16/9] sm:h-auto sm:w-full sm:rounded-none">
-        {t.photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={t.photo} alt="" className="h-full w-full object-cover" loading="lazy" />
-        ) : (
-          <div className="grid h-full place-items-center text-3xl opacity-60 sm:text-5xl">⚽</div>
-        )}
+      <div className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-brand-800 sm:aspect-[16/9] sm:h-auto sm:w-full sm:rounded-none">
+        <TurfThumb photo={t.photo} name={t.name} />
         <div className="absolute left-1.5 top-1.5 hidden gap-1.5 sm:left-3 sm:top-3 sm:flex">
           {t.isFeatured && <span className="chip border-amber-300 bg-amber-100 text-amber-800">Featured</span>}
           {t.isDemo && <DemoBadge />}

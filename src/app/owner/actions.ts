@@ -52,12 +52,10 @@ const turfFields = z.object({
   phone: z.string().max(16).optional(),
   whatsapp: z.string().max(16).optional(),
   email: z.string().email().optional().or(z.literal("")),
-  photos: z.string().max(4000).optional(),
 });
 
 function parseTurf(fd: FormData) {
   const d = turfFields.parse(Object.fromEntries(fd));
-  const photos = (d.photos ?? "").split(/\s+/).filter((u) => /^https:\/\//.test(u)).slice(0, 8);
   return {
     name: d.name,
     description: d.description || null,
@@ -71,7 +69,6 @@ function parseTurf(fd: FormData) {
     phone: d.phone ? normalizePhone(d.phone) ?? d.phone : null,
     whatsapp: d.whatsapp ? normalizePhone(d.whatsapp) : null,
     email: d.email || null,
-    photos,
     amenities: fd.getAll("amenities").map(String).slice(0, 20),
   };
 }

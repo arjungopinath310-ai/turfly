@@ -23,3 +23,6 @@ mobile/keystore.properties
 .env*.bak
 # database backups (personal data)
 backups/
+
+# turf photos uploaded through the app (back up with the database)
+uploads/

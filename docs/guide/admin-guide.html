@@ -276,7 +276,13 @@ To add a single turf, use "Add unclaimed listing" on <code>/admin/turfs</code> i
 <p>Turfly uses India Post's <b>DIGIPIN</b> instead of a street address or latitude/longitude: a 10-character code (for example <code>MC9 4P82 MJK</code>)
 for a spot of about 4 m × 4 m. Owners and admins type it, or stand on the pitch and tap <b>Use my location</b>; "Check it on the map" confirms the spot.
 A turf's DIGIPIN can be found at <code>app.indiapost.gov.in/digipin</code>. Turf, booking and checkout pages show the area, town and DIGIPIN (tap to copy),
-Directions still open the exact spot, and typing a DIGIPIN into the turf search lists the nearest turfs first.</p>
+Directions still open the exact spot.</p>
+<h3>Turf photos</h3>
+<p>The first photo of a turf is its thumbnail in search; turfs without photos show a drawn pitch. Owners add photos under <b>My turfs → (turf) → Photos</b>
+("Add photos" picks them from the phone; they are shrunk before upload). Admins can do the same for any listing: on <code>/admin/turfs</code> click
+<b>add photos</b> under the turf's name. Only use photos you took or have permission to use (photos on Google Maps or other sites belong to whoever took them).
+Photos are stored in the <code>uploads</code> folder of the project; <code>backup-db.ps1</code> zips them next to each database backup.</p>
+<p>The search box matches turf names only; towns, PIN codes and facilities are separate filters.</p>
 </section>
 
 <section>

@@ -47,10 +47,6 @@ export function TurfFields({ cities, turf }: { cities: City[]; turf?: Partial<Tu
         <label className="label">Email</label>
         <input name="email" type="email" defaultValue={turf?.email ?? ""} className="input" />
       </div>
-      <div>
-        <label className="label">Photo URLs (https, space separated)</label>
-        <input name="photos" defaultValue={turf?.photos?.join(" ")} className="input" />
-      </div>
       <div className="sm:col-span-2">
         <label className="label">Amenities</label>
         <div className="flex flex-wrap gap-1.5">

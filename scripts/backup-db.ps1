@@ -15,4 +15,12 @@ $file = Join-Path $dir ("turfly-" + (Get-Date -Format "yyyyMMdd-HHmm") + ".dump"
 if ($LASTEXITCODE -ne 0) { Write-Error "Backup failed"; exit 1 }
 Get-ChildItem $dir -Filter "turfly-*.dump" | Sort-Object Name -Descending | Select-Object -Skip 14 | Remove-Item -Force
 Write-Host "Backup saved: $file ($([math]::Round((Get-Item $file).Length / 1MB, 2)) MB)"
+# Turf photos uploaded through the app are files, not database rows: keep a copy next to the dump.
+$uploads = Join-Path $root "uploads"
+if ((Test-Path $uploads) -and (Get-ChildItem $uploads -File -ErrorAction SilentlyContinue)) {
+  $zip = $file -replace '\.dump$', '-photos.zip'
+  Compress-Archive -Path (Join-Path $uploads "*") -DestinationPath $zip -Force
+  Get-ChildItem $dir -Filter "turfly-*-photos.zip" | Sort-Object Name -Descending | Select-Object -Skip 14 | Remove-Item -Force
+  Write-Host "Photos saved: $zip (restore by unzipping into the uploads folder)"
+}
 Write-Host "Copy it somewhere off this PC (Google Drive, USB) so a broken PC doesn't lose the data."

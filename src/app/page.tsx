@@ -37,7 +37,7 @@ export default async function Home() {
           </h1>
           <p className="mt-2 text-slate-300">Find a football turf near you.</p>
           <form action="/turfs" className="mt-6 flex max-w-2xl gap-2 rounded-2xl bg-white p-2 text-slate-900 shadow-2xl">
-            <input name="q" className="input flex-1 border-0 focus:ring-0" placeholder="Turf name or place" aria-label="Turf name or place" />
+            <input name="q" className="input flex-1 border-0 focus:ring-0" placeholder="Search by turf name" aria-label="Search by turf name" />
             <button className="btn-primary px-5">Search</button>
           </form>
           <div className="mt-4 flex flex-wrap gap-2 text-sm">

@@ -102,7 +102,9 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
               <tr key={t.id}>
                 <td>
                   <Link href={`/turfs/${t.slug}`} className="font-semibold hover:underline">{t.name}</Link>
-                  <div className="text-xs text-slate-500">{t.city.name}{t.isDemo ? " · demo" : ""}</div>
+                  <div className="text-xs text-slate-500">
+                    {t.city.name}{t.isDemo ? " · demo" : ""} · <Link href={`/owner/turfs/${t.id}#photos`} className="text-brand-700 hover:underline">{t.photos.length ? `${t.photos.length} photo${t.photos.length === 1 ? "" : "s"}` : "add photos"}</Link>
+                  </div>
                   {t.claimToken && <div className="mt-1 break-all font-mono text-[10px] text-sky-700">Claim link: {app}/claim/{t.claimToken}</div>}
                 </td>
                 <td><StatusBadge status={t.status} /><div className="mt-1"><StatusBadge status={t.availabilityMode} /></div></td>

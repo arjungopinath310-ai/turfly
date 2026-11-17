@@ -50,7 +50,7 @@ export default async function TurfsPage(props: { searchParams: Promise<SP> }) {
         {Object.entries(base).filter(([k]) => k !== "q").map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
         <div className="relative flex-1">
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input name="q" defaultValue={f.q} className="input pl-9" placeholder="Turf name, place, PIN or DIGIPIN" aria-label="Search turfs" />
+          <input name="q" defaultValue={f.q} className="input pl-9" placeholder="Search by turf name" aria-label="Search by turf name" />
         </div>
         <button className="btn-primary">Search</button>
       </form>
