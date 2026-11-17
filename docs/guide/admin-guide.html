@@ -277,6 +277,18 @@ To add a single turf, use "Add unclaimed listing" on <code>/admin/turfs</code> i
 for a spot of about 4 m × 4 m. Owners and admins type it, or stand on the pitch and tap <b>Use my location</b>; "Check it on the map" confirms the spot.
 A turf's DIGIPIN can be found at <code>app.indiapost.gov.in/digipin</code>. Turf, booking and checkout pages show the area, town and DIGIPIN (tap to copy),
 Directions still open the exact spot.</p>
+<h3>Sample turf for sales demos</h3>
+<p><b>Turfly Showcase Arena (Sample)</b> shows what a turf looks like when it runs fully on Turfly: online booking with live slots, a 7-a-side pitch that
+splits into two 5-a-side pitches, peak / early-bird / weekend prices, floodlights till 1 AM, photos, about two months of bookings (online, phone and
+walk-in, including cancellations with refunds and a few no-shows), verified reviews and a planned maintenance block. It carries the "Demo listing" badge.</p>
+<ul>
+<li>To show a turf owner the owner side: sign in with <b>9000000001</b> and choose "I own or run a turf" (the demo code works while <code>DEMO_OTP</code> is on).
+Show Dashboard, Calendar, Bookings and Analytics.</li>
+<li>To refresh it so the history ends today (do this before an important demo):
+<pre>npx.cmd tsx scripts/seed-showcase.ts</pre>
+It replaces only the sample turf and its own sample players (numbers +91 90000001xx); nothing else is touched. Make a backup first (section 8).</li>
+<li>To remove it: Admin → Turfs → type a reason and press <b>Hide</b> on the sample turf.</li>
+</ul>
 <h3>Turf photos</h3>
 <p>The first photo of a turf is its thumbnail in search; turfs without photos show a drawn pitch. Owners add photos under <b>My turfs → (turf) → Photos</b>
 ("Add photos" picks them from the phone; they are shrunk before upload). Admins can do the same for any listing: on <code>/admin/turfs</code> click
