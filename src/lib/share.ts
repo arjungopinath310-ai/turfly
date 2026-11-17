@@ -8,6 +8,10 @@ export const whatsappShare = (text: string) => `https://wa.me/?text=${encodeURIC
 export const directionsUrl = (t: { lat: number; lng: number }) =>
   `https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}`;
 
+/** Google Maps search for the turf by name and place, so players can see its phone, photos and reviews there. */
+export const mapsSearchUrl = (t: { name: string; locality?: string | null; city: { name: string } }) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${t.name}, ${t.locality ?? t.city.name}, Kerala`)}`;
+
 const gcalStamp = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
 export function googleCalendarUrl(b: { code: string; startAt: Date | string; endAt: Date | string; turfName: string; address: string; configName: string }) {

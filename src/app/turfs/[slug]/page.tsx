@@ -7,7 +7,7 @@ import { AMENITIES } from "@/lib/brand";
 import { rupees } from "@/lib/engine/pricing";
 import { describePolicy, refundabilityLabel } from "@/lib/engine/policy";
 import { getSettings, turfPolicy } from "@/lib/settings";
-import { directionsUrl, turfShareText, whatsappShare } from "@/lib/share";
+import { directionsUrl, mapsSearchUrl, turfShareText, whatsappShare } from "@/lib/share";
 import { formatDateLong, formatMinute, todayIst } from "@/lib/time";
 import { AvailabilityBadge, DemoBadge, Stars } from "@/components/ui";
 import { BookingWidget } from "@/components/BookingWidget";
@@ -30,6 +30,10 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
   const [settings, user] = await Promise.all([getSettings(), currentUser()]);
   const policy = turfPolicy(turf, settings);
   const bookable = turf.status === "APPROVED" && turf.availabilityMode === "LIVE";
+  // Listed from public information only (or not on the booking calendar): no booking here, so no
+  // cancellation policy; point players to the turf's phone and its Google Maps listing instead.
+  const contactOnly = turf.availabilityMode === "NONE";
+  const mapsUrl = mapsSearchUrl(turf);
   const avg = (k: "turfQuality" | "cleanliness" | "lighting" | "parking") =>
     turf.reviews.length ? turf.reviews.reduce((a, r) => a + r[k], 0) / turf.reviews.length : 0;
 
@@ -72,6 +76,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
             <div className="mt-4 flex flex-wrap gap-2">
               <a href={directionsUrl(turf)} target="_blank" className="btn-ghost btn-sm"><Navigation size={14} /> Directions</a>
               {turf.phone && <a href={`tel:${turf.phone}`} className="btn-ghost btn-sm"><Phone size={14} /> {turf.phone}</a>}
+              {contactOnly && <a href={mapsUrl} target="_blank" rel="noopener" className="btn-ghost btn-sm"><MapPin size={14} /> Google Maps</a>}
               {turf.status === "APPROVED" && turf.ownerId && turf.ownerId !== user?.id && <MessageButton turfId={turf.id} signedIn={Boolean(user)} />}
               <a href={whatsappShare(turfShareText(turf))} target="_blank" className="btn-ghost btn-sm"><Share2 size={14} /> Share on WhatsApp</a>
               <Link href={`/compare?ids=${turf.id}`} className="btn-ghost btn-sm">Compare</Link>
@@ -97,7 +102,18 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
                   ))}
                 </div>
               ))}
-              {turf.configs.length === 0 && <p className="muted">Pricing not published yet.</p>}
+              {turf.configs.length === 0 &&
+                (turf.reportedPriceFrom != null ? (
+                  <div className="card p-4 sm:col-span-2">
+                    <div className="font-semibold">Reported: from {rupees(turf.reportedPriceFrom)} / hour</div>
+                    {turf.reportedPriceNote && <div className="mt-0.5 text-sm text-slate-600">{turf.reportedPriceNote}</div>}
+                    <div className="mt-1 text-xs text-slate-500">Not confirmed by the turf{turf.reportedPriceAt ? `; reported ${formatDateLong(turf.reportedPriceAt)}` : ""}.</div>
+                  </div>
+                ) : (
+                  <p className="muted sm:col-span-2">
+                    Prices aren&apos;t on {"Turfly"} yet. Ask when you call{contactOnly ? <>, or see recent player reviews on <a href={mapsUrl} target="_blank" rel="noopener" className="underline">Google Maps</a></> : null}.
+                  </p>
+                ))}
             </div>
           </section>
 
@@ -108,7 +124,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
                 {turf.amenities.map((a) => (
                   <span key={a} className="chip border-brand-200 bg-brand-50 text-brand-800">✓ {AMENITIES[a] ?? a}</span>
                 ))}
-                {turf.amenities.length === 0 && <span className="muted">Not listed</span>}
+                {turf.amenities.length === 0 && <span className="muted">Not known yet</span>}
               </div>
             </div>
             <div>
@@ -120,19 +136,21 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
                     <span>{h.isClosed ? "Closed" : `${formatMinute(h.openMinute)} – ${formatMinute(h.closeMinute)}`}</span>
                   </li>
                 ))}
-                {turf.hours.length === 0 && <li className="muted">Not listed</li>}
+                {turf.hours.length === 0 && <li className="muted">Not known yet</li>}
               </ul>
             </div>
           </section>
 
-          <section>
-            <h2 className="h2 mb-2">Cancellation policy · <span className="text-brand-700">{refundabilityLabel(policy)}</span></h2>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
-              {describePolicy(policy, settings.advanceAmountPaise).map((l) => (
-                <li key={l}>{l}</li>
-              ))}
-            </ul>
-          </section>
+          {!contactOnly && (
+            <section>
+              <h2 className="h2 mb-2">Cancellation policy · <span className="text-brand-700">{refundabilityLabel(policy)}</span></h2>
+              <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
+                {describePolicy(policy, settings.advanceAmountPaise).map((l) => (
+                  <li key={l}>{l}</li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section>
             <h2 className="h2 mb-3">Reviews from verified bookings</h2>
@@ -157,7 +175,12 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
                   {r.comment && <p className="mt-1 text-sm text-slate-700">{r.comment}</p>}
                 </div>
               ))}
-              {turf.reviews.length === 0 && <p className="muted">No reviews yet. Only players who booked through {"Turfly"} can review.</p>}
+              {turf.reviews.length === 0 && (
+                <p className="muted">
+                  No reviews yet. Only players who booked through {"Turfly"} can review.
+                  {contactOnly && <> Reviews by other players are on <a href={mapsUrl} target="_blank" rel="noopener" className="underline">Google Maps</a>.</>}
+                </p>
+              )}
             </div>
           </section>
         </div>
@@ -166,17 +189,18 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
           {turf.availabilityMode === "NONE" ? (
             <div className="card space-y-3 p-5">
               <h3 className="h2">Booking</h3>
-              <p className="muted">This turf has not connected its booking calendar, so we can&apos;t show availability. Please call the turf directly.</p>
+              <p className="muted">
+                This turf isn&apos;t taking bookings on {"Turfly"} yet, so we can&apos;t show free slots.{turf.phone ? " Call the turf to book." : ""}
+              </p>
               {turf.reportedPriceFrom != null && (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
-                  <div className="font-semibold">Reported price: from {rupees(turf.reportedPriceFrom)} / hour</div>
-                  {turf.reportedPriceNote && <div className="mt-0.5 text-slate-600">{turf.reportedPriceNote}</div>}
-                  <div className="mt-1 text-xs text-slate-500">
-                    Not confirmed by the turf{turf.reportedPriceAt ? `; reported ${formatDateLong(turf.reportedPriceAt)}` : ""}. Ask the price when you call.
-                  </div>
-                </div>
+                <p className="text-sm">Reported price: from <b>{rupees(turf.reportedPriceFrom)}</b> / hour (not confirmed; ask when you call).</p>
               )}
-              {turf.phone && <a href={`tel:${turf.phone}`} className="btn-primary w-full"><Phone size={16} /> Call {turf.phone}</a>}
+              {turf.phone ? (
+                <a href={`tel:${turf.phone}`} className="btn-primary w-full"><Phone size={16} /> Call {turf.phone}</a>
+              ) : (
+                <p className="text-sm text-slate-600">We don&apos;t have this turf&apos;s phone number yet. Its Google Maps listing usually has it, with photos and reviews.</p>
+              )}
+              <a href={mapsUrl} target="_blank" rel="noopener" className={`${turf.phone ? "btn-ghost" : "btn-primary"} w-full`}><MapPin size={16} /> Open in Google Maps</a>
               {turf.status === "UNCLAIMED" && (
                 <p className="text-xs text-slate-500">Are you the owner? Ask us for your claim link, or <Link href="/owner/turfs/new" className="underline">register</Link>.</p>
               )}
