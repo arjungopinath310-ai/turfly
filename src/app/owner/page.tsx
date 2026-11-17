@@ -5,21 +5,16 @@ import { getAvailability } from "@/lib/engine/booking";
 import { rupees } from "@/lib/engine/pricing";
 import { manageableTurfs, pickTurf } from "@/lib/owner";
 import { formatMinute, formatTimeRange, istParts, istToUtc, todayIst } from "@/lib/time";
-import { Empty, Stat, StatusBadge } from "@/components/ui";
+import { Stat, StatusBadge } from "@/components/ui";
 import { TurfSwitcher } from "@/components/TurfSwitcher";
+import { OwnerWelcome } from "@/components/OwnerWelcome";
 
 export default async function OwnerHome(props: { searchParams: Promise<{ turf?: string }> }) {
   const searchParams = await props.searchParams;
   const user = await pageUser("/owner");
   const turfs = await manageableTurfs(user);
   const turf = pickTurf(turfs, searchParams.turf);
-  if (!turf)
-    return (
-      <Empty title="List your turf on Turfly">
-        Register your turf, configure pitches (including 7-a-side that splits into two 5-a-side), set prices and start taking bookings.
-        <div className="mt-4"><Link href="/owner/turfs/new" className="btn-primary">Register a turf</Link></div>
-      </Empty>
-    );
+  if (!turf) return <OwnerWelcome userId={user.id} name={user.name} />;
 
   const today = todayIst();
   const dayStart = istToUtc(today, 0);

@@ -5,6 +5,8 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Providers } from "@/components/Providers";
 import { NativeBridge } from "@/components/NativeBridge";
+import { MobileTabBar } from "@/components/MobileTabBar";
+import { currentView } from "@/lib/view";
 import { currentUser } from "@/lib/auth";
 import { BRAND } from "@/lib/brand";
 import { mockAllowed } from "@/lib/payments/razorpay";
@@ -24,6 +26,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser().catch(() => null);
+  const view = user ? await currentView(user.role) : null;
   return (
     <html lang="en" className={font.variable}>
       <body className="min-h-screen font-sans">
@@ -36,22 +39,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           )}
           <main>{children}</main>
-          <footer className="safe-bottom mt-24 border-t border-slate-200 bg-white">
+          <footer className={`mt-24 border-t border-slate-200 bg-white ${user ? "pb-16 md:pb-0" : "safe-bottom"}`}>
             <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-slate-500">
               <nav className="flex flex-wrap gap-x-5 gap-y-2">
-                <Link href="/about" className="hover:text-slate-800">About</Link>
+                {view !== "owner" && <Link href="/about" className="hover:text-slate-800">About</Link>}
                 <Link href="/legal/terms" className="hover:text-slate-800">Terms</Link>
                 <Link href="/legal/privacy" className="hover:text-slate-800">Privacy</Link>
                 <Link href="/legal/refunds" className="hover:text-slate-800">Cancellation &amp; refunds</Link>
-                <Link href="/contact" className="hover:text-slate-800">Contact</Link>
-                <Link href="/owner/turfs/new" className="hover:text-slate-800">List your turf</Link>
+                <Link href="/contact" className="hover:text-slate-800">{view === "owner" ? "Help & contact" : "Contact"}</Link>
+                {/* Signed-out visitors: a way in for turf owners. Signed-in players never see owner options. */}
+                {!user && <Link href="/login?as=owner" className="hover:text-slate-800">For turf owners</Link>}
               </nav>
               <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span>© {new Date().getFullYear()} {BRAND.name} · Starting in Manjeri, Kerala</span>
-                <span>Live availability is shown only where the turf manages bookings on {BRAND.name}.</span>
+                {view !== "owner" && <span>Live availability is shown only where the turf manages bookings on {BRAND.name}.</span>}
               </div>
             </div>
           </footer>
+          {user && view && <MobileTabBar view={view} admin={user.role === "ADMIN"} />}
         </Providers>
       </body>
     </html>

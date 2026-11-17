@@ -228,6 +228,16 @@ before they can see turfs, book or use anything else. Afterwards they return to 
 turf claims) still work. These pages stay open without signing in, because Razorpay, Google and the Play Store check them, and none of them shows turfs:
 <code>/login</code>, <code>/about</code> (what Turfly is, with a sign-in button), <code>/legal/…</code>, <code>/contact</code> and <code>/account/delete</code>.
 When Razorpay or Google asks for your website or home page, give the <code>/about</code> address. The rule lives in <code>src\lib\access.ts</code>.</p>
+<h3>Players and turf owners see different apps</h3>
+<p>The sign-in page asks <b>"I want to play"</b> or <b>"I own or run a turf"</b>. The choice is remembered on that phone or computer and decides what
+the person sees; it never gives extra permissions.</p>
+<ul>
+<li><b>Players</b> land on a search page and see Find turfs, My bookings, Teams and Find players. They never see owner options.</li>
+<li><b>Turf owners</b> land on their dashboard and see Dashboard, Calendar, Bookings, My turfs and Analytics. An owner with no turf yet gets
+two buttons: <b>Find my turf</b> (ask to manage a turf that is already listed) and <b>Add my turf</b>.</li>
+<li>On phones both get a tab bar at the bottom of the screen. Owners and admins can change side from the account menu
+("Switch to player" / "Switch to turf owner"). The footer link <b>For turf owners</b> opens sign-in with the owner choice ticked.</li>
+</ul>
 <h3>Signing in as admin</h3>
 <ul>
 <li>Phone numbers listed in <code>ADMIN_PHONES</code> in <code>.env</code> become admin when they sign in.</li>
@@ -253,6 +263,8 @@ Directions button, but cannot book. Each listing names its sources (TapTurf, Ope
 manage bookings here, for example after calling the turf or reading recent reviews. It shows as "~₹… reported / hour" with the date, never as a confirmed price,
 and is ignored once the owner sets real prices. Leave it empty and press Save to remove it.</li>
 <li><b>Closed or wrong listing:</b> type a reason and press <b>Hide</b>; it disappears from search. "Show again" brings it back.</li>
+<li><b>An owner asks to manage a listed turf</b> (Find my turf): the request appears under <b>Listing claims</b> on <code>/admin/turfs</code> with what
+they wrote. Call the turf's public number to confirm, then press <b>Approve &amp; transfer</b>. The turf moves to their dashboard and they can turn on bookings.</li>
 </ul>
 <p>To add or correct many at once, edit <code>prisma\data\turfs-manjeri-malappuram.json</code> (exact map position needed) and run:</p>
 <pre>npx.cmd tsx scripts/import-turfs.ts prisma/data/turfs-manjeri-malappuram.json --dry-run   <span class="c"># shows what would change</span>

@@ -69,14 +69,16 @@ export default async function About() {
         </ol>
       </section>
 
+      {/* For visitors and reviewers; signed-in players don't see owner options. */}
+      {!user && (
       <section className="mx-auto mt-16 max-w-6xl px-4">
         <div className="card grid grid-cols-1 gap-6 overflow-hidden p-8 sm:grid-cols-[1.2fr_1fr] sm:items-center">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Own a turf? Fill your empty hours.</h2>
             <p className="muted mt-2">
-              Manage bookings, walk-ins, peak pricing and split pitches (7-a-side ↔ two 5-a-side) from one calendar.
-              Sign in and choose <b>List your turf</b> to get started.
+              Manage bookings, walk-ins, peak pricing and split pitches (7-a-side ↔ two 5-a-side) from one calendar. Listing is free.
             </p>
+            <Link href="/login?as=owner" className="btn-dark mt-4">I own or run a turf</Link>
           </div>
           <ul className="grid gap-3 text-sm">
             <li className="flex gap-2"><CalendarCheck className="text-brand-600" size={18} /> Double-booking impossible, enforced by the database</li>
@@ -85,6 +87,7 @@ export default async function About() {
           </ul>
         </div>
       </section>
+      )}
     </>
   );
 }

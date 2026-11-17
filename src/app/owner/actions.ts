@@ -109,6 +109,24 @@ export async function claimListing(_: ActionState, fd: FormData): Promise<Action
   });
 }
 
+/** An owner found their turf among the public listings (Owner → "Find my turf") and asks to manage it. */
+export async function requestClaim(_: ActionState, fd: FormData): Promise<ActionState> {
+  return run(async () => {
+    const user = await requireUser();
+    const { turfId, evidence } = z
+      .object({ turfId: z.string(), evidence: z.string().trim().min(10, "Tell us your name, your role at the turf and its phone number").max(1000) })
+      .parse(Object.fromEntries(fd));
+    const turf = await prisma.turf.findUnique({ where: { id: turfId } });
+    if (!turf || turf.status !== "UNCLAIMED") throw new AppError(404, "This turf is already managed by someone. Contact us if that's wrong.");
+    const pending = await prisma.turfClaim.findFirst({ where: { turfId, userId: user.id, status: "PENDING" } });
+    if (pending) return "We already have your request. We'll call you soon.";
+    await prisma.turfClaim.create({ data: { turfId, userId: user.id, evidence } });
+    revalidatePath("/owner");
+    revalidatePath("/owner/claim");
+    return "Request sent. We'll call the turf to confirm, then it appears in your dashboard.";
+  });
+}
+
 export async function updateTurf(_: ActionState, fd: FormData): Promise<ActionState> {
   return run(async () => {
     const { turf } = await requireTurfAccess(String(fd.get("turfId")));

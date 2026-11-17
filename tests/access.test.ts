@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAppUserAgent, isPublicPath, safeNext } from "@/lib/access";
+import { homeFor, isAppUserAgent, isPublicPath, resolveView, safeNext } from "@/lib/access";
 
 describe("sign-in gate", () => {
   it("keeps the sign-in, about, legal, contact and deletion pages public", () => {
@@ -18,6 +18,17 @@ describe("sign-in gate", () => {
     expect(safeNext("https://evil.com")).toBe("/");
     expect(safeNext(undefined)).toBe("/");
     expect(safeNext("javascript:alert(1)", "")).toBe("");
+  });
+
+  it("picks the player or owner side: the sign-in choice wins, otherwise turf owners get the owner side", () => {
+    expect(resolveView("PLAYER", "owner")).toBe("owner");
+    expect(resolveView("OWNER", "player")).toBe("player");
+    expect(resolveView("OWNER", undefined)).toBe("owner");
+    expect(resolveView("PLAYER", null)).toBe("player");
+    expect(resolveView("ADMIN", undefined)).toBe("player");
+    expect(resolveView("OWNER", "something-else")).toBe("owner");
+    expect(homeFor("owner")).toBe("/owner");
+    expect(homeFor("player")).toBe("/");
   });
 
   it("recognises the Turfly app's web view", () => {

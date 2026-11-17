@@ -1,102 +1,80 @@
 import Link from "next/link";
-import { CalendarCheck, MapPin, ShieldCheck, Users, Wallet, Zap } from "lucide-react";
+import { redirect } from "next/navigation";
+import { CalendarCheck, ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { currentUser } from "@/lib/auth";
 import { searchTurfs } from "@/lib/search";
+import { currentView } from "@/lib/view";
+import { formatDateLong, formatTimeRange } from "@/lib/time";
 import { TurfCardView } from "@/components/TurfCard";
-import { addDays, todayIst } from "@/lib/time";
 
+/** Player home. Turf owners land on their dashboard instead; signed-out visitors never get here (sign-in gate). */
 export default async function Home() {
-  const [cities, turfs] = await Promise.all([
-    prisma.city.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
+  const user = await currentUser();
+  if (user && (await currentView(user.role)) === "owner") redirect("/owner");
+
+  const [towns, turfs, nextMatch] = await Promise.all([
+    // Towns that have turfs, busiest first, for one-tap search buttons.
+    prisma.city.findMany({
+      where: { isActive: true, turfs: { some: { status: { in: ["APPROVED", "UNCLAIMED"] } } } },
+      include: { _count: { select: { turfs: { where: { status: { in: ["APPROVED", "UNCLAIMED"] } } } } } },
+    }),
     searchTurfs({}).then((r) => r.slice(0, 6)),
+    user
+      ? prisma.booking.findFirst({ where: { userId: user.id, status: "CONFIRMED", startAt: { gte: new Date() } }, include: { turf: { select: { name: true } } }, orderBy: { startAt: "asc" } })
+      : null,
   ]);
+  towns.sort((a, b) => b._count.turfs - a._count.turfs);
+  const first = user?.name?.trim().split(/\s+/)[0];
+
   return (
     <>
       <section className="relative overflow-hidden bg-pitch-night text-white">
         <div className="absolute inset-0 opacity-30 [background:radial-gradient(60%_60%_at_70%_20%,#12b76a_0%,transparent_60%),repeating-linear-gradient(90deg,transparent_0_78px,rgba(255,255,255,.05)_78px_80px)]" />
-        <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:pt-24">
-          <span className="chip border-white/15 bg-white/5 text-brand-200">Now live in Manjeri, Kerala</span>
-          <h1 className="mt-5 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
-            Book your next match <span className="bg-gradient-to-r from-brand-300 to-lime-300 bg-clip-text text-transparent">in under a minute</span>
+        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-10 sm:pb-16 sm:pt-16">
+          <h1 className="max-w-3xl text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+            {first ? `Hi ${first}, ready to play?` : "Ready to play?"}
           </h1>
-          <p className="mt-5 max-w-xl text-lg text-slate-300">
-            Compare turfs, see real availability, reserve with a ₹49 advance and bring your whole team, all in one place.
-          </p>
-          <form action="/turfs" className="mt-8 grid grid-cols-1 max-w-3xl gap-2 rounded-2xl bg-white p-2 text-slate-900 shadow-2xl sm:grid-cols-[1.4fr_1fr_1fr_auto]">
-            <input name="q" className="input border-0 focus:ring-0" placeholder="Turf name, area or PIN code" />
-            <select name="city" className="input border-0 focus:ring-0" defaultValue="manjeri">
-              {cities.map((c) => (
-                <option key={c.id} value={c.slug}>{c.name}</option>
-              ))}
-            </select>
-            <select name="format" className="input border-0 focus:ring-0" defaultValue="">
-              <option value="">Any format</option>
-              <option value="5">5-a-side</option>
-              <option value="7">7-a-side</option>
-            </select>
-            <button className="btn-primary px-6">Search</button>
+          <p className="mt-2 text-slate-300">Find a football turf near you.</p>
+          <form action="/turfs" className="mt-6 flex max-w-2xl gap-2 rounded-2xl bg-white p-2 text-slate-900 shadow-2xl">
+            <input name="q" className="input flex-1 border-0 focus:ring-0" placeholder="Turf name or place" aria-label="Turf name or place" />
+            <button className="btn-primary px-5">Search</button>
           </form>
-          <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-300">
-            <Link href={`/turfs?date=${todayIst()}&time=19:00`} className="chip border-white/15 hover:bg-white/10">Tonight 7 PM</Link>
-            <Link href={`/turfs?date=${addDays(todayIst(), 1)}&time=18:00`} className="chip border-white/15 hover:bg-white/10">Tomorrow 6 PM</Link>
-            <Link href="/turfs?format=5" className="chip border-white/15 hover:bg-white/10">5-a-side</Link>
-            <Link href="/turfs?amenities=floodlights,parking" className="chip border-white/15 hover:bg-white/10">Floodlit + parking</Link>
+          <div className="mt-4 flex flex-wrap gap-2 text-sm">
+            {towns.map((t) => (
+              <Link key={t.id} href={`/turfs?city=${t.slug}`} className="chip border-white/20 bg-white/5 text-slate-100 hover:bg-white/15">
+                {t.name} <span className="text-slate-400">{t._count.turfs}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* relative z-10: these cards overlap the hero's bottom edge and must paint above it */}
-      <section className="relative z-10 mx-auto -mt-8 grid grid-cols-1 max-w-6xl gap-3 px-4 sm:grid-cols-3">
-        {[
-          { icon: <Zap size={18} />, t: "Live slot grid", d: "Green means free right now. No calling around." },
-          { icon: <Wallet size={18} />, t: "₹49 to reserve", d: "Pay the rest at the turf. Refund rules shown upfront." },
-          { icon: <Users size={18} />, t: "Teams built in", d: "Invite your squad on WhatsApp, track who's in." },
-        ].map((f) => (
-          <div key={f.t} className="card flex gap-3 p-4">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">{f.icon}</span>
-            <div>
-              <div className="font-semibold">{f.t}</div>
-              <div className="muted">{f.d}</div>
+      <div className="mx-auto max-w-6xl space-y-10 px-4 pt-8">
+        {nextMatch && (
+          <Link href={`/bookings/${nextMatch.id}`} className="card flex items-center gap-4 p-4 hover:shadow-lg">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"><CalendarCheck size={20} /></span>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-semibold uppercase tracking-wide text-brand-700">Your next match</div>
+              <div className="truncate font-semibold">{nextMatch.turf.name}</div>
+              <div className="text-sm text-slate-500">{formatDateLong(nextMatch.startAt)} · {formatTimeRange(nextMatch.startAt, nextMatch.endAt)}</div>
             </div>
-          </div>
-        ))}
-      </section>
+            <ChevronRight className="text-slate-400" />
+          </Link>
+        )}
 
-      <section className="mx-auto mt-14 max-w-6xl px-4">
-        <div className="mb-5 flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Turfs near you</h2>
-            <p className="muted">Manjeri and surroundings</p>
+        <section>
+          <div className="mb-4 flex items-end justify-between">
+            <h2 className="text-xl font-bold tracking-tight">Turfs</h2>
+            <Link href="/turfs" className="text-sm font-semibold text-brand-700 hover:underline">See all & map →</Link>
           </div>
-          <Link href="/turfs" className="text-sm font-semibold text-brand-700 hover:underline">See all & map →</Link>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {turfs.map((t) => (
-            <TurfCardView key={t.id} t={t} />
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto mt-16 max-w-6xl px-4">
-        <div className="card grid grid-cols-1 gap-6 overflow-hidden p-8 sm:grid-cols-[1.2fr_1fr] sm:items-center">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Own a turf? Fill your empty hours.</h2>
-            <p className="muted mt-2">
-              Manage bookings, walk-ins, peak pricing and split pitches (7-a-side ↔ two 5-a-side) from one calendar.
-              Unclaimed listing of your turf already here? Claim it in minutes.
-            </p>
-            <div className="mt-5 flex gap-2">
-              <Link href="/owner/turfs/new" className="btn-dark">List your turf</Link>
-              <Link href="/owner" className="btn-ghost">Owner dashboard</Link>
-            </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {turfs.map((t) => (
+              <TurfCardView key={t.id} t={t} />
+            ))}
           </div>
-          <ul className="grid gap-3 text-sm">
-            <li className="flex gap-2"><CalendarCheck className="text-brand-600" size={18} /> Double-booking impossible, enforced by the database</li>
-            <li className="flex gap-2"><ShieldCheck className="text-brand-600" size={18} /> Payments confirmed only by verified gateway webhooks</li>
-            <li className="flex gap-2"><MapPin className="text-brand-600" size={18} /> Verified listing badge and Google Maps directions</li>
-          </ul>
-        </div>
-      </section>
+        </section>
+      </div>
     </>
   );
 }

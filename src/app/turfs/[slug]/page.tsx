@@ -8,6 +8,7 @@ import { rupees } from "@/lib/engine/pricing";
 import { describePolicy, refundabilityLabel } from "@/lib/engine/policy";
 import { getSettings, turfPolicy } from "@/lib/settings";
 import { directionsUrl, mapsSearchUrl, turfShareText, whatsappShare } from "@/lib/share";
+import { currentView } from "@/lib/view";
 import { formatDateLong, formatMinute, todayIst } from "@/lib/time";
 import { AvailabilityBadge, DemoBadge, Stars } from "@/components/ui";
 import { BookingWidget } from "@/components/BookingWidget";
@@ -28,6 +29,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
   });
   if (!turf || !["APPROVED", "UNCLAIMED"].includes(turf.status)) notFound();
   const [settings, user] = await Promise.all([getSettings(), currentUser()]);
+  const view = await currentView(user?.role);
   const policy = turfPolicy(turf, settings);
   const bookable = turf.status === "APPROVED" && turf.availabilityMode === "LIVE";
   // Listed from public information only (or not on the booking calendar): no booking here, so no
@@ -201,8 +203,9 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
                 <p className="text-sm text-slate-600">We don&apos;t have this turf&apos;s phone number yet. Its Google Maps listing usually has it, with photos and reviews.</p>
               )}
               <a href={mapsUrl} target="_blank" rel="noopener" className={`${turf.phone ? "btn-ghost" : "btn-primary"} w-full`}><MapPin size={16} /> Open in Google Maps</a>
-              {turf.status === "UNCLAIMED" && (
-                <p className="text-xs text-slate-500">Are you the owner? Ask us for your claim link, or <Link href="/owner/turfs/new" className="underline">register</Link>.</p>
+              {/* Owner options only on the owner side; players never see them. */}
+              {turf.status === "UNCLAIMED" && view === "owner" && (
+                <Link href={`/owner/claim?q=${encodeURIComponent(turf.name)}`} className="btn-dark w-full">This is my turf: manage it</Link>
               )}
               {turf.sourceNote && <p className="text-xs text-slate-400">Listing info source: {turf.sourceNote}</p>}
             </div>

@@ -8,6 +8,7 @@ import { POSITIONS } from "@/lib/brand";
 import { PageHeader } from "@/components/ui";
 import { formatPhone } from "@/lib/format";
 import { AccountData } from "@/components/AccountData";
+import { currentView } from "@/lib/view";
 
 async function save(fd: FormData) {
   "use server";
@@ -19,10 +20,9 @@ async function save(fd: FormData) {
     const taken = await prisma.user.findFirst({ where: { email: d.email, id: { not: user.id } } });
     if (taken) throw new Error("That email is linked to another account");
   }
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { name: d.name, email: d.email || null, preferredPosition: d.preferredPosition || null, shareContactWithTeams: d.share === "on" },
-  });
+  // Player-only fields are only on the form for the player side; the owner side's form must not reset them.
+  const playerFields = fd.get("playerFields") === "1" ? { preferredPosition: d.preferredPosition || null, shareContactWithTeams: d.share === "on" } : {};
+  await prisma.user.update({ where: { id: user.id }, data: { name: d.name, email: d.email || null, ...playerFields } });
   // keep the user's own team-member rows in sync with their profile name
   await prisma.teamMember.updateMany({ where: { userId: user.id }, data: { name: d.name } });
   revalidatePath("/", "layout");
@@ -36,10 +36,15 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
   const user = await currentUser();
   if (!user) redirect("/login?next=/profile");
   const next = safeNext(searchParams.next, "");
+  const isPlayer = (await currentView(user.role)) === "player";
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
       <PageHeader title={searchParams.welcome ? "Welcome to Turfly! 👋" : "Your profile"} subtitle={formatPhone(user.phone) ?? user.email ?? ""} />
-      {searchParams.welcome && <p className="mb-4 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-800">Tell us your name so teammates and turf owners know who booked.</p>}
+      {searchParams.welcome && (
+        <p className="mb-4 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-800">
+          {isPlayer ? "Tell us your name so teammates and turf owners know who booked." : "Tell us your name so players and our team know who runs the turf."}
+        </p>
+      )}
       <form action={save} className="card space-y-4 p-6">
         <input type="hidden" name="next" value={next} />
         <div>
@@ -50,23 +55,28 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
           <label className="label">Email (for receipts)</label>
           <input name="email" type="email" defaultValue={user.email ?? ""} className="input" />
         </div>
-        <div>
-          <label className="label">Preferred position</label>
-          <select name="preferredPosition" defaultValue={user.preferredPosition ?? ""} className="input">
-            <option value="">—</option>
-            {POSITIONS.map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
-        </div>
-        <label className="flex items-start gap-3 rounded-xl bg-slate-50 p-3 text-sm">
-          <input type="checkbox" name="share" defaultChecked={user.shareContactWithTeams} className="mt-0.5 accent-brand-600" />
-          <span>
-            <b>Share my phone number with my teammates</b>
-            <span className="block text-slate-500">Off by default. When off, other players only see your name.</span>
-          </span>
-        </label>
-        {user.referralCode && <p className="text-sm text-slate-600">Your referral code: <b className="font-mono">{user.referralCode}</b></p>}
+        {isPlayer && (
+          <>
+            <input type="hidden" name="playerFields" value="1" />
+            <div>
+              <label className="label">Preferred position</label>
+              <select name="preferredPosition" defaultValue={user.preferredPosition ?? ""} className="input">
+                <option value="">—</option>
+                {POSITIONS.map((p) => (
+                  <option key={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+            <label className="flex items-start gap-3 rounded-xl bg-slate-50 p-3 text-sm">
+              <input type="checkbox" name="share" defaultChecked={user.shareContactWithTeams} className="mt-0.5 accent-brand-600" />
+              <span>
+                <b>Share my phone number with my teammates</b>
+                <span className="block text-slate-500">Off by default. When off, other players only see your name.</span>
+              </span>
+            </label>
+            {user.referralCode && <p className="text-sm text-slate-600">Your referral code: <b className="font-mono">{user.referralCode}</b></p>}
+          </>
+        )}
         <button className="btn-primary">{next ? "Save & continue" : "Save"}</button>
       </form>
       {!searchParams.welcome && (

@@ -19,5 +19,22 @@ export function safeNext(next: string | null | undefined, fallback = "/") {
   return next;
 }
 
+/**
+ * Which side of Turfly someone sees: "player" (find and book turfs) or "owner" (run a turf).
+ * Chosen on the sign-in page and remembered in a cookie; without a choice, turf owners see the owner side.
+ * It only changes menus and the landing page. Permissions still come from the user's role and turf ownership.
+ */
+export type View = "player" | "owner";
+export const VIEW_COOKIE = "turfly_view";
+export const VIEW_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+export function resolveView(role: string | null | undefined, chosen: string | null | undefined): View {
+  if (chosen === "owner" || chosen === "player") return chosen;
+  return role === "OWNER" ? "owner" : "player";
+}
+
+/** Where each side starts after signing in. */
+export const homeFor = (view: View) => (view === "owner" ? "/owner" : "/");
+
 /** The Turfly Android/iOS app's WebView adds "TurflyApp/<version>" to its user agent. */
 export const isAppUserAgent = (ua: string | null | undefined) => Boolean(ua && /TurflyApp\//.test(ua));

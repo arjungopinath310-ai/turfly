@@ -9,9 +9,14 @@ export default async function MyTurfs() {
   return (
     <div>
       <PageHeader title="My turfs">
-        <Link href="/owner/turfs/new" className="btn-primary">Register a turf</Link>
+        <Link href="/owner/claim" className="btn-ghost">Find my listed turf</Link>
+        <Link href="/owner/turfs/new" className="btn-primary">Add a turf</Link>
       </PageHeader>
-      {turfs.length === 0 && <Empty title="No turfs yet">Register your turf, or use the claim link we sent if your turf is already listed.</Empty>}
+      {turfs.length === 0 && (
+        <Empty title="No turfs yet">
+          If your turf is already on Turfly, <Link href="/owner/claim" className="font-semibold text-brand-700 underline">find it</Link> and ask to manage it. Otherwise add it.
+        </Empty>
+      )}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {turfs.map((t) => (
           <Link key={t.id} href={`/owner/turfs/${t.id}`} className="card flex items-center justify-between p-5 hover:shadow-lg">
