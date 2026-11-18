@@ -30,7 +30,7 @@ export default async function TeamsPage() {
               </div>
               <div className="flex-1">
                 <div className="font-semibold">{t.name}</div>
-                <div className="text-sm text-slate-500">{t.playersPerSide}-a-side · {t._count.members} players · {t._count.bookings} matches</div>
+                <div className="text-sm text-slate-500">{t.playersPerSide}-a-side · {t._count.members} player{t._count.members === 1 ? "" : "s"} · {t._count.bookings} match{t._count.bookings === 1 ? "" : "es"}</div>
               </div>
               <span className="text-sm text-brand-700">Manage →</span>
             </Link>

@@ -6,6 +6,7 @@ import { ActionForm } from "@/components/ActionForm";
 import { StatusBadge } from "@/components/ui";
 import { DigipinField } from "@/components/DigipinField";
 import { addUnclaimedTurf, reviewClaim, reviewTurf, setReportedPrice, updateTurfAdmin } from "../actions";
+import { formatPhone } from "@/lib/format";
 
 export default async function AdminTurfs(props: { searchParams: Promise<{ status?: string }> }) {
   const searchParams = await props.searchParams;
@@ -35,7 +36,7 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
                 <div>
                   <div className="font-semibold">{t.name}</div>
                   <div className="text-sm text-slate-500">{t.addressLine}, {t.city.name} {t.pincode}</div>
-                  <div className="text-xs text-slate-500">Owner: {t.owner?.name ?? "—"} {t.owner?.phone}</div>
+                  <div className="text-xs text-slate-500">Owner: {t.owner?.name ?? "—"} {formatPhone(t.owner?.phone)}</div>
                   <div className="mt-1 text-xs text-slate-500">{t.configs.map((c) => c.name).join(" · ")}</div>
                 </div>
                 <Link className="btn-ghost btn-sm h-fit" href={`/owner/turfs/${t.id}`}>Inspect</Link>
@@ -108,7 +109,7 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
                   {t.claimToken && <div className="mt-1 break-all font-mono text-[10px] text-sky-700">Claim link: {app}/claim/{t.claimToken}</div>}
                 </td>
                 <td><StatusBadge status={t.status} /><div className="mt-1"><StatusBadge status={t.availabilityMode} /></div></td>
-                <td className="text-xs">{t.owner?.name ?? "—"}<br />{t.owner?.phone}</td>
+                <td className="text-xs">{t.owner?.name ?? "—"}<br />{formatPhone(t.owner?.phone)}</td>
                 <td>{t._count.bookings}</td>
                 <td>
                   <ActionForm action={updateTurfAdmin} className="flex items-center gap-2" submit="Save" submitClass="btn-ghost btn-sm">

@@ -8,6 +8,7 @@ import { formatMinute, formatTimeRange, istParts, istToUtc, todayIst } from "@/l
 import { Stat, StatusBadge } from "@/components/ui";
 import { TurfSwitcher } from "@/components/TurfSwitcher";
 import { OwnerWelcome } from "@/components/OwnerWelcome";
+import { plural } from "@/lib/format";
 
 export default async function OwnerHome(props: { searchParams: Promise<{ turf?: string }> }) {
   const searchParams = await props.searchParams;
@@ -51,9 +52,10 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
           <h1 className="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{turf.name}</h1>
           <div className="mt-1 flex gap-2"><StatusBadge status={turf.status} /><StatusBadge status={turf.availabilityMode} /></div>
         </div>
-        <div className="flex w-full gap-2 sm:w-auto">
-          {turfs.length > 1 && <TurfSwitcher turfs={turfs} current={turf.id} />}
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
+          {turfs.length > 1 && <div className="w-full sm:w-auto"><TurfSwitcher turfs={turfs} current={turf.id} /></div>}
           <Link href={`/owner/calendar?turf=${turf.id}`} className="btn-primary flex-1 sm:flex-none">Open calendar</Link>
+          <Link href={`/owner/calendar?turf=${turf.id}#walkin`} className="btn-ghost flex-1 sm:flex-none">+ Walk-in booking</Link>
         </div>
       </div>
       {turf.status !== "APPROVED" && (
@@ -72,7 +74,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
               <li key={b.id} className="flex items-center justify-between py-2.5 text-sm">
                 <span>
                   <b>{formatTimeRange(b.startAt, b.endAt)}</b> · {b.config.name}
-                  <span className="block text-xs text-slate-500">{b.teamName ?? b.team?.name ?? b.customerName ?? b.user?.name ?? "Customer"} · {b.code} · {b.source.toLowerCase().replace("_", "-")}</span>
+                  <span className="block text-xs text-slate-500">{b.teamName || b.team?.name || b.customerName || b.user?.name || "Customer"} · {b.code} · {b.source.toLowerCase().replace("_", "-")}</span>
                 </span>
                 <span className="text-right text-xs">{b.balanceCollectedAt ? <span className="text-brand-700">Paid ✓</span> : `${rupees(b.balanceDue)} due`}</span>
               </li>
@@ -88,7 +90,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
         <Stat label="Bookings this month" value={month.length} hint={`${month.filter((m) => m.source !== "ONLINE").length} walk-in / phone`} />
         <Stat label="Booking value this month" value={rupees(revenue)} />
         <Stat label="Advances received" value={rupees(advances)} hint="Collected online by the platform" />
-        <Stat label="Pending balances" value={rupees(pending._sum.balanceDue ?? 0)} hint={`${pending._count} bookings`} />
+        <Stat label="Pending balances" value={rupees(pending._sum.balanceDue ?? 0)} hint={plural(pending._count, "booking")} />
         <Stat label="Cancellations" value={`${cancelled}`} hint={`${cancelRate}% this month`} />
       </div>
 
@@ -96,11 +98,14 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
         <div className="card p-5">
           <h2 className="h2 mb-1">Peak booking hours</h2>
           <p className="muted mb-4">Last 90 days, by start time</p>
-          <div className="flex h-36 items-end gap-1">
+          <div className="flex h-36 gap-1" role="img" aria-label="Bookings by start hour">
             {hours.map(({ h, n }) => (
               <div key={h} className="flex flex-1 flex-col items-center gap-1" title={`${formatMinute(h * 60)}: ${n}`}>
-                <div className="w-full rounded-t bg-brand-500" style={{ height: `${(n / maxH) * 100}%`, minHeight: n ? 4 : 1, opacity: n ? 1 : 0.15 }} />
-                {h % 3 === 0 && <span className="text-[9px] text-slate-400">{h}</span>}
+                {/* the bar's % height needs a parent with a height: this flex-1 box gets it from the h-36 row */}
+                <div className="flex w-full flex-1 items-end">
+                  <div className="w-full rounded-t bg-brand-500" style={{ height: `${(n / maxH) * 100}%`, minHeight: n ? 4 : 1, opacity: n ? 1 : 0.15 }} />
+                </div>
+                <span className="h-3 text-[9px] leading-3 text-slate-400">{h % 3 === 0 ? (h === 0 ? "12a" : h < 12 ? `${h}a` : h === 12 ? "12p" : `${h - 12}p`) : ""}</span>
               </div>
             ))}
           </div>

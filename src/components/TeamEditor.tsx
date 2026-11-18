@@ -5,6 +5,7 @@ import { Copy, Crown, MessageCircle, Pencil, Trash2, UserPlus } from "lucide-rea
 import { POSITIONS } from "@/lib/brand";
 import { whatsappShare } from "@/lib/share";
 import { ImagePicker } from "./ImagePicker";
+import { formatPhone } from "@/lib/format";
 
 interface Member { id: string; name: string; position: string | null; jerseyNumber: number | null; photoUrl: string | null; isCaptain: boolean; status: string; registered: boolean; phone: string | null; email: string | null }
 const blank = { name: "", phone: "", email: "", position: "", jerseyNumber: "", photoUrl: null as string | null };
@@ -63,7 +64,7 @@ export function TeamEditor(p: { team: { id: string; name: string; playersPerSide
           ) : (
             <h1 className="h1">{p.team.name}</h1>
           )}
-          <div className="mt-1 text-sm text-slate-500">{p.team.playersPerSide}-a-side · {p.members.length} players</div>
+          <div className="mt-1 text-sm text-slate-500">{p.team.playersPerSide}-a-side · {p.members.length} player{p.members.length === 1 ? "" : "s"}</div>
         </div>
         {p.inviteUrl && (
           <div className="flex gap-2">
@@ -88,7 +89,7 @@ export function TeamEditor(p: { team: { id: string; name: string; playersPerSide
                 </div>
                 <div className="text-xs text-slate-500">
                   {m.position ?? "Any position"} · {m.registered ? "Registered" : "Invited"}
-                  {m.phone && ` · ${m.phone}`}
+                  {m.phone && ` · ${formatPhone(m.phone)}`}
                 </div>
               </div>
               {p.isOwner && (

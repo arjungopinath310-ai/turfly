@@ -20,7 +20,7 @@ function ago(iso: string) {
   return fmtDay(iso);
 }
 
-export function ChatApp({ initialId }: { initialId: string | null }) {
+export function ChatApp({ initialId, owner = false }: { initialId: string | null; owner?: boolean }) {
   const [list, setList] = useState<ConvRow[] | null>(null);
   const [selected, setSelected] = useState<string | null>(initialId);
   const [thread, setThread] = useState<ThreadInfo | null>(null);
@@ -122,7 +122,7 @@ export function ChatApp({ initialId }: { initialId: string | null }) {
   const showThread = Boolean(selected);
 
   return (
-    <div className="card grid grid-cols-1 h-[calc(100vh-11rem)] min-h-[480px] overflow-hidden md:grid-cols-[320px_1fr]">
+    <div className="card grid h-[calc(100dvh-17.5rem)] min-h-[340px] grid-cols-1 overflow-hidden md:h-[calc(100vh-11rem)] md:min-h-[480px] md:grid-cols-[320px_1fr]">
       {/* Conversation list */}
       <aside className={clsx("flex min-h-0 flex-col border-r border-slate-100", showThread && "hidden md:flex")}>
         <div className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Conversations</div>
@@ -130,7 +130,11 @@ export function ChatApp({ initialId }: { initialId: string | null }) {
           {list === null && <div className="p-6 text-center text-sm text-slate-400"><Loader2 className="mx-auto animate-spin" size={18} /></div>}
           {list?.length === 0 && (
             <div className="p-6 text-center text-sm text-slate-500">
-              No messages yet. Open a turf and tap <b>Message turf</b> to ask about availability, parking or anything else.
+              {owner ? (
+                <>No messages yet. When players tap <b>Message turf</b> on your turf&apos;s page, their questions arrive here.</>
+              ) : (
+                <>No messages yet. Open a turf and tap <b>Message turf</b> to ask about availability, parking or anything else.</>
+              )}
             </div>
           )}
           {list?.map((c) => (

@@ -6,6 +6,8 @@ import { manageableTurfs, pickTurf } from "@/lib/owner";
 import { formatDateLong, formatTimeRange, todayIst } from "@/lib/time";
 import { ActionButton, ActionForm } from "@/components/ActionForm";
 import { Empty, StatusBadge } from "@/components/ui";
+import { spotsLabel } from "@/lib/games-shared";
+import { formatPhone } from "@/lib/format";
 import { TurfSwitcher } from "@/components/TurfSwitcher";
 import { MessageButton } from "@/components/MessageButton";
 import { collectBalance, markNoShow, ownerCancel, ownerReschedule } from "../actions";
@@ -28,7 +30,15 @@ export default async function OwnerBookings(
   const [bookings, configs] = await Promise.all([
     prisma.booking.findMany({
       where: { turfId: sel.id, ...where, ...(searchParams.focus ? { id: searchParams.focus } : {}), ...(searchParams.q ? { OR: [{ code: { contains: searchParams.q, mode: "insensitive" as const } }, { customerName: { contains: searchParams.q, mode: "insensitive" as const } }, { teamName: { contains: searchParams.q, mode: "insensitive" as const } }] } : {}) },
-      include: { config: true, team: true, user: { select: { name: true, phone: true } }, roster: true, payments: true },
+      include: {
+        config: true,
+        team: true,
+        user: { select: { name: true, phone: true } },
+        roster: true,
+        payments: true,
+        // Players short for this booking who listed it as an open game
+        posts: { where: { status: { in: ["OPEN", "FILLED"] } }, select: { playersNeeded: true, _count: { select: { requests: { where: { status: "ACCEPTED" } } } } } },
+      },
       orderBy: { startAt: tab === "upcoming" ? "asc" : "desc" },
       take: 100,
     }),
@@ -62,11 +72,16 @@ export default async function OwnerBookings(
                   <span className="font-mono text-sm">{b.code}</span>
                   <StatusBadge status={b.status} />
                   <span className="chip border-slate-200 text-slate-500">{b.source.toLowerCase().replace("_", "-")}</span>
+                  {b.posts[0] && (
+                    <span className="chip border-amber-200 bg-amber-50 text-amber-800" title="The organiser is finding extra players through Turfly">
+                      Open game · {spotsLabel(b.posts[0].playersNeeded - b.posts[0]._count.requests).toLowerCase()}
+                    </span>
+                  )}
                 </div>
                 <div className="mt-1 font-semibold">{formatDateLong(b.startAt)} · {formatTimeRange(b.startAt, b.endAt)} · {b.config.name}</div>
                 <div className="text-sm text-slate-600">
-                  {b.teamName ?? b.team?.name ?? "No team"} · organiser {b.customerName ?? b.user?.name ?? "—"}
-                  {(b.customerPhone ?? b.user?.phone) && <> · <a className="underline" href={`tel:${b.customerPhone ?? b.user?.phone}`}>{b.customerPhone ?? b.user?.phone}</a></>}
+                  {b.teamName || b.team?.name || "No team"} · organiser {b.customerName || b.user?.name || "—"}
+                  {(b.customerPhone ?? b.user?.phone) && <> · <a className="underline" href={`tel:${b.customerPhone ?? b.user?.phone}`}>{formatPhone(b.customerPhone ?? b.user?.phone)}</a></>}
                 </div>
                 {b.roster.length > 0 && <div className="mt-1 text-xs text-slate-500">Squad: {b.roster.filter((r) => r.status !== "DECLINED").map((r) => r.name + (r.isCaptain ? " (C)" : "")).join(", ")}</div>}
               </div>

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { ActionForm } from "@/components/ActionForm";
 import { PageHeader } from "@/components/ui";
 import { requestClaim } from "../actions";
+import { formatPhone } from "@/lib/format";
 
 /** "Find my turf": an owner searches the public listings and asks to manage theirs (an admin confirms by phone). */
 export default async function FindMyTurf(props: { searchParams: Promise<{ q?: string }> }) {
@@ -54,7 +55,7 @@ export default async function FindMyTurf(props: { searchParams: Promise<{ q?: st
             <div className="font-semibold">{t.name}</div>
             <div className="mt-0.5 flex flex-wrap gap-x-3 text-sm text-slate-500">
               <span className="flex items-center gap-1"><MapPin size={14} /> {t.locality ? `${t.locality}, ` : ""}{t.city.name} {t.pincode}</span>
-              {t.phone && <span className="flex items-center gap-1"><Phone size={14} /> {t.phone}</span>}
+              {t.phone && <span className="flex items-center gap-1"><Phone size={14} /> {formatPhone(t.phone)}</span>}
             </div>
             {requested.has(t.id) ? (
               <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">Request sent. We&apos;ll call the turf to confirm.</p>

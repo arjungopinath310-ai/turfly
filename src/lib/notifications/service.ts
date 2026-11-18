@@ -46,7 +46,7 @@ export async function cancelBookingJobs(db: Tx, bookingId: string) {
 function render(template: string, b: Awaited<ReturnType<typeof loadBooking>>) {
   const when = `${formatDateLong(b.startAt)}, ${formatTimeRange(b.startAt, b.endAt)}`;
   const link = `${APP()}/bookings/${b.id}`;
-  const team = b.teamName ?? b.team?.name ?? "—";
+  const team = b.teamName || b.team?.name || "—";
   const base = `${b.turf.name} · ${b.config.name} · ${when}`;
   switch (template) {
     case "BOOKING_CONFIRMED":

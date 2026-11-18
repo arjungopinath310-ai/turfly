@@ -6,6 +6,7 @@ import { formatIst } from "@/lib/time";
 import { ActionForm } from "@/components/ActionForm";
 import { StatusBadge } from "@/components/ui";
 import { adminRefund, resolveDispute } from "../actions";
+import { formatPhone } from "@/lib/format";
 
 export default async function Finance(props: { searchParams: Promise<{ q?: string }> }) {
   const searchParams = await props.searchParams;
@@ -71,7 +72,7 @@ export default async function Finance(props: { searchParams: Promise<{ q?: strin
               <tr key={p.id}>
                 <td className="text-xs">{formatIst(p.createdAt)}</td>
                 <td className="text-xs"><b className="font-mono">{p.booking.code}</b><br />{p.booking.turf.name}</td>
-                <td className="text-xs">{p.user?.name ?? "—"}<br />{p.user?.phone}</td>
+                <td className="text-xs">{p.user?.name ?? "—"}<br />{formatPhone(p.user?.phone)}</td>
                 <td className="font-mono text-[10px]">{p.providerOrderId}<br />{p.providerPaymentId}<br />{p.method}</td>
                 <td>{rupees(p.amount)}{p.refundedAmount > 0 && <div className="text-xs text-sky-700">−{rupees(p.refundedAmount)}</div>}</td>
                 <td><StatusBadge status={p.status} />{p.clientVerifiedAt && <div className="text-[10px] text-slate-400">client sig ✓</div>}</td>

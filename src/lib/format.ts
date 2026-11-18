@@ -18,3 +18,6 @@ export const adminPhones = () =>
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+
+/** "1 booking", "3 bookings", "1 match", "2 matches" */
+export const plural = (n: number, word: string, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;

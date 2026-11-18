@@ -44,5 +44,6 @@ export function quote(opts: {
   };
 }
 
+/** 150000 → "₹1,500"; negative amounts read "−₹686" (not "₹-686"). */
 export const rupees = (paise: number) =>
-  "₹" + ((paise || 0) / 100).toLocaleString("en-IN", { minimumFractionDigits: paise % 100 ? 2 : 0, maximumFractionDigits: 2 });
+  (paise < 0 ? "−" : "") + "₹" + (Math.abs(paise || 0) / 100).toLocaleString("en-IN", { minimumFractionDigits: paise % 100 ? 2 : 0, maximumFractionDigits: 2 });

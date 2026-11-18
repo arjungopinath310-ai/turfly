@@ -38,7 +38,7 @@ export default async function BookingsPage() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="truncate font-semibold">{b.turf.name}</div>
-            <div className="truncate text-sm text-slate-500">{formatTimeRange(b.startAt, b.endAt)} · {b.config.name}{b.team || b.teamName ? ` · ${b.teamName ?? b.team?.name}` : ""}</div>
+            <div className="truncate text-sm text-slate-500">{formatTimeRange(b.startAt, b.endAt)} · {b.config.name}{b.team || b.teamName ? ` · ${b.teamName || b.team?.name}` : ""}</div>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
               <StatusBadge status={b.status} />
               {b.status === "HELD" && <span className="font-semibold text-amber-700">Finish payment →</span>}
@@ -61,8 +61,11 @@ export default async function BookingsPage() {
         <List items={upcoming} />
       ) : (
         <Empty title="No upcoming matches">
-          Find a turf and reserve a slot in a minute.
-          <div className="mt-3"><Link href="/turfs" className="btn-primary">Find a turf</Link></div>
+          Find a turf and reserve a slot in a minute. No team? Join a game that&apos;s short of players.
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            <Link href="/turfs" className="btn-primary">Find a turf</Link>
+            <Link href="/games" className="btn-ghost">Join a game</Link>
+          </div>
         </Empty>
       )}
       {past.length > 0 && (

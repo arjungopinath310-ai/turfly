@@ -315,7 +315,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
               <select id="team" className="input" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
                 <option value="">No team / decide later</option>
                 {teams.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name} ({t.members} players)</option>
+                  <option key={t.id} value={t.id}>{t.name} ({t.members} player{t.members === 1 ? "" : "s"})</option>
                 ))}
                 <option value="new">+ Create a new team</option>
               </select>

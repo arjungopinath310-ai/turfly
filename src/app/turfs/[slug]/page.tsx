@@ -17,6 +17,7 @@ import { formatDateLong, formatMinute, todayIst } from "@/lib/time";
 import { AvailabilityBadge, DemoBadge, Stars } from "@/components/ui";
 import { BookingWidget } from "@/components/BookingWidget";
 import { MessageButton } from "@/components/MessageButton";
+import { formatPhone } from "@/lib/format";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -92,7 +93,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
             <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto whitespace-nowrap px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0 [&>*]:shrink-0">
 
               <a href={directionsUrl(turf)} target="_blank" className="btn-ghost btn-sm shrink-0"><Navigation size={14} /> Directions</a>
-              {turf.phone && <a href={`tel:${turf.phone}`} className="btn-ghost btn-sm shrink-0"><Phone size={14} /> {turf.phone}</a>}
+              {turf.phone && <a href={`tel:${turf.phone}`} className="btn-ghost btn-sm shrink-0"><Phone size={14} /> <span className="sm:hidden">Call</span><span className="hidden sm:inline">{formatPhone(turf.phone)}</span></a>}
               {contactOnly && <a href={mapsUrl} target="_blank" rel="noopener" className="btn-ghost btn-sm shrink-0"><MapPin size={14} /> Google Maps</a>}
               {turf.status === "APPROVED" && turf.ownerId && turf.ownerId !== user?.id && <MessageButton turfId={turf.id} signedIn={Boolean(user)} />}
               <a href={whatsappShare(turfShareText(turf))} target="_blank" className="btn-ghost btn-sm shrink-0"><Share2 size={14} /> Share</a>

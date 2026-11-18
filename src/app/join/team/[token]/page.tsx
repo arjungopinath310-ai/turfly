@@ -3,6 +3,7 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { JoinTeamButton } from "@/components/JoinTeamButton";
+import { plural } from "@/lib/format";
 
 export default async function JoinTeam(props: { params: Promise<{ token: string }> }) {
   const params = await props.params;
@@ -22,7 +23,7 @@ export default async function JoinTeam(props: { params: Promise<{ token: string 
         <div>
           <div className="text-sm text-slate-500">{team.owner.name ?? "A player"} invited you to join</div>
           <h1 className="h1">{team.name}</h1>
-          <div className="muted">{team.playersPerSide}-a-side · {team._count.members} players</div>
+          <div className="muted">{team.playersPerSide}-a-side · {plural(team._count.members, "player")}</div>
         </div>
         {user ? <JoinTeamButton token={params.token} /> : <Link href={`/login?next=/join/team/${params.token}`} className="btn-primary w-full">Sign in to join</Link>}
         <p className="text-xs text-slate-400">Your phone number stays private unless you choose to share it with teammates in your profile.</p>
