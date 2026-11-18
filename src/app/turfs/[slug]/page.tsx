@@ -34,6 +34,8 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
   });
   if (!turf || !["APPROVED", "UNCLAIMED"].includes(turf.status)) notFound();
   const [settings, user] = await Promise.all([getSettings(), currentUser()]);
+  // A private sample copy is visible only to the person it belongs to (and admins)
+  if (turf.isSandbox && turf.ownerId !== user?.id && user?.role !== "ADMIN") notFound();
   const view = await currentView(user?.role);
   const policy = turfPolicy(turf, settings);
   const bookable = turf.status === "APPROVED" && turf.availabilityMode === "LIVE";

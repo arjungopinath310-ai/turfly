@@ -62,7 +62,8 @@ const AVAILABILITY_CONCURRENCY = 6;
  */
 export async function searchTurfs(f: TurfFilters, opts: { page?: number; pageSize?: number } = {}) {
   const pageSize = Math.min(Math.max(opts.pageSize ?? PAGE_SIZE, 1), 100);
-  const where: Prisma.TurfWhereInput = { status: { in: ["APPROVED", "UNCLAIMED"] } };
+  // Private sample copies (demo mode) belong to one person and never show in search
+  const where: Prisma.TurfWhereInput = { status: { in: ["APPROVED", "UNCLAIMED"] }, isSandbox: false };
   const and: Prisma.TurfWhereInput[] = [];
   // The search box matches turf names only (towns, PIN codes and facilities are separate filters).
   if (f.q?.trim()) and.push({ name: { contains: f.q.trim(), mode: "insensitive" } });

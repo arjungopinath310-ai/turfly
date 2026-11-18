@@ -13,7 +13,7 @@ export default async function Settings() {
   const [s, offers, turfs] = await Promise.all([
     getSettings(),
     prisma.offer.findMany({ orderBy: { createdAt: "desc" }, include: { turf: { select: { name: true } } } }),
-    prisma.turf.findMany({ where: { status: "APPROVED" }, select: { id: true, name: true } }),
+    prisma.turf.findMany({ where: { status: "APPROVED", isSandbox: false }, select: { id: true, name: true } }),
   ]);
   const integrations = [
     ["Razorpay", razorpayConfigured()],

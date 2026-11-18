@@ -13,7 +13,7 @@ export default async function Compare(
   const searchParams = await props.searchParams;
   const ids = (searchParams.ids ?? "").split(",").filter(Boolean).slice(0, 3);
   const turfs = await prisma.turf.findMany({
-    where: { id: { in: ids }, status: { in: ["APPROVED", "UNCLAIMED"] } },
+    where: { id: { in: ids }, status: { in: ["APPROVED", "UNCLAIMED"] }, isSandbox: false },
     include: { city: true, configs: { where: { isActive: true } } },
   });
   if (turfs.length === 0) return <div className="mx-auto max-w-4xl px-4 py-10"><Empty title="Pick turfs to compare">Tick “Compare” on up to three turfs in the search results.</Empty></div>;

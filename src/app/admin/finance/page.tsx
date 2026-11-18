@@ -15,7 +15,7 @@ export default async function Finance(props: { searchParams: Promise<{ q?: strin
   const [disputes, payments, refunds, webhooks] = await Promise.all([
     prisma.dispute.findMany({ where: { status: "OPEN" }, include: { booking: { include: { turf: true, payments: true } }, raisedBy: true }, orderBy: { createdAt: "asc" } }),
     prisma.payment.findMany({
-      where: q ? { OR: [{ providerOrderId: { contains: q } }, { providerPaymentId: { contains: q } }, { booking: { code: { contains: q, mode: "insensitive" } } }] } : {},
+      where: { booking: { turf: { isSandbox: false } }, ...(q ? { OR: [{ providerOrderId: { contains: q } }, { providerPaymentId: { contains: q } }, { booking: { code: { contains: q, mode: "insensitive" as const } } }] } : {}) },
       include: { booking: { select: { code: true, id: true, turf: { select: { name: true } } } }, user: { select: { name: true, phone: true } } },
       orderBy: { createdAt: "desc" },
       take: 50,

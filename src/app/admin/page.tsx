@@ -13,19 +13,19 @@ export default async function AdminHome() {
   const [users, owners, turfs, pending, claims, month, captured, refunds, disputes, recent, byCity, ledger] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { role: "OWNER" } }),
-    prisma.turf.groupBy({ by: ["status"], _count: true }),
+    prisma.turf.groupBy({ by: ["status"], where: { isSandbox: false }, _count: true }),
     prisma.turf.count({ where: { status: "PENDING_REVIEW" } }),
     prisma.turfClaim.count({ where: { status: "PENDING" } }),
-    prisma.booking.aggregate({ where: { status: active, confirmedAt: { gte: monthStart } }, _count: true, _sum: { totalPrice: true, discount: true } }),
-    prisma.payment.aggregate({ where: { status: { in: ["CAPTURED", "PARTIALLY_REFUNDED", "REFUNDED"] }, capturedAt: { gte: monthStart } }, _sum: { amount: true }, _count: true }),
-    prisma.refund.aggregate({ where: { createdAt: { gte: monthStart } }, _sum: { amount: true }, _count: true }),
+    prisma.booking.aggregate({ where: { status: active, confirmedAt: { gte: monthStart }, turf: { isSandbox: false } }, _count: true, _sum: { totalPrice: true, discount: true } }),
+    prisma.payment.aggregate({ where: { status: { in: ["CAPTURED", "PARTIALLY_REFUNDED", "REFUNDED"] }, capturedAt: { gte: monthStart }, booking: { turf: { isSandbox: false } } }, _sum: { amount: true }, _count: true }),
+    prisma.refund.aggregate({ where: { createdAt: { gte: monthStart }, payment: { booking: { turf: { isSandbox: false } } } }, _sum: { amount: true }, _count: true }),
     prisma.dispute.count({ where: { status: "OPEN" } }),
-    prisma.booking.findMany({ where: { status: { not: "EXPIRED" } }, orderBy: { createdAt: "desc" }, take: 15, include: { turf: { select: { name: true } }, config: { select: { name: true } } } }),
+    prisma.booking.findMany({ where: { status: { not: "EXPIRED" }, turf: { isSandbox: false } }, orderBy: { createdAt: "desc" }, take: 15, include: { turf: { select: { name: true } }, config: { select: { name: true } } } }),
     prisma.$queryRaw<{ city: string; bookings: bigint }[]>`
       SELECT c.name AS city, COUNT(b.id) AS bookings FROM "Booking" b
       JOIN "Turf" t ON t.id = b."turfId" JOIN "City" c ON c.id = t."cityId"
       WHERE b.status IN ('CONFIRMED','COMPLETED') GROUP BY c.name ORDER BY 2 DESC LIMIT 10`,
-    prisma.ledgerEntry.aggregate({ where: { type: "COMMISSION" }, _sum: { amount: true } }),
+    prisma.ledgerEntry.aggregate({ where: { type: "COMMISSION", turf: { isSandbox: false } }, _sum: { amount: true } }),
   ]);
   const count = (s: string) => turfs.find((t) => t.status === s)?._count ?? 0;
 

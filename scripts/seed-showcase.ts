@@ -13,7 +13,6 @@
  * Between rebuilds the cron loop keeps it current (new days, open games): see src/lib/showcase.ts.
  */
 import { prisma } from "../src/lib/db";
-import { convertiblePitchLayout } from "../src/lib/engine/allocation";
 import {
   DAYS_AHEAD,
   DAYS_BACK,
@@ -25,15 +24,13 @@ import {
   ensureShowcaseGames,
   generateShowcaseDay,
   loadShowcase,
+  setupShowcaseTurf,
   type DayResult,
 } from "../src/lib/showcase";
 import { addDays, istToUtc, todayIst } from "../src/lib/time";
 import { randomBytes } from "node:crypto";
 
 const dryRun = process.argv.includes("--dry-run");
-const PHOTOS = ["1624880357913-a8539238245b", "1551958219-acbc608c6377", "1575361204480-aadea25e6e68", "1574629810360-7efbbe195018"].map(
-  (id) => `https://images.unsplash.com/photo-${id}?w=1200&q=70`, // free to use (Unsplash licence)
-);
 
 async function removeExisting() {
   const t = await prisma.turf.findUnique({ where: { slug: SLUG }, select: { id: true } });
@@ -61,7 +58,6 @@ async function removeExisting() {
 async function main() {
   const manjeri = await prisma.city.findUniqueOrThrow({ where: { slug: "manjeri" } });
   const today = todayIst();
-  const now = new Date();
   const days = Array.from({ length: DAYS_BACK + DAYS_AHEAD + 1 }, (_, i) => addDays(today, i - DAYS_BACK));
   const blockDay = addDays(today, 4); // planned maintenance 6-8 AM
   if (dryRun) {
@@ -81,58 +77,23 @@ async function main() {
   await ensureSamplePlayers();
 
   // ── The turf, set up the way a model owner would ──
-  const turf = await prisma.turf.create({
-    data: {
-      slug: SLUG,
-      name: "Turfly Showcase Arena (Sample)",
-      description:
-        "Sample turf: this is what a fully set-up Turfly listing looks like. One 7-a-side pitch that splits into two 5-a-side pitches, live free slots, online booking with a ₹49 advance, peak and early-bird prices, floodlights till 1 AM and verified reviews. Not a real ground.",
-      ownerId: owner.id,
-      status: "APPROVED",
-      availabilityMode: "LIVE",
-      availabilityUpdatedAt: now,
-      cityId: manjeri.id,
-      addressLine: "Sample listing",
-      locality: "Manjeri Town",
-      pincode: "676121",
-      lat: 11.12146,
-      lng: 76.11868,
-      phone: SHOWCASE_OWNER_PHONE,
-      whatsapp: SHOWCASE_OWNER_PHONE,
-      photos: PHOTOS,
-      amenities: ["parking", "washroom", "changing_room", "drinking_water", "floodlights", "seating", "cafe", "first_aid", "shower", "bibs"],
-      slotStepMinutes: 60,
-      allowedDurations: [60, 120],
-      minNoticeMinutes: 30,
-      maxAdvanceDays: 30,
-      isDemo: true,
-      isFeatured: true,
-      createdAt: istToUtc(addDays(today, -DAYS_BACK - 14), 600),
-    },
+  const { turf, unitIds } = await setupShowcaseTurf(prisma, {
+    slug: SLUG,
+    name: "Turfly Showcase Arena (Sample)",
+    description:
+      "Sample turf: this is what a fully set-up Turfly listing looks like. One 7-a-side pitch that splits into two 5-a-side pitches, live free slots, online booking with a ₹49 advance, peak and early-bird prices, floodlights till 1 AM and verified reviews. Not a real ground.",
+    ownerId: owner.id,
+    cityId: manjeri.id,
+    isSandbox: false,
+    phone: SHOWCASE_OWNER_PHONE,
+    createdAt: istToUtc(addDays(today, -DAYS_BACK - 14), 600),
   });
-  await prisma.operatingHours.createMany({ data: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ turfId: turf.id, weekday, openMinute: 360, closeMinute: 1500 })) });
 
-  const l = convertiblePitchLayout({ halvesSimultaneous: true, allowCombined: true, fullPricePerHour: 150000, halfPricePerHour: 90000 });
-  const unitIds: Record<string, string> = {};
-  for (const [i, u] of l.units.entries()) unitIds[u.key] = (await prisma.resourceUnit.create({ data: { turfId: turf.id, name: u.name, isVirtual: Boolean(u.isVirtual), sortOrder: i } })).id;
-  for (const [i, c] of l.configs.entries()) {
-    const cfg = await prisma.pitchConfig.create({
-      data: { turfId: turf.id, name: c.name, playersPerSide: c.playersPerSide, basePricePerHour: c.basePricePerHour, sortOrder: i, units: { create: c.unitKeys.map((k) => ({ unitId: unitIds[k] })) } },
-    });
-    const full = c.playersPerSide === 7;
-    await prisma.pricingRule.createMany({
-      data: [
-        { configId: cfg.id, label: "Peak evening", weekdays: [], startMinute: 18 * 60, endMinute: 23 * 60, pricePerHour: full ? 180000 : 110000, priority: 2 },
-        { configId: cfg.id, label: "Early bird", weekdays: [], startMinute: 6 * 60, endMinute: 9 * 60, pricePerHour: full ? 120000 : 70000, priority: 1 },
-        { configId: cfg.id, label: "Weekend day", weekdays: [0, 6], startMinute: 9 * 60, endMinute: 18 * 60, pricePerHour: full ? 160000 : 100000, priority: 1 },
-      ],
-    });
-  }
   // ── The maintenance block first, so no bookings are generated inside it ──
   const block = await prisma.slotBlock.create({
     data: { turfId: turf.id, configId: null, startAt: istToUtc(blockDay, 6 * 60), endAt: istToUtc(blockDay, 8 * 60), reason: "MAINTENANCE", note: "Turf brushing and line marking", createdById: owner.id },
   });
-  await prisma.occupancy.createMany({ data: Object.values(unitIds).map((unitId) => ({ unitId, blockId: block.id, startAt: block.startAt, endAt: block.endAt })) });
+  await prisma.occupancy.createMany({ data: unitIds.map((unitId) => ({ unitId, blockId: block.id, startAt: block.startAt, endAt: block.endAt })) });
 
   // ── Two months of bookings, busiest in the evenings and weekends, growing week by week ──
   const ctx = (await loadShowcase())!;

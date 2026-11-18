@@ -146,6 +146,8 @@ model Turf {
   cancellationPolicy       Json? // null → platform default
   commissionPercent        Float? // null → platform default
   isDemo                   Boolean          @default(false)
+  /// A private sample copy of the demo turf for one signed-in person (demo mode): hidden from players and other owners.
+  isSandbox                Boolean          @default(false)
   isFeatured               Boolean          @default(false)
   ratingAvg                Float            @default(0)
   ratingCount              Int              @default(0)
@@ -175,6 +177,7 @@ model Turf {
   @@index([cityId, status])
   @@index([status, availabilityMode])
   @@index([lat, lng])
+  @@index([isSandbox, ownerId])
 }
 
 model OperatingHours {

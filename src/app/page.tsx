@@ -18,8 +18,8 @@ export default async function Home() {
   const [towns, turfs, nextMatch, games] = await Promise.all([
     // Towns that have turfs, busiest first, for one-tap search buttons.
     prisma.city.findMany({
-      where: { isActive: true, turfs: { some: { status: { in: ["APPROVED", "UNCLAIMED"] } } } },
-      include: { _count: { select: { turfs: { where: { status: { in: ["APPROVED", "UNCLAIMED"] } } } } } },
+      where: { isActive: true, turfs: { some: { status: { in: ["APPROVED", "UNCLAIMED"] }, isSandbox: false } } },
+      include: { _count: { select: { turfs: { where: { status: { in: ["APPROVED", "UNCLAIMED"] }, isSandbox: false } } } } },
     }),
     searchTurfs({}, { pageSize: 6 }).then((r) => r.cards),
     user

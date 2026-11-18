@@ -8,13 +8,14 @@ import { switchView } from "@/app/actions/view";
 import type { View } from "@/lib/access";
 import { forgetPushToken } from "./NativeBridge";
 
-export function UserMenu({ name, hasName, role, view }: { name: string; hasName: boolean; role: string; view: View }) {
+export function UserMenu({ name, hasName, role, view, demo = false }: { name: string; hasName: boolean; role: string; view: View; demo?: boolean }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const path = usePathname();
   const item = "block w-full px-4 py-2.5 text-left hover:bg-slate-50";
   // Only people who run a turf (or admins) can switch sides here; players never see owner options.
-  const canSwitch = role === "OWNER" || role === "ADMIN";
+  // Demo mode: anyone can try the owner side (they get a private sample turf).
+  const canSwitch = role === "OWNER" || role === "ADMIN" || demo;
 
   // The menu closes on a tap or click anywhere else, on Escape, and when the page changes.
   useEffect(() => {
