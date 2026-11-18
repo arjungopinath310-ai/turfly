@@ -9,6 +9,9 @@ import { PageHeader } from "@/components/ui";
 import { formatPhone } from "@/lib/format";
 import { AccountData } from "@/components/AccountData";
 import { currentView } from "@/lib/view";
+import { coinBalance, coinHistory } from "@/lib/coins";
+import { getSettings } from "@/lib/settings";
+import { rupees } from "@/lib/engine/pricing";
 
 async function save(fd: FormData) {
   "use server";
@@ -37,6 +40,8 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
   if (!user) redirect("/login?next=/profile");
   const next = safeNext(searchParams.next, "");
   const isPlayer = (await currentView(user.role)) === "player";
+  const settings = await getSettings();
+  const coins = { balance: await coinBalance(user.id), history: await coinHistory(user.id), perBooking: settings.coinsPerBooking, valuePaise: settings.coinValuePaise };
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
       <PageHeader title={searchParams.welcome ? "Welcome to Turfly! 👋" : "Your profile"} subtitle={formatPhone(user.phone) ?? user.email ?? ""} />
@@ -79,6 +84,28 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
         )}
         <button className="btn-primary">{next ? "Save & continue" : "Save"}</button>
       </form>
+      {!searchParams.welcome && isPlayer && (
+        <section id="coins" className="card mt-6 scroll-mt-20 p-5">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="h2">Turf coins</h2>
+            <span className="text-2xl font-extrabold text-brand-700">{coins.balance}</span>
+          </div>
+          <p className="mt-1 text-sm text-slate-600">
+            Earn {coins.perBooking} coins for every online booking you play. Use them on the online advance of your next booking: 1 coin = {rupees(coins.valuePaise)}.
+            Coins have no cash value and can&apos;t be transferred.
+          </p>
+          {coins.history.length > 0 && (
+            <ul className="mt-3 divide-y divide-slate-100 text-sm">
+              {coins.history.map((e) => (
+                <li key={e.id} className="flex justify-between gap-3 py-2">
+                  <span className="min-w-0 truncate text-slate-700">{e.note ?? e.kind.toLowerCase()}</span>
+                  <span className={e.amount > 0 ? "font-semibold text-brand-700" : "font-semibold text-slate-500"}>{e.amount > 0 ? `+${e.amount}` : e.amount}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
       {!searchParams.welcome && (
         <div className="mt-6">
           <AccountData />

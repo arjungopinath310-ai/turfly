@@ -16,6 +16,8 @@ const schema = z.object({
   teamName: z.string().max(60).nullish(),
   offerCode: z.string().max(30).optional(),
   payFullOnline: z.boolean().optional(),
+  /** pay (part of) the online advance with Turf coins */
+  useCoins: z.boolean().optional(),
   /** "Short of players": list the game so players without a team can ask to join */
   openSpots: z
     .object({

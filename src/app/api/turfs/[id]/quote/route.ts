@@ -4,6 +4,7 @@ import { currentUser } from "@/lib/auth";
 import { quoteSlot } from "@/lib/engine/booking";
 import { describePolicy, refundabilityLabel } from "@/lib/engine/policy";
 import { handle } from "@/lib/errors";
+import { coinBalance, coinsUsable } from "@/lib/coins";
 
 const schema = z.object({
   configId: z.string(),
@@ -25,5 +26,11 @@ export const POST = handle(async (req, { params }) => {
     policy: { label: refundabilityLabel(q.policy), lines: describePolicy(q.policy, q.quote.onlineAmount - q.quote.platformFee) },
     holdMinutes: q.settings.holdMinutes,
     fullOnlineAvailable: q.turf.fullOnlinePaymentEnabled,
+    // Turf coins the player could put towards this booking's online advance
+    coins: user ? await (async () => {
+      const balance = await coinBalance(user.id);
+      const usable = coinsUsable(balance, q.quote.onlineAmount, q.settings.coinValuePaise);
+      return { balance, usable, valuePaise: usable * q.settings.coinValuePaise };
+    })() : null,
   });
 });

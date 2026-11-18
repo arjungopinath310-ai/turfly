@@ -7,6 +7,16 @@ export interface PlatformSettings {
   holdMinutes: number;
   maxActiveHoldsPerUser: number;
   defaultCommissionPercent: number;
+  /** Owner pricing: days with no Turfly fee, counted from the turf's first online booking */
+  freeTrialDays: number;
+  /** Turfly's fee per online booking after the free period (paise); walk-ins and phone bookings are always free */
+  onlineBookingFeePaise: number;
+  /** the most one turf pays Turfly in a calendar month (paise) */
+  monthlyFeeCapPaise: number;
+  /** Turf coins a player earns for each online booking they played */
+  coinsPerBooking: number;
+  /** what one coin is worth on an online advance (paise) */
+  coinValuePaise: number;
   defaultCancellationPolicy: CancellationPolicy;
   reminders: { h24: boolean; h2: boolean; balance: boolean; channels: ("SMS" | "WHATSAPP" | "EMAIL")[] };
 }
@@ -17,6 +27,11 @@ export const DEFAULT_SETTINGS: PlatformSettings = {
   holdMinutes: 5,
   maxActiveHoldsPerUser: 2,
   defaultCommissionPercent: 0,
+  freeTrialDays: 90,
+  onlineBookingFeePaise: 3000,
+  monthlyFeeCapPaise: 49900,
+  coinsPerBooking: 10,
+  coinValuePaise: 100,
   defaultCancellationPolicy: DEFAULT_POLICY,
   reminders: { h24: true, h2: true, balance: true, channels: ["SMS", "WHATSAPP", "EMAIL"] },
 };

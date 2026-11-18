@@ -33,7 +33,11 @@ export default async function Settings() {
             <div><label className="label">Advance per booking (₹)</label><input name="advance" type="number" step="1" min={1} defaultValue={s.advanceAmountPaise / 100} className="input" /></div>
             <div><label className="label">Platform fee to customer (₹)</label><input name="fee" type="number" step="1" min={0} defaultValue={s.platformFeePaise / 100} className="input" /></div>
             <div><label className="label">Checkout hold (minutes)</label><input name="holdMinutes" type="number" min={2} max={30} defaultValue={s.holdMinutes} className="input" /></div>
-            <div><label className="label">Default commission (%)</label><input name="commission" type="number" step="0.5" min={0} max={50} defaultValue={s.defaultCommissionPercent} className="input" /></div>
+            <div><label className="label">Free period for new turfs (days)</label><input name="freeTrialDays" type="number" min={0} max={730} defaultValue={s.freeTrialDays} className="input" /></div>
+            <div><label className="label">Turfly fee per online booking (₹)</label><input name="feePerBooking" type="number" step="1" min={0} max={1000} defaultValue={s.onlineBookingFeePaise / 100} className="input" /></div>
+            <div><label className="label">Monthly fee cap per turf (₹)</label><input name="feeCap" type="number" step="1" min={0} max={100000} defaultValue={s.monthlyFeeCapPaise / 100} className="input" /></div>
+            <div><label className="label">Turf coins per played booking</label><input name="coinsPerBooking" type="number" min={0} max={1000} defaultValue={s.coinsPerBooking} className="input" /></div>
+            <div><label className="label">Value of one coin (₹)</label><input name="coinValue" type="number" step="0.5" min={0.5} max={10} defaultValue={s.coinValuePaise / 100} className="input" /></div>
           </div>
           <p className="text-xs text-slate-500">Platform fee is shown as its own line and added on top. Commission is charged to turf owners in their ledger, never deducted silently from the customer&apos;s advance. Per-turf commission overrides are in Turfs.</p>
           <div>

@@ -45,9 +45,10 @@ export default async function CheckoutPage(props: { params: Promise<{ id: string
           <div className="flex justify-between"><dt className="text-slate-600">{b.payFullOnline ? "Paid online" : "Advance (online)"}</dt><dd>{rupees(b.advanceAmount)}</dd></div>
           {b.platformFee > 0 && <div className="flex justify-between"><dt className="text-slate-600">Platform fee</dt><dd>{rupees(b.platformFee)}</dd></div>}
           <div className="flex justify-between"><dt className="text-slate-600">Pay at the turf</dt><dd>{rupees(b.balanceDue)}</dd></div>
+          {b.coinsUsed > 0 && <div className="flex justify-between text-brand-700"><dt>Turf coins ({b.coinsUsed})</dt><dd>− {rupees(b.coinsValue)}</dd></div>}
           <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold"><dt>Pay now</dt><dd>{rupees(b.onlineAmount)}</dd></div>
         </dl>
-        <Checkout bookingId={b.id} status={b.status} holdExpiresAt={b.holdExpiresAt?.toISOString() ?? null} mock={mockAllowed()} turfSlug={b.turf.slug} />
+        <Checkout bookingId={b.id} status={b.status} holdExpiresAt={b.holdExpiresAt?.toISOString() ?? null} mock={mockAllowed()} turfSlug={b.turf.slug} coinsOnly={b.onlineAmount === 0 && b.coinsUsed > 0} />
         <p className="text-center text-[11px] text-slate-400">UPI · Cards · Net banking · Wallets, processed securely by Razorpay.</p>
       </div>
       <details className="card p-4 sm:p-5 md:col-start-1 md:row-start-2" open>

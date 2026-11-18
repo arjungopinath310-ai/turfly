@@ -23,3 +23,13 @@ describe("display formats", () => {
     expect(formatPhone(null)).toBeNull();
   });
 });
+
+import { coinsUsable } from "@/lib/coins";
+describe("Turf coins at checkout", () => {
+  it("whole coins, at most the balance and the amount, never leaving under ₹1 to pay", () => {
+    expect(coinsUsable(60, 4900, 100)).toBe(49);
+    expect(coinsUsable(11, 4900, 100)).toBe(11);
+    expect(coinsUsable(0, 4900, 100)).toBe(0);
+    expect(coinsUsable(100, 4950, 100)).toBe(48); // 49 would leave 50 paise, under the gateway minimum
+  });
+});

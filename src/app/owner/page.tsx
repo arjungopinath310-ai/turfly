@@ -9,6 +9,16 @@ import { Stat, StatusBadge } from "@/components/ui";
 import { TurfSwitcher } from "@/components/TurfSwitcher";
 import { OwnerWelcome } from "@/components/OwnerWelcome";
 import { plural } from "@/lib/format";
+import { turfPlan } from "@/lib/fees";
+import { formatDateLong } from "@/lib/time";
+
+const LEDGER_LABEL: Record<string, string> = {
+  ADVANCE_COLLECTED: "advances collected online",
+  SPLIT_COLLECTED: "split shares collected",
+  COMMISSION: "Turfly fees",
+  REFUND: "refunds",
+  PAYOUT: "paid out to you",
+};
 
 export default async function OwnerHome(props: { searchParams: Promise<{ turf?: string }> }) {
   const searchParams = await props.searchParams;
@@ -23,6 +33,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
   const monthStart = istToUtc(today.slice(0, 8) + "01", 0);
   const active = { in: ["CONFIRMED", "COMPLETED"] as ("CONFIRMED" | "COMPLETED")[] };
 
+  const plan = await turfPlan(turf);
   const [todays, upcoming, month, cancelled, pending, ledger, recent, avail] = await Promise.all([
     prisma.booking.findMany({ where: { turfId: turf.id, status: active, startAt: { gte: dayStart, lt: dayEnd } }, include: { config: true, team: true, user: { select: { name: true } } }, orderBy: { startAt: "asc" } }),
     prisma.booking.count({ where: { turfId: turf.id, status: "CONFIRMED", startAt: { gte: new Date() } } }),
@@ -57,6 +68,19 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
           <Link href={`/owner/calendar?turf=${turf.id}`} className="btn-primary flex-1 sm:flex-none">Open calendar</Link>
           <Link href={`/owner/calendar?turf=${turf.id}#walkin`} className="btn-ghost flex-1 sm:flex-none">+ Walk-in booking</Link>
         </div>
+      </div>
+      <div className="rounded-2xl border border-brand-200 bg-brand-50 p-4 text-sm text-brand-900">
+        <b>Your Turfly plan:</b>{" "}
+        {plan.sample ? (
+          <>sample turf, no fees.</>
+        ) : !plan.freeUntil ? (
+          <>your {Math.round(plan.freeTrialDays / 30)} free months start with your first online booking.</>
+        ) : plan.inFreePeriod ? (
+          <>free until {formatDateLong(plan.freeUntil)}. No Turfly fee on any booking.</>
+        ) : (
+          <>{rupees(plan.feePaise)} per online booking, at most {rupees(plan.capPaise)} a month. This month: {rupees(plan.chargedThisMonth)} of {rupees(plan.capPaise)}.</>
+        )}{" "}
+        Walk-in and phone bookings are always free.
       </div>
       {turf.isSandbox && (
         <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
@@ -120,9 +144,9 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
           <div className="mt-5 border-t border-slate-100 pt-4 text-sm">
             <div className="flex justify-between"><span className="text-slate-500">Settlement balance (ledger)</span><b>{rupees(owed)}</b></div>
             {ledger.map((l) => (
-              <div key={l.type} className="flex justify-between text-xs text-slate-500"><span>{l.type.replace("_", " ").toLowerCase()}</span><span>{rupees(l._sum.amount ?? 0)}</span></div>
+              <div key={l.type} className="flex justify-between text-xs text-slate-500"><span>{LEDGER_LABEL[l.type] ?? l.type.replace("_", " ").toLowerCase()}</span><span>{rupees(l._sum.amount ?? 0)}</span></div>
             ))}
-            <p className="mt-2 text-[11px] text-slate-400">Commission (if any) is shown here as a separate line. It is never taken silently from the customer&apos;s advance.</p>
+            <p className="mt-2 text-[11px] text-slate-400">Turfly&apos;s fees are a separate line here, never hidden in the advance. Walk-in and phone bookings are always free.</p>
           </div>
         </div>
       </div>

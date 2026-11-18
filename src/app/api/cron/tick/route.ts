@@ -4,6 +4,7 @@ import { completePastBookings, releaseExpiredHolds } from "@/lib/engine/booking"
 import { processDueJobs } from "@/lib/notifications/service";
 import { isDemoMode } from "@/lib/format";
 import { topUpShowcase } from "@/lib/showcase";
+import { awardCoinsForPlayedBookings, returnCoinsForExpiredHolds } from "@/lib/coins";
 
 // Demo only: keep the sample turf current (new days of bookings, open games). At most every 30 minutes per server.
 let showcaseCheckedAt = 0;
@@ -27,6 +28,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const expired = await releaseExpiredHolds();
   const completed = await completePastBookings();
+  // Turf coins: earned on played online bookings; returned when an unpaid hold expires
+  const coins = { awarded: await awardCoinsForPlayedBookings(), returned: await returnCoinsForExpiredHolds() };
   // recover jobs stuck in SENDING (worker crashed mid-send)
   await prisma.notificationJob.updateMany({ where: { status: "SENDING", sendAt: { lt: new Date(Date.now() - 10 * 60_000) } }, data: { status: "PENDING" } });
   // Work through the queue in batches until it's empty or the time budget (under the 1-minute schedule) is used.
@@ -41,6 +44,6 @@ export async function POST(req: Request) {
     if (r.processed < 100 || Date.now() - startedAt > 40_000) break;
   }
   const showcase = await maybeTopUpShowcase();
-  return NextResponse.json({ releasedOccupancyRows: expired, completed: completed.count, ...jobs, ...(showcase ? { showcase } : {}) });
+  return NextResponse.json({ releasedOccupancyRows: expired, completed: completed.count, coins, ...jobs, ...(showcase ? { showcase } : {}) });
 }
 export const GET = POST;

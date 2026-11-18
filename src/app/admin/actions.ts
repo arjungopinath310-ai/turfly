@@ -193,7 +193,11 @@ export async function savePlatformSettings(_: ActionState, fd: FormData): Promis
         advance: z.coerce.number().min(1).max(5000),
         fee: z.coerce.number().min(0).max(500),
         holdMinutes: z.coerce.number().int().min(2).max(30),
-        commission: z.coerce.number().min(0).max(50),
+        freeTrialDays: z.coerce.number().int().min(0).max(730),
+        feePerBooking: z.coerce.number().min(0).max(1000),
+        feeCap: z.coerce.number().min(0).max(100000),
+        coinsPerBooking: z.coerce.number().int().min(0).max(1000),
+        coinValue: z.coerce.number().min(0.5).max(10),
       })
       .parse(Object.fromEntries(fd));
     const tiers = [0, 1, 2]
@@ -203,7 +207,11 @@ export async function savePlatformSettings(_: ActionState, fd: FormData): Promis
     await setSetting("advanceAmountPaise", Math.round(d.advance * 100));
     await setSetting("platformFeePaise", Math.round(d.fee * 100));
     await setSetting("holdMinutes", d.holdMinutes);
-    await setSetting("defaultCommissionPercent", d.commission);
+    await setSetting("freeTrialDays", d.freeTrialDays);
+    await setSetting("onlineBookingFeePaise", Math.round(d.feePerBooking * 100));
+    await setSetting("monthlyFeeCapPaise", Math.round(d.feeCap * 100));
+    await setSetting("coinsPerBooking", d.coinsPerBooking);
+    await setSetting("coinValuePaise", Math.round(d.coinValue * 100));
     await setSetting("defaultCancellationPolicy", policySchema.parse({ tiers, ownerCancelRefundPercent: 100 }));
     await setSetting("reminders", { h24: fd.get("h24") === "on", h2: fd.get("h2") === "on", balance: fd.get("balance") === "on", channels });
     await audit(a.id, "SETTINGS_UPDATE", "PlatformSetting", "all", d);
