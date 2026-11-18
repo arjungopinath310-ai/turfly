@@ -318,7 +318,7 @@ export async function ensureShowcaseGames(c: ShowcaseCtx, target = 4) {
     for (const [i, u] of askers.entries()) {
       const accept = i === 0 && needed >= 2;
       if (i === 1 && rand() < 0.4) continue;
-      const askedAt = new Date(now.getTime() - (20 + rand() * 600) * 60_000);
+      const askedAt = new Date(now.getTime() - (15 + rand() * 150) * 60_000); // within the last few hours
       const req = await prisma.playerPostRequest.create({
         data: { postId: post.id, userId: u.id, message: pick(ASKS), status: accept ? "ACCEPTED" : "PENDING", createdAt: askedAt, lastMessageAt: askedAt },
       });
