@@ -2,7 +2,7 @@
 
 Discover, compare and book football turfs, starting in **Manjeri, Kerala**. Built for players, turf owners and platform admins.
 
-* **Players:** OTP / Google sign-in, search by area, PIN, distance, price, format, amenities, rating and free time; list + map view; live colour-coded grid of **1-hour slots**; reserve with a **₹49 advance** (balance at venue); teams with WhatsApp invites; match squads; reviews from verified bookings; find-players posts; compare up to 3 turfs; Google Calendar / .ics; receipts; **chat with turfs** (Messages).
+* **Players:** OTP / Google sign-in, search by area, PIN, distance, price, format, amenities, rating and free time; list + map view; live colour-coded grid of **1-hour slots**; reserve with a **₹49 advance** (balance at venue); teams with WhatsApp invites; match squads; reviews from verified bookings; **open games**: short of players? tick it while booking, and players without a team see the game, ask to join and chat with the organiser; compare up to 3 turfs; Google Calendar / .ics; receipts; **chat with turfs** (Messages).
 * **Owners:** register or claim a listing, configure **one 7-a-side pitch convertible into two 5-a-side pitches** (or any custom layout), peak pricing, hours (incl. past midnight), durations, refund policy; day/week/month calendar; walk-in & phone bookings; blocks; balance collection; cancel/refund; reschedule; **analytics view** (utilisation heatmap, revenue per day, sources, lead time, top teams, CSV export) & settlement ledger; **chat with customers**.
 * **Admin:** approve/reject/suspend turfs, add unclaimed listings + claim links, verify claims, users & roles, payments, refunds, disputes, advance amount, platform fee, commission, default policy, reminders, offers.
 

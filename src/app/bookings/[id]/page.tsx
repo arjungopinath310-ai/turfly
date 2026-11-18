@@ -37,6 +37,11 @@ export default async function BookingPage(
   });
   if (!b || b.userId !== user.id) notFound();
   if (b.status === "HELD") redirect(`/checkout/${b.id}`);
+  const game = await prisma.playerPost.findFirst({
+    where: { bookingId: b.id, status: { in: ["OPEN", "FILLED", "CLOSED"] } },
+    orderBy: { createdAt: "desc" },
+    include: { requests: { where: { status: { in: ["PENDING", "ACCEPTED"] } }, select: { status: true } } },
+  });
   const policy = parsePolicy(b.policySnapshot);
   const played = b.status === "COMPLETED" || (b.status === "CONFIRMED" && b.endAt < new Date());
   const share = bookingShareText({ ...b, turfName: b.turf.name, configName: b.config.name, teamName: b.teamName ?? b.team?.name, lat: b.turf.lat, lng: b.turf.lng });
@@ -118,6 +123,14 @@ export default async function BookingPage(
             reviewed={Boolean(b.review)}
             canDispute={["CONFIRMED", "COMPLETED", "CANCELLED"].includes(b.status) && !b.disputes.some((d) => d.status === "OPEN")}
             canPost={b.status === "CONFIRMED" && !played}
+            playersPerSide={b.config.playersPerSide}
+            game={game && {
+              id: game.id,
+              status: game.status,
+              playersNeeded: game.playersNeeded,
+              joined: game.requests.filter((r) => r.status === "ACCEPTED").length,
+              asking: game.requests.filter((r) => r.status === "PENDING").length,
+            }}
           />
         </div>
 

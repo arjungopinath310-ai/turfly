@@ -12,6 +12,7 @@ import { generateSlots, priceFor, type Slot } from "./slots";
 import { cancelBookingJobs, notifyInApp, scheduleBookingJobs } from "../notifications/service";
 import { refundBooking } from "../payments/refunds";
 import { refundSplitShares } from "../split";
+import { closeGamesForBooking, listGame, moveGamesForBooking, openGamesForBooking, type ListingInput } from "../games";
 
 // ───────────── Hold expiry ─────────────
 
@@ -168,7 +169,7 @@ export async function quoteSlot(req: SlotRequest & { offerCode?: string; payFull
 
 export async function createHold(
   user: User,
-  req: SlotRequest & { teamId?: string | null; teamName?: string | null; offerCode?: string; payFullOnline?: boolean },
+  req: SlotRequest & { teamId?: string | null; teamName?: string | null; offerCode?: string; payFullOnline?: boolean; openSpots?: ListingInput | null },
 ): Promise<Booking> {
   const q = await quoteSlot({ ...req, userId: user.id });
   if (req.teamId) {
@@ -203,6 +204,8 @@ export async function createHold(
       });
       await insertOccupancy(tx, q.unitIds, q.startAt, q.endAt, { bookingId: booking.id });
       if (req.teamId) await seedRosterFromTeam(tx, booking.id, req.teamId);
+      // "Short of players": listed now, visible to others once the payment confirms the booking
+      if (req.openSpots) await listGame(tx, { ...booking, turf: q.turf, config: q.config }, req.openSpots, "DRAFT");
       return booking;
     });
   } catch (e) {
@@ -259,6 +262,7 @@ export async function confirmFromPayment(bookingId: string): Promise<"confirmed"
 async function afterConfirm(bookingId: string) {
   await prisma.$transaction(async (tx) => {
     const b = await tx.booking.findUniqueOrThrow({ where: { id: bookingId }, include: { turf: true } });
+    await openGamesForBooking(tx, bookingId);
     // Ledger + offer usage exactly once per booking
     const exists = await tx.ledgerEntry.findFirst({ where: { bookingId, type: "ADVANCE_COLLECTED" } });
     if (!exists) {
@@ -360,6 +364,7 @@ export async function cancelBooking(actor: User, bookingId: string, reason: stri
       prisma.booking.update({ where: { id: b.id }, data: { status: "CANCELLED", cancelledAt: new Date(), cancelledBy: actor.id, cancelReason: reason } }),
       prisma.occupancy.updateMany({ where: { bookingId: b.id }, data: { released: true } }),
     ]);
+    await closeGamesForBooking(prisma, b.id);
     return { refunded: 0 };
   }
   if (b.status !== "CONFIRMED") throw new AppError(400, "Only confirmed bookings can be cancelled");
@@ -375,6 +380,7 @@ export async function cancelBooking(actor: User, bookingId: string, reason: stri
   if (count !== 1) throw new AppError(409, "Booking was already updated");
   await prisma.occupancy.updateMany({ where: { bookingId: b.id }, data: { released: true } });
   await cancelBookingJobs(prisma, b.id);
+  await closeGamesForBooking(prisma, b.id);
   const refunded = await refundBooking(b.id, refund, `Cancelled by ${by}: ${reason}`, actor.id);
   await refundSplitShares(b.id, `Booking ${b.code} was cancelled`, actor.id);
   if (b.userId && by !== "customer")
@@ -395,6 +401,7 @@ export async function rescheduleBooking(actor: User, bookingId: string, req: { c
       await tx.booking.update({ where: { id: b.id }, data: { configId: v.config.id, startAt: v.startAt, endAt: v.endAt } });
       await tx.notificationJob.deleteMany({ where: { bookingId: b.id, status: "PENDING", template: { not: "BOOKING_CONFIRMED" } } });
       await tx.auditLog.create({ data: { actorId: actor.id, action: "RESCHEDULE", entity: "Booking", entityId: b.id, data: { from: b.startAt, to: v.startAt } } });
+      await moveGamesForBooking(tx, b.id, v.startAt);
     });
   } catch (e) {
     if (isExclusionViolation(e)) throw new SlotConflictError();

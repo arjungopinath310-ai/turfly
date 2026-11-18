@@ -2,14 +2,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { Loader2, RefreshCw } from "lucide-react";
+import { ChevronRight, Loader2, Minus, Plus, RefreshCw, Users } from "lucide-react";
 import { rupees } from "@/lib/engine/pricing";
+import { SKILL_LEVELS, maxPlayersNeeded, spotsLabel, suggestShare } from "@/lib/games-shared";
 import { addDays, formatMinute, slotRange } from "@/lib/time";
 
 type SlotStatus = "available" | "booked" | "held" | "blocked" | "unavailable";
 interface Slot { startMinute: number; endMinute: number; status: SlotStatus; price: number; peakLabel: string | null }
 interface Config { id: string; name: string; playersPerSide: number; slots: Slot[] }
-interface Avail { mode: string; bookable: boolean; updatedAt: string | null; configs: Config[] }
+interface Game { id: string; configId: string | null; playersPerSide: number; startMinute: number; endMinute: number; spots: number }
+interface Avail { mode: string; bookable: boolean; updatedAt: string | null; configs: Config[]; games?: Game[] }
 interface QuoteRes {
   quote: { totalPrice: number; discount: number; advanceAmount: number; platformFee: number; onlineAmount: number; balanceDue: number };
   offer: { code: string; title: string } | null;
@@ -49,6 +51,11 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
   const [showOffer, setShowOffer] = useState(false);
   const [offerCode, setOfferCode] = useState("");
   const [payFull, setPayFull] = useState(false);
+  // "Short of players?": list the game so players without a team can ask to join
+  const [short, setShort] = useState(false);
+  const [need, setNeed] = useState(2);
+  const [skill, setSkill] = useState("");
+  const [shortNote, setShortNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -84,6 +91,12 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
   const shown = useMemo(() => (config?.slots ?? []).filter((s) => s.status !== "unavailable"), [config]);
   const free = shown.filter((s) => s.status === "available");
   const fromPrice = free.length ? Math.min(...free.map((s) => s.price)) : null;
+  const games = data?.games ?? [];
+  const gameAt = (s: Slot) => games.find((g) => g.configId === configId && g.startMinute <= s.startMinute && s.startMinute < g.endMinute);
+  const maxNeed = maxPlayersNeeded(config?.playersPerSide ?? 5);
+  useEffect(() => {
+    setNeed((n) => Math.min(n, maxNeed));
+  }, [maxNeed]);
 
   // Selected slot became unavailable on refresh → clear it
   useEffect(() => {
@@ -132,6 +145,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
           newTeamName: teamId === "new" ? newTeam : null,
           offerCode: offerCode || undefined,
           payFullOnline: payFull,
+          openSpots: short ? { playersNeeded: need, skillLevel: skill || null, note: shortNote.trim() || null } : null,
         }),
       });
       const j = await r.json();
@@ -219,6 +233,21 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
 
         {/* 3. Time */}
         <div id="slots" className="scroll-mt-24 space-y-3">
+          {games.length > 0 && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3">
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-amber-900"><Users size={16} /> No team? Join a game here</div>
+              <ul className="mt-2 space-y-1.5">
+                {games.map((g) => (
+                  <li key={g.id}>
+                    <a href={`/games/${g.id}`} className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm shadow-sm active:bg-amber-100">
+                      <span><span className="font-semibold">{slotRange(g.startMinute, g.endMinute)}</span><span className="text-slate-500"> · {g.playersPerSide}-a-side</span></span>
+                      <span className="flex items-center gap-1 font-semibold text-amber-800">{spotsLabel(g.spots)} <ChevronRight size={16} /></span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {!data && <div className="grid grid-cols-3 gap-2">{Array.from({ length: 6 }, (_, i) => <div key={i} className="h-14 animate-pulse rounded-xl bg-slate-100" />)}</div>}
           {data && PARTS.map((part, i) => {
             const from = i === 0 ? -Infinity : PARTS[i - 1].until;
@@ -232,6 +261,15 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
                   {list.map((s) => {
                     const on = slot?.startMinute === s.startMinute;
                     const ok = s.status === "available" && p.bookable;
+                    const g = s.status === "booked" ? gameAt(s) : undefined;
+                    if (g)
+                      return (
+                        <a key={s.startMinute} href={`/games/${g.id}`} title="Booked, but short of players: ask to join"
+                          className="rounded-xl border border-amber-300 bg-amber-50 px-1 py-2.5 text-center text-amber-900 active:bg-amber-100">
+                          <span className="block text-[13px] font-semibold leading-tight">{slotRange(s.startMinute, s.endMinute)}</span>
+                          <span className="block text-[11px] font-semibold">Join · {g.spots} spot{g.spots === 1 ? "" : "s"}</span>
+                        </a>
+                      );
                     return (
                       <button key={s.startMinute} disabled={!ok} onClick={() => pick(s)} aria-pressed={on}
                         title={`${formatMinute(s.startMinute)} – ${formatMinute(s.endMinute)}${s.peakLabel ? ` · ${s.peakLabel}` : ""}`}
@@ -282,6 +320,40 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
                 <option value="new">+ Create a new team</option>
               </select>
               {teamId === "new" && <input className="input mt-2" placeholder="Team name" value={newTeam} onChange={(e) => setNewTeam(e.target.value)} maxLength={60} />}
+            </div>
+
+            <div className={clsx("rounded-xl border p-3", short ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white")}>
+              <label className="flex cursor-pointer items-start gap-3">
+                <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 accent-brand-600" checked={short} onChange={(e) => setShort(e.target.checked)} />
+                <span>
+                  <span className="block text-sm font-semibold">Short of players?</span>
+                  <span className="block text-xs text-slate-600">List this game so players without a team can ask to join. You chat with them and choose who plays.</span>
+                </span>
+              </label>
+              {short && (
+                <div className="mt-3 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Players needed</span>
+                    <span className="flex items-center gap-2">
+                      <button type="button" className="grid h-9 w-9 place-items-center rounded-full border border-slate-300 bg-white disabled:opacity-40" onClick={() => setNeed((n) => Math.max(1, n - 1))} disabled={need <= 1} aria-label="One less"><Minus size={16} /></button>
+                      <span className="w-6 text-center text-lg font-bold" aria-live="polite">{need}</span>
+                      <button type="button" className="grid h-9 w-9 place-items-center rounded-full border border-slate-300 bg-white disabled:opacity-40" onClick={() => setNeed((n) => Math.min(maxNeed, n + 1))} disabled={need >= maxNeed} aria-label="One more"><Plus size={16} /></button>
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {["", ...SKILL_LEVELS].map((l) => (
+                      <button key={l} type="button" onClick={() => setSkill(l)} aria-pressed={skill === l}
+                        className={clsx("rounded-full border px-3 py-1 text-xs", skill === l ? "border-slate-900 bg-slate-900 text-white" : "border-slate-300 bg-white")}>
+                        {l || "Any level"}
+                      </button>
+                    ))}
+                  </div>
+                  <input className="input" placeholder="Note, e.g. need a goalkeeper" value={shortNote} onChange={(e) => setShortNote(e.target.value)} maxLength={300} />
+                  {quote && config && suggestShare(quote.quote.totalPrice, config.playersPerSide) > 0 && (
+                    <p className="text-xs text-slate-600">Suggested share: about {rupees(suggestShare(quote.quote.totalPrice, config.playersPerSide))} a player, paid to you at the turf. Your game is listed once your payment goes through.</p>
+                  )}
+                </div>
+              )}
             </div>
 
             {showOffer || offerCode ? (

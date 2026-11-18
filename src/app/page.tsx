@@ -7,13 +7,15 @@ import { searchTurfs } from "@/lib/search";
 import { currentView } from "@/lib/view";
 import { formatDateLong, formatTimeRange } from "@/lib/time";
 import { TurfCardView } from "@/components/TurfCard";
+import { GameCardView } from "@/components/GameCard";
+import { findOpenGames } from "@/lib/games";
 
 /** Player home. Turf owners land on their dashboard instead; signed-out visitors never get here (sign-in gate). */
 export default async function Home() {
   const user = await currentUser();
   if (user && (await currentView(user.role)) === "owner") redirect("/owner");
 
-  const [towns, turfs, nextMatch] = await Promise.all([
+  const [towns, turfs, nextMatch, games] = await Promise.all([
     // Towns that have turfs, busiest first, for one-tap search buttons.
     prisma.city.findMany({
       where: { isActive: true, turfs: { some: { status: { in: ["APPROVED", "UNCLAIMED"] } } } },
@@ -23,6 +25,7 @@ export default async function Home() {
     user
       ? prisma.booking.findFirst({ where: { userId: user.id, status: "CONFIRMED", startAt: { gte: new Date() } }, include: { turf: { select: { name: true } } }, orderBy: { startAt: "asc" } })
       : null,
+    findOpenGames({ take: 8 }).then((g) => g.filter((x) => x.userId !== user?.id)),
   ]);
   towns.sort((a, b) => b._count.turfs - a._count.turfs);
   const first = user?.name?.trim().split(/\s+/)[0];
@@ -61,6 +64,23 @@ export default async function Home() {
             </div>
             <ChevronRight className="text-slate-400" />
           </Link>
+        )}
+
+        {games.length > 0 && (
+          <section>
+            <div className="mb-3 flex items-end justify-between">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight">Games you can join</h2>
+                <p className="text-sm text-slate-500">No team? These are booked and short of players.</p>
+              </div>
+              <Link href="/games" className="shrink-0 text-sm font-semibold text-brand-700 hover:underline">See all →</Link>
+            </div>
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3">
+              {games.slice(0, 6).map((g) => (
+                <GameCardView key={g.id} g={g} compact />
+              ))}
+            </div>
+          </section>
         )}
 
         <section>

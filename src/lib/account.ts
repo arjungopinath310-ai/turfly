@@ -34,7 +34,9 @@ export async function deleteAccount(user: User) {
       await tx.team.updateMany({ where: { id: { in: ids } }, data: { archived: true, logoUrl: null } });
       await tx.teamMember.updateMany({ where: { teamId: { in: ids } }, data: { phone: null, email: null, photoUrl: null } });
     }
-    await tx.playerPost.updateMany({ where: { userId: user.id, status: "OPEN" }, data: { status: "CLOSED" } });
+    await tx.playerPost.updateMany({ where: { userId: user.id, status: { in: ["DRAFT", "OPEN", "FILLED"] } }, data: { status: "CLOSED" } });
+    await tx.playerPostRequest.updateMany({ where: { userId: user.id, status: { in: ["PENDING", "ACCEPTED"] } }, data: { status: "WITHDRAWN" } });
+    await tx.playerPostMessage.updateMany({ where: { senderId: user.id }, data: { body: "(message deleted)" } });
     await tx.notification.deleteMany({ where: { userId: user.id } });
     await tx.deviceToken.deleteMany({ where: { userId: user.id } });
     if (user.phone) await tx.otpCode.deleteMany({ where: { phone: user.phone } });
@@ -58,7 +60,7 @@ export async function deleteAccount(user: User) {
 
 /** Everything we hold about the user, as JSON (DPDP Act right of access). */
 export async function exportAccount(user: User) {
-  const [bookings, teams, memberships, reviews, conversations, notifications, posts] = await Promise.all([
+  const [bookings, teams, memberships, reviews, conversations, notifications, posts, gameMessages] = await Promise.all([
     prisma.booking.findMany({
       where: { userId: user.id },
       include: { turf: { select: { name: true } }, config: { select: { name: true } }, payments: { include: { refunds: true } }, roster: true },
@@ -70,6 +72,7 @@ export async function exportAccount(user: User) {
     prisma.conversation.findMany({ where: { playerId: user.id }, include: { turf: { select: { name: true } }, messages: { orderBy: { createdAt: "asc" } } } }),
     prisma.notification.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 500 }),
     prisma.playerPost.findMany({ where: { userId: user.id }, include: { requests: true } }),
+    prisma.playerPostMessage.findMany({ where: { senderId: user.id }, select: { body: true, createdAt: true, requestId: true }, orderBy: { createdAt: "asc" } }),
   ]);
   const { id, phone, email, name, preferredPosition, shareContactWithTeams, referralCode, role, createdAt } = user;
   return {
@@ -82,5 +85,6 @@ export async function exportAccount(user: User) {
     conversations: conversations.map((c) => ({ turf: c.turf.name, messages: c.messages.map((m) => ({ fromYou: m.senderId === user.id, body: m.body, at: m.createdAt })) })),
     notifications,
     playerPosts: posts,
+    gameChatMessagesYouSent: gameMessages,
   };
 }
