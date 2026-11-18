@@ -21,7 +21,7 @@ function loadScript() {
   });
 }
 
-export function Checkout(p: { bookingId: string; status: string; holdExpiresAt: string | null; mock: boolean; turfSlug: string }) {
+export function Checkout(p: { bookingId: string; status: string; holdExpiresAt: string | null; mock: boolean; turfSlug: string; coinsOnly?: boolean }) {
   const router = useRouter();
   // null until mounted, so server and client render the same markup
   const [left, setLeft] = useState<number | null>(null);
@@ -66,6 +66,7 @@ export function Checkout(p: { bookingId: string; status: string; holdExpiresAt: 
       const r = await fetch("/api/payments/order", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ bookingId: p.bookingId }) });
       const o = await r.json();
       if (!r.ok) throw new Error(o.error);
+      if (o.paidWithCoins) return router.replace(`/bookings/${p.bookingId}?new=1`);
       setOrder(o);
       if (o.provider === "mock") return; // mock buttons rendered below
       await loadScript();
@@ -132,7 +133,7 @@ export function Checkout(p: { bookingId: string; status: string; holdExpiresAt: 
         </div>
       ) : (
         <button className="btn-primary w-full py-3 text-base" onClick={pay} disabled={phase === "paying"}>
-          {phase === "paying" && <Loader2 size={16} className="animate-spin" />} Pay securely
+          {phase === "paying" && <Loader2 size={16} className="animate-spin" />} {p.coinsOnly ? "Confirm with Turf coins" : "Pay securely"}
         </button>
       )}
       {msg && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{msg}</p>}

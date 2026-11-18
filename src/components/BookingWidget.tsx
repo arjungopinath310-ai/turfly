@@ -17,6 +17,7 @@ interface QuoteRes {
   offer: { code: string; title: string } | null;
   policy: { label: string; lines: string[] };
   holdMinutes: number;
+  coins?: { balance: number; usable: number; valuePaise: number } | null;
 }
 interface TeamLite { id: string; name: string; playersPerSide: number; members: number }
 
@@ -51,6 +52,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
   const [showOffer, setShowOffer] = useState(false);
   const [offerCode, setOfferCode] = useState("");
   const [payFull, setPayFull] = useState(false);
+  const [useCoins, setUseCoins] = useState(true);
   // "Short of players?": list the game so players without a team can ask to join
   const [short, setShort] = useState(false);
   const [need, setNeed] = useState(2);
@@ -145,6 +147,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
           newTeamName: teamId === "new" ? newTeam : null,
           offerCode: offerCode || undefined,
           payFullOnline: payFull,
+          useCoins: Boolean(useCoins && quote?.coins?.usable),
           openSpots: short ? { playersNeeded: need, skillLevel: skill || null, note: shortNote.trim() || null } : null,
         }),
       });
@@ -172,7 +175,8 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
     setError(null);
   };
   const canContinue = Boolean(slot && quote && !submitting && !(teamId === "new" && newTeam.trim().length < 2));
-  const payNow = quote ? rupees(quote.quote.onlineAmount) : rupees(p.advance);
+  const coinsOff = useCoins && quote?.coins?.usable ? quote.coins.valuePaise : 0;
+  const payNow = quote ? rupees(quote.quote.onlineAmount - coinsOff) : rupees(p.advance);
 
   return (
     <div className="card overflow-hidden">
@@ -374,11 +378,18 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
                   {quote.quote.discount > 0 && <Row k={`Offer ${quote.offer?.code ?? ""}`} v={`− ${rupees(quote.quote.discount)}`} className="text-brand-700" />}
                   <Row k={payFull ? "Paid online" : "Advance (online)"} v={rupees(quote.quote.advanceAmount)} />
                   {quote.quote.platformFee > 0 && <Row k="Platform fee" v={rupees(quote.quote.platformFee)} />}
+                  {coinsOff > 0 && <Row k={`Turf coins (${quote.coins!.usable})`} v={`− ${rupees(coinsOff)}`} className="text-brand-700" />}
                   <Row k="Pay at the turf" v={rupees(quote.quote.balanceDue)} />
                   <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold">
                     <span>Pay now</span>
-                    <span>{rupees(quote.quote.onlineAmount)}</span>
+                    <span>{rupees(quote.quote.onlineAmount - coinsOff)}</span>
                   </div>
+                {quote.coins && quote.coins.usable > 0 && (
+                  <label className="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                    <input type="checkbox" className="h-4 w-4 accent-brand-600" checked={useCoins} onChange={(e) => setUseCoins(e.target.checked)} />
+                    Use {quote.coins.usable} of your {quote.coins.balance} Turf coins on the advance
+                  </label>
+                )}
                 </dl>
                 <details className="text-xs text-slate-600">
                   <summary className="cursor-pointer font-semibold text-slate-700">Cancellation: {quote.policy.label.toLowerCase()}</summary>

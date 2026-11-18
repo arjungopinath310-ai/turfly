@@ -13,6 +13,8 @@ import { cancelBookingJobs, notifyInApp, scheduleBookingJobs } from "../notifica
 import { refundBooking } from "../payments/refunds";
 import { refundSplitShares } from "../split";
 import { closeGamesForBooking, listGame, moveGamesForBooking, openGamesForBooking, type ListingInput } from "../games";
+import { chargeOnlineBookingFee, returnOnlineBookingFee } from "../fees";
+import { coinBalance, coinsUsable, returnCoins } from "../coins";
 
 // ───────────── Hold expiry ─────────────
 
@@ -169,7 +171,7 @@ export async function quoteSlot(req: SlotRequest & { offerCode?: string; payFull
 
 export async function createHold(
   user: User,
-  req: SlotRequest & { teamId?: string | null; teamName?: string | null; offerCode?: string; payFullOnline?: boolean; openSpots?: ListingInput | null },
+  req: SlotRequest & { teamId?: string | null; teamName?: string | null; offerCode?: string; payFullOnline?: boolean; openSpots?: ListingInput | null; useCoins?: boolean },
 ): Promise<Booking> {
   const q = await quoteSlot({ ...req, userId: user.id });
   if (req.teamId) {
@@ -182,6 +184,13 @@ export async function createHold(
       await releaseExpiredHolds(tx);
       const active = await tx.booking.count({ where: { userId: user.id, status: "HELD", holdExpiresAt: { gt: new Date() } } });
       if (active >= q.settings.maxActiveHoldsPerUser) throw new AppError(429, "You already have slots on hold. Complete or cancel them first.");
+      // Turf coins towards the online advance (Turfly pays the turf that part); one spend at a time per player
+      let coins = 0;
+      if (req.useCoins) {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"coins:" + user.id}))`;
+        coins = coinsUsable(await coinBalance(user.id, tx), q.quote.onlineAmount, q.settings.coinValuePaise);
+      }
+      const coinsValue = coins * q.settings.coinValuePaise;
       const booking = await tx.booking.create({
         data: {
           code: bookingCode(),
@@ -194,6 +203,9 @@ export async function createHold(
           endAt: q.endAt,
           durationMinutes: req.durationMinutes,
           ...q.quote,
+          onlineAmount: q.quote.onlineAmount - coinsValue,
+          coinsUsed: coins,
+          coinsValue,
           payFullOnline: q.quote.balanceDue === 0 && Boolean(req.payFullOnline),
           offerId: q.offer?.id,
           policySnapshot: q.policy,
@@ -203,6 +215,7 @@ export async function createHold(
         },
       });
       await insertOccupancy(tx, q.unitIds, q.startAt, q.endAt, { bookingId: booking.id });
+      if (coins) await tx.coinEntry.create({ data: { userId: user.id, amount: -coins, kind: "REDEEM", bookingId: booking.id, note: `Used on booking ${booking.code}` } });
       if (req.teamId) await seedRosterFromTeam(tx, booking.id, req.teamId);
       // "Short of players": listed now, visible to others once the payment confirms the booking
       if (req.openSpots) await listGame(tx, { ...booking, turf: q.turf, config: q.config }, req.openSpots, "DRAFT");
@@ -266,14 +279,11 @@ async function afterConfirm(bookingId: string) {
     // Ledger + offer usage exactly once per booking
     const exists = await tx.ledgerEntry.findFirst({ where: { bookingId, type: "ADVANCE_COLLECTED" } });
     if (!exists) {
-      const s = await getSettings();
-      const pct = b.turf.commissionPercent ?? s.defaultCommissionPercent;
-      const owed = b.onlineAmount - b.platformFee;
-      await tx.ledgerEntry.create({ data: { turfId: b.turfId, bookingId, type: "ADVANCE_COLLECTED", amount: owed, note: "Online advance collected by platform" } });
-      if (pct > 0) {
-        const commission = Math.round(((b.totalPrice - b.discount) * pct) / 100);
-        await tx.ledgerEntry.create({ data: { turfId: b.turfId, bookingId, type: "COMMISSION", amount: -commission, note: `${pct}% platform commission on booking value` } });
-      }
+      // The turf is owed the whole advance, including any part paid with Turf coins (Turfly covers that)
+      const owed = b.onlineAmount + b.coinsValue - b.platformFee;
+      await tx.ledgerEntry.create({ data: { turfId: b.turfId, bookingId, type: "ADVANCE_COLLECTED", amount: owed, note: b.coinsValue ? "Online advance (part paid with Turf coins, covered by Turfly)" : "Online advance collected by platform" } });
+      // Turfly's fee: free period first, then a flat fee per online booking, capped per month (lib/fees.ts)
+      await chargeOnlineBookingFee(tx, b.turf, bookingId);
       if (b.offerId) await tx.offer.update({ where: { id: b.offerId }, data: { usedCount: { increment: 1 } } });
       await scheduleBookingJobs(tx, bookingId);
       if (b.turf.ownerId) await notifyInApp(tx, b.turf.ownerId, `New booking ${b.code}`, `${b.turf.name}`, `/owner/bookings?focus=${b.id}`);
@@ -365,6 +375,7 @@ export async function cancelBooking(actor: User, bookingId: string, reason: stri
       prisma.occupancy.updateMany({ where: { bookingId: b.id }, data: { released: true } }),
     ]);
     await closeGamesForBooking(prisma, b.id);
+    await returnCoins(prisma, b, "Booking not completed");
     return { refunded: 0 };
   }
   if (b.status !== "CONFIRMED") throw new AppError(400, "Only confirmed bookings can be cancelled");
@@ -383,6 +394,8 @@ export async function cancelBooking(actor: User, bookingId: string, reason: stri
   await closeGamesForBooking(prisma, b.id);
   const refunded = await refundBooking(b.id, refund, `Cancelled by ${by}: ${reason}`, actor.id);
   await refundSplitShares(b.id, `Booking ${b.code} was cancelled`, actor.id);
+  await returnCoins(prisma, b, "Booking cancelled");
+  await returnOnlineBookingFee(prisma, b.id);
   if (b.userId && by !== "customer")
     await notifyInApp(prisma, b.userId, `Booking ${b.code} cancelled by the turf`, `Refund of ₹${refunded / 100} initiated.`, `/bookings/${b.id}`);
   if (b.turf.ownerId && by === "customer") await notifyInApp(prisma, b.turf.ownerId, `Booking ${b.code} cancelled`, reason, `/owner/bookings`);

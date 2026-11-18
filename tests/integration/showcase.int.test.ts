@@ -70,8 +70,9 @@ describe("sample turf top-up", () => {
   });
 
   it("lists another game when one fills up", async () => {
-    const [g] = await findOpenGames({ turfId });
-    await prisma.playerPost.update({ where: { id: g.id }, data: { status: "FILLED" } });
+    // leave exactly three open games, whatever earlier runs left behind
+    const open = await findOpenGames({ turfId });
+    await prisma.playerPost.updateMany({ where: { id: { in: open.slice(3).map((g) => g.id) } }, data: { status: "FILLED" } });
     const r = await topUpShowcase();
     expect(r).toMatchObject({ games: 1 });
     expect((await findOpenGames({ turfId })).length).toBeGreaterThanOrEqual(4);

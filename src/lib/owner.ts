@@ -11,7 +11,7 @@ export async function manageableTurfs(user: User) {
   return prisma.turf.findMany({
     where: user.role === "ADMIN" ? { status: { not: "UNCLAIMED" }, OR: [{ isSandbox: false }, { ownerId: user.id }] } : { ownerId: user.id },
     orderBy: { createdAt: "asc" },
-    select: { id: true, name: true, slug: true, status: true, availabilityMode: true, isSandbox: true },
+    select: { id: true, name: true, slug: true, status: true, availabilityMode: true, isSandbox: true, isDemo: true, freeUntil: true },
   });
 }
 
