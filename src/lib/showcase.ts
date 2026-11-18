@@ -342,9 +342,9 @@ const CHATS: { from: number; lines: [who: "p" | "o", text: string, minsAgo: numb
   { from: 8, lines: [["p", "Can we pay the balance by UPI at the ground?", 18], ["p", "Also, is there parking for 6 bikes?", 16]] },
 ];
 
-/** A few sample player questions in the owner's inbox (only when the sample turf has no chats yet). */
+/** A few sample player questions in the owner's inbox (once; chats started by real people don't count). */
 export async function ensureShowcaseChats(c: ShowcaseCtx) {
-  if (await prisma.conversation.count({ where: { turfId: c.turf.id } })) return 0;
+  if (await prisma.conversation.count({ where: { turfId: c.turf.id, playerId: { in: c.players.map((p) => p.id) } } })) return 0;
   const now = Date.now();
   for (const chat of CHATS) {
     const player = c.players[chat.from];
