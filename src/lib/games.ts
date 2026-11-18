@@ -145,7 +145,7 @@ export function openGamesWhere(f: { town?: string; format?: number; turfId?: str
     booking: { status: "CONFIRMED" },
     ...(f.town ? { city: { slug: f.town } } : {}),
     ...(f.format ? { playersPerSide: f.format } : {}),
-    ...(f.turfId ? { turfId: f.turfId } : {}),
+    ...(f.turfId ? { turfId: f.turfId } : { turf: { isSandbox: false } }),
   };
 }
 

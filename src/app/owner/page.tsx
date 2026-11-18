@@ -58,6 +58,14 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
           <Link href={`/owner/calendar?turf=${turf.id}#walkin`} className="btn-ghost flex-1 sm:flex-none">+ Walk-in booking</Link>
         </div>
       </div>
+      {turf.isSandbox && (
+        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
+          <b>Your private sample turf.</b> It&apos;s filled with sample bookings, players and chats so you can try everything: add walk-ins,
+          change prices, cancel bookings. Only you can see it, and nothing here affects real players.{" "}
+          <Link href="/owner/claim" className="font-semibold underline">Find my real turf</Link> ·{" "}
+          <Link href="/owner/turfs/new" className="font-semibold underline">Add my turf</Link>
+        </div>
+      )}
       {turf.status !== "APPROVED" && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
           This turf is <b>{turf.status.replace("_", " ").toLowerCase()}</b>. Customers can&apos;t book online until an admin approves it. <Link href={`/owner/turfs/${turf.id}`} className="underline">Complete setup →</Link>

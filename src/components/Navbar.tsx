@@ -8,6 +8,7 @@ import { displayName } from "@/lib/format";
 import { homeFor } from "@/lib/access";
 import { currentView } from "@/lib/view";
 import { UserMenu } from "./UserMenu";
+import { isDemoMode } from "@/lib/format";
 
 /** Main links for each side. The phone tab bar (MobileTabBar) shows the same destinations. */
 export const NAV = {
@@ -64,7 +65,7 @@ export async function Navbar() {
                 <Bell size={18} />
                 {unread > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />}
               </Link>
-              <UserMenu name={displayName(user)} hasName={Boolean(user.name?.trim())} role={user.role} view={view} />
+              <UserMenu name={displayName(user)} hasName={Boolean(user.name?.trim())} role={user.role} view={view} demo={isDemoMode()} />
             </>
           ) : (
             <Link href="/login" className="btn-primary">Sign in</Link>

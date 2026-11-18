@@ -15,7 +15,7 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
     prisma.turf.findMany({ where: { status: "PENDING_REVIEW" }, include: { owner: true, city: true, configs: true }, orderBy: { updatedAt: "asc" } }),
     prisma.turfClaim.findMany({ where: { status: "PENDING" }, include: { turf: true, user: true }, orderBy: { createdAt: "asc" } }),
     prisma.turf.findMany({
-      where: searchParams.status ? { status: searchParams.status as never } : {},
+      where: { isSandbox: false, ...(searchParams.status ? { status: searchParams.status as never } : {}) },
       include: { owner: { select: { name: true, phone: true } }, city: true, _count: { select: { bookings: true } } },
       orderBy: { createdAt: "desc" },
       take: 200,
