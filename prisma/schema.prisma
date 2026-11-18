@@ -34,28 +34,29 @@ model User {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  ownedTurfs      Turf[]             @relation("TurfOwner")
-  bookings        Booking[]          @relation("BookingOrganiser")
-  teams           Team[]             @relation("TeamOwner")
-  memberships     TeamMember[]
-  payments        Payment[]
-  reviews         Review[]
-  notifications   Notification[]
-  playerPosts     PlayerPost[]
-  postRequests    PlayerPostRequest[]
-  claims          TurfClaim[]        @relation("Claimant")
-  disputes        Dispute[]          @relation("DisputeRaiser")
-  matchPlayers    MatchPlayer[]
-  conversations   Conversation[]     @relation("ConversationPlayer")
-  messagesSent    Message[]
-  devices         DeviceToken[]
-  splitShares     SplitShare[]       @relation("SplitSharePayer")
+  ownedTurfs    Turf[]              @relation("TurfOwner")
+  bookings      Booking[]           @relation("BookingOrganiser")
+  teams         Team[]              @relation("TeamOwner")
+  memberships   TeamMember[]
+  payments      Payment[]
+  reviews       Review[]
+  notifications Notification[]
+  playerPosts   PlayerPost[]
+  postRequests  PlayerPostRequest[]
+  gameMessages  PlayerPostMessage[]
+  claims        TurfClaim[]         @relation("Claimant")
+  disputes      Dispute[]           @relation("DisputeRaiser")
+  matchPlayers  MatchPlayer[]
+  conversations Conversation[]      @relation("ConversationPlayer")
+  messagesSent  Message[]
+  devices       DeviceToken[]
+  splitShares   SplitShare[]        @relation("SplitSharePayer")
 }
 
 model OtpCode {
   id         String    @id @default(cuid())
   phone      String
-  ip         String?   // requester IP, for SMS-pumping protection
+  ip         String? // requester IP, for SMS-pumping protection
   codeHash   String
   expiresAt  DateTime
   attempts   Int       @default(0)
@@ -73,7 +74,7 @@ model DeviceToken {
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   token      String   @unique
-  platform   String   // "android" | "ios" | "web"
+  platform   String // "android" | "ios" | "web"
   appVersion String?
   createdAt  DateTime @default(now())
   lastSeenAt DateTime @default(now())
@@ -84,15 +85,15 @@ model DeviceToken {
 // ───────────────────────────── Geography ─────────────────────────────
 
 model City {
-  id       String  @id @default(cuid())
-  slug     String  @unique
+  id       String       @id @default(cuid())
+  slug     String       @unique
   name     String
   district String?
   state    String
   lat      Float
   lng      Float
   pincodes String[]
-  isActive Boolean @default(true)
+  isActive Boolean      @default(true)
   turfs    Turf[]
   posts    PlayerPost[]
 }
@@ -100,7 +101,7 @@ model City {
 // ───────────────────────────── Turfs ─────────────────────────────
 
 enum TurfStatus {
-  UNCLAIMED       // added by admin from public info; owner can claim
+  UNCLAIMED // added by admin from public info; owner can claim
   DRAFT
   PENDING_REVIEW
   APPROVED
@@ -109,9 +110,9 @@ enum TurfStatus {
 }
 
 enum AvailabilityMode {
-  LIVE            // managed on platform; bookable online
-  OWNER_REPORTED  // owner updates manually; informational
-  NONE            // no availability data (e.g. unclaimed)
+  LIVE // managed on platform; bookable online
+  OWNER_REPORTED // owner updates manually; informational
+  NONE // no availability data (e.g. unclaimed)
 }
 
 model Turf {
@@ -142,33 +143,33 @@ model Turf {
   minNoticeMinutes         Int              @default(30)
   maxAdvanceDays           Int              @default(30)
   fullOnlinePaymentEnabled Boolean          @default(false)
-  cancellationPolicy       Json?            // null → platform default
-  commissionPercent        Float?           // null → platform default
+  cancellationPolicy       Json? // null → platform default
+  commissionPercent        Float? // null → platform default
   isDemo                   Boolean          @default(false)
   isFeatured               Boolean          @default(false)
   ratingAvg                Float            @default(0)
   ratingCount              Int              @default(0)
-  sourceNote               String?          // where public info came from (unclaimed listings)
+  sourceNote               String? // where public info came from (unclaimed listings)
   // Price players report for a turf that doesn't manage bookings here (no pitch prices of its own).
   // Shown as "reported", never used for charging. Set by an admin; cleared once the owner sets real prices.
-  reportedPriceFrom        Int?             // paise per hour, lowest reported
-  reportedPriceNote        String?          // e.g. "₹1,000 after 6 PM; source: called the turf"
+  reportedPriceFrom        Int? // paise per hour, lowest reported
+  reportedPriceNote        String? // e.g. "₹1,000 after 6 PM; source: called the turf"
   reportedPriceAt          DateTime?
   claimToken               String?          @unique
   createdAt                DateTime         @default(now())
   updatedAt                DateTime         @updatedAt
 
-  hours        OperatingHours[]
-  units        ResourceUnit[]
-  configs      PitchConfig[]
-  bookings     Booking[]
-  blocks       SlotBlock[]
-  reviews      Review[]
-  claims       TurfClaim[]
-  offers       Offer[]
-  ledger       LedgerEntry[]
-  posts        PlayerPost[]
-  tournaments  Tournament[]
+  hours         OperatingHours[]
+  units         ResourceUnit[]
+  configs       PitchConfig[]
+  bookings      Booking[]
+  blocks        SlotBlock[]
+  reviews       Review[]
+  claims        TurfClaim[]
+  offers        Offer[]
+  ledger        LedgerEntry[]
+  posts         PlayerPost[]
+  tournaments   Tournament[]
   conversations Conversation[]
 
   @@index([cityId, status])
@@ -180,40 +181,40 @@ model OperatingHours {
   id          String  @id @default(cuid())
   turfId      String
   turf        Turf    @relation(fields: [turfId], references: [id], onDelete: Cascade)
-  weekday     Int     // 0 = Sunday … 6 = Saturday (IST)
+  weekday     Int // 0 = Sunday … 6 = Saturday (IST)
   isClosed    Boolean @default(false)
-  openMinute  Int     // minutes from 00:00 IST
-  closeMinute Int     // may exceed 1440 (closes after midnight), max 1800
+  openMinute  Int // minutes from 00:00 IST
+  closeMinute Int // may exceed 1440 (closes after midnight), max 1800
 
   @@unique([turfId, weekday])
 }
 
 /// An atomic, exclusively-allocatable resource: a physical area ("Half A") or a virtual lock.
 model ResourceUnit {
-  id        String              @id @default(cuid())
+  id        String            @id @default(cuid())
   turfId    String
-  turf      Turf                @relation(fields: [turfId], references: [id], onDelete: Cascade)
+  turf      Turf              @relation(fields: [turfId], references: [id], onDelete: Cascade)
   name      String
-  isVirtual Boolean             @default(false)
-  sortOrder Int                 @default(0)
+  isVirtual Boolean           @default(false)
+  sortOrder Int               @default(0)
   configs   PitchConfigUnit[]
   occupancy Occupancy[]
 }
 
 /// What a customer books ("Full 7-a-side", "5-a-side Pitch A"). Consumes one or more units.
 model PitchConfig {
-  id                String            @id @default(cuid())
-  turfId            String
-  turf              Turf              @relation(fields: [turfId], references: [id], onDelete: Cascade)
-  name              String
-  playersPerSide    Int               // 5, 6, 7, 11 …
-  basePricePerHour  Int               // paise
-  isActive          Boolean           @default(true)
-  sortOrder         Int               @default(0)
-  units             PitchConfigUnit[]
-  pricingRules      PricingRule[]
-  bookings          Booking[]
-  blocks            SlotBlock[]
+  id               String            @id @default(cuid())
+  turfId           String
+  turf             Turf              @relation(fields: [turfId], references: [id], onDelete: Cascade)
+  name             String
+  playersPerSide   Int // 5, 6, 7, 11 …
+  basePricePerHour Int // paise
+  isActive         Boolean           @default(true)
+  sortOrder        Int               @default(0)
+  units            PitchConfigUnit[]
+  pricingRules     PricingRule[]
+  bookings         Booking[]
+  blocks           SlotBlock[]
 }
 
 model PitchConfigUnit {
@@ -230,11 +231,11 @@ model PricingRule {
   id           String      @id @default(cuid())
   configId     String
   config       PitchConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
-  label        String      // "Peak", "Weekend evening"
-  weekdays     Int[]       // empty = every day
+  label        String // "Peak", "Weekend evening"
+  weekdays     Int[] // empty = every day
   startMinute  Int
   endMinute    Int
-  pricePerHour Int         // paise
+  pricePerHour Int // paise
   priority     Int         @default(0)
 }
 
@@ -256,48 +257,48 @@ enum BookingSource {
 }
 
 model Booking {
-  id                  String        @id @default(cuid())
-  code                String        @unique // human booking ID, e.g. TF-7KQ2MX
-  turfId              String
-  turf                Turf          @relation(fields: [turfId], references: [id])
-  configId            String
-  config              PitchConfig   @relation(fields: [configId], references: [id])
-  userId              String?
-  user                User?         @relation("BookingOrganiser", fields: [userId], references: [id])
-  source              BookingSource @default(ONLINE)
-  status              BookingStatus @default(HELD)
-  startAt             DateTime
-  endAt               DateTime
-  durationMinutes     Int
+  id                 String        @id @default(cuid())
+  code               String        @unique // human booking ID, e.g. TF-7KQ2MX
+  turfId             String
+  turf               Turf          @relation(fields: [turfId], references: [id])
+  configId           String
+  config             PitchConfig   @relation(fields: [configId], references: [id])
+  userId             String?
+  user               User?         @relation("BookingOrganiser", fields: [userId], references: [id])
+  source             BookingSource @default(ONLINE)
+  status             BookingStatus @default(HELD)
+  startAt            DateTime
+  endAt              DateTime
+  durationMinutes    Int
   // money (paise)
-  totalPrice          Int           // venue price before discount
-  discount            Int           @default(0)
-  advanceAmount       Int           // part of the venue price paid online
-  platformFee         Int           @default(0) // shown separately, on top
-  onlineAmount        Int           // advanceAmount (+ rest if full payment) + platformFee
-  balanceDue          Int           // payable at venue
-  splitCollected      Int           @default(0) // friends' shares paid online (already deducted from balanceDue)
-  payFullOnline       Boolean       @default(false)
-  balanceCollectedAt  DateTime?
-  balanceCollectedBy  String?
-  offerId             String?
-  offer               Offer?        @relation(fields: [offerId], references: [id])
-  policySnapshot      Json          // cancellation policy at time of booking
-  holdExpiresAt       DateTime?
-  confirmedAt         DateTime?
-  cancelledAt         DateTime?
-  cancelledBy         String?
-  cancelReason        String?
-  rescheduledFromId   String?
+  totalPrice         Int // venue price before discount
+  discount           Int           @default(0)
+  advanceAmount      Int // part of the venue price paid online
+  platformFee        Int           @default(0) // shown separately, on top
+  onlineAmount       Int // advanceAmount (+ rest if full payment) + platformFee
+  balanceDue         Int // payable at venue
+  splitCollected     Int           @default(0) // friends' shares paid online (already deducted from balanceDue)
+  payFullOnline      Boolean       @default(false)
+  balanceCollectedAt DateTime?
+  balanceCollectedBy String?
+  offerId            String?
+  offer              Offer?        @relation(fields: [offerId], references: [id])
+  policySnapshot     Json // cancellation policy at time of booking
+  holdExpiresAt      DateTime?
+  confirmedAt        DateTime?
+  cancelledAt        DateTime?
+  cancelledBy        String?
+  cancelReason       String?
+  rescheduledFromId  String?
   // team / customer
-  teamId              String?
-  team                Team?         @relation(fields: [teamId], references: [id])
-  teamName            String?       // per-match override
-  customerName        String?       // walk-in / phone bookings
-  customerPhone       String?
-  notes               String?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  teamId             String?
+  team               Team?         @relation(fields: [teamId], references: [id])
+  teamName           String? // per-match override
+  customerName       String? // walk-in / phone bookings
+  customerPhone      String?
+  notes              String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   occupancy     Occupancy[]
   payments      Payment[]
@@ -321,11 +322,11 @@ model SlotBlock {
   id          String       @id @default(cuid())
   turfId      String
   turf        Turf         @relation(fields: [turfId], references: [id], onDelete: Cascade)
-  configId    String?      // null → whole turf (all units)
+  configId    String? // null → whole turf (all units)
   config      PitchConfig? @relation(fields: [configId], references: [id])
   startAt     DateTime
   endAt       DateTime
-  reason      String       // MAINTENANCE | PRIVATE_EVENT | HOLIDAY | OTHER
+  reason      String // MAINTENANCE | PRIVATE_EVENT | HOLIDAY | OTHER
   note        String?
   createdById String
   createdAt   DateTime     @default(now())
@@ -368,17 +369,17 @@ model Payment {
   booking           Booking       @relation(fields: [bookingId], references: [id])
   userId            String?
   user              User?         @relation(fields: [userId], references: [id])
-  provider          String        // "razorpay" | "mock"
+  provider          String // "razorpay" | "mock"
   providerOrderId   String        @unique
   providerPaymentId String?       @unique
   amount            Int
   currency          String        @default("INR")
   purpose           String        @default("ADVANCE") // ADVANCE | FULL | SPLIT_SHARE
-  splitShareId      String?       // set for purpose SPLIT_SHARE
+  splitShareId      String? // set for purpose SPLIT_SHARE
   splitShare        SplitShare?   @relation(fields: [splitShareId], references: [id])
   status            PaymentStatus @default(CREATED)
-  method            String?       // upi | card | netbanking | wallet
-  clientVerifiedAt  DateTime?     // browser handler signature check (informational only)
+  method            String? // upi | card | netbanking | wallet
+  clientVerifiedAt  DateTime? // browser handler signature check (informational only)
   capturedAt        DateTime?
   failureReason     String?
   refundedAmount    Int           @default(0)
@@ -457,7 +458,7 @@ model LedgerEntry {
   booking   Booking? @relation(fields: [bookingId], references: [id])
   paymentId String?
   payment   Payment? @relation(fields: [paymentId], references: [id])
-  type      String   // ADVANCE_COLLECTED | SPLIT_COLLECTED | COMMISSION | REFUND | PAYOUT
+  type      String // ADVANCE_COLLECTED | SPLIT_COLLECTED | COMMISSION | REFUND | PAYOUT
   amount    Int
   note      String?
   createdAt DateTime @default(now())
@@ -469,13 +470,13 @@ model Offer {
   id               String    @id @default(cuid())
   code             String    @unique
   title            String
-  kind             String    // FIRST_BOOKING | PROMO | REPEAT | REFERRAL
-  turfId           String?   // null → platform-wide
+  kind             String // FIRST_BOOKING | PROMO | REPEAT | REFERRAL
+  turfId           String? // null → platform-wide
   turf             Turf?     @relation(fields: [turfId], references: [id])
-  discountType     String    // PERCENT | FLAT
-  value            Int       // percent, or paise
+  discountType     String // PERCENT | FLAT
+  value            Int // percent, or paise
   maxDiscountPaise Int?
-  minBookings      Int?      // REPEAT: min completed bookings
+  minBookings      Int? // REPEAT: min completed bookings
   usageLimit       Int?
   usedCount        Int       @default(0)
   validFrom        DateTime?
@@ -496,7 +497,7 @@ model PlatformSetting {
 model Team {
   id             String       @id @default(cuid())
   name           String
-  logoUrl        String?      // data URL (≤256px) or https URL
+  logoUrl        String? // data URL (≤256px) or https URL
   playersPerSide Int
   ownerId        String
   owner          User         @relation("TeamOwner", fields: [ownerId], references: [id])
@@ -522,7 +523,7 @@ model TeamMember {
   userId       String?
   user         User?        @relation(fields: [userId], references: [id])
   name         String
-  phone        String?      // private: visible to team owner only (unless member consents)
+  phone        String? // private: visible to team owner only (unless member consents)
   email        String?
   position     String?
   jerseyNumber Int?
@@ -540,7 +541,7 @@ model TeamEvent {
   id        String   @id @default(cuid())
   teamId    String
   team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  type      String   // CREATED | RENAMED | MEMBER_ADDED | MEMBER_REMOVED | CAPTAIN_CHANGED | MEMBER_JOINED
+  type      String // CREATED | RENAMED | MEMBER_ADDED | MEMBER_REMOVED | CAPTAIN_CHANGED | MEMBER_JOINED
   detail    String
   createdAt DateTime @default(now())
 }
@@ -570,33 +571,33 @@ model MatchPlayer {
 }
 
 model MatchResult {
-  id               String   @id @default(cuid())
-  bookingId        String   @unique
-  booking          Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  ourScore         Int
-  opponentName     String?
-  opponentScore    Int
-  playerOfMatchId  String?
-  createdAt        DateTime @default(now())
+  id              String   @id @default(cuid())
+  bookingId       String   @unique
+  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  ourScore        Int
+  opponentName    String?
+  opponentScore   Int
+  playerOfMatchId String?
+  createdAt       DateTime @default(now())
 }
 
 // ───────────────────────────── Community ─────────────────────────────
 
 model Review {
-  id           String   @id @default(cuid())
-  bookingId    String   @unique // one review per verified booking
-  booking      Booking  @relation(fields: [bookingId], references: [id])
-  turfId       String
-  turf         Turf     @relation(fields: [turfId], references: [id])
-  userId       String
-  user         User     @relation(fields: [userId], references: [id])
-  turfQuality  Int
-  cleanliness  Int
-  lighting     Int
-  parking      Int
-  overall      Int
-  comment      String?
-  createdAt    DateTime @default(now())
+  id          String   @id @default(cuid())
+  bookingId   String   @unique // one review per verified booking
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  turfId      String
+  turf        Turf     @relation(fields: [turfId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  turfQuality Int
+  cleanliness Int
+  lighting    Int
+  parking     Int
+  overall     Int
+  comment     String?
+  createdAt   DateTime @default(now())
 
   @@index([turfId])
 }
@@ -615,26 +616,50 @@ model PlayerPost {
   playersPerSide Int
   startAt        DateTime
   skillLevel     String?
-  sharePerPlayer Int?                // paise, informational (pay organiser at venue)
+  sharePerPlayer Int? // paise, informational (pay organiser at venue)
   note           String?
-  status         String              @default("OPEN") // OPEN | FILLED | CLOSED
+  /// DRAFT: listed while booking, waits for the payment · OPEN: others can ask to join · FILLED · CLOSED.
+  /// At most one listing per booking that isn't CLOSED (partial unique index in migration 0008).
+  status         String              @default("OPEN") // DRAFT | OPEN | FILLED | CLOSED
   createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @default(now()) @updatedAt
   requests       PlayerPostRequest[]
 
   @@index([cityId, status, startAt])
+  @@index([status, startAt])
+  @@index([turfId, status, startAt])
+  @@index([bookingId])
 }
 
 model PlayerPostRequest {
-  id        String     @id @default(cuid())
-  postId    String
-  post      PlayerPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User       @relation(fields: [userId], references: [id])
-  message   String?
-  status    String     @default("PENDING") // PENDING | ACCEPTED | DECLINED
-  createdAt DateTime   @default(now())
+  id            String              @id @default(cuid())
+  postId        String
+  post          PlayerPost          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                @relation(fields: [userId], references: [id])
+  message       String?
+  status        String              @default("PENDING") // PENDING | ACCEPTED | DECLINED | WITHDRAWN
+  createdAt     DateTime            @default(now())
+  /// Last chat message in this request's thread, for sorting the organiser's list.
+  lastMessageAt DateTime?
+  messages      PlayerPostMessage[]
 
   @@unique([postId, userId])
+  @@index([userId, status])
+}
+
+/// Chat between a game's organiser and one player who asked to join. Only those two can read it.
+model PlayerPostMessage {
+  id        String            @id @default(cuid())
+  requestId String
+  request   PlayerPostRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User              @relation(fields: [senderId], references: [id])
+  body      String
+  createdAt DateTime          @default(now())
+
+  @@index([requestId, createdAt])
+  @@index([senderId, createdAt])
 }
 
 model TurfClaim {
@@ -643,7 +668,7 @@ model TurfClaim {
   turf         Turf      @relation(fields: [turfId], references: [id])
   userId       String
   user         User      @relation("Claimant", fields: [userId], references: [id])
-  evidence     String    // e.g. GST / trade licence number, role
+  evidence     String // e.g. GST / trade licence number, role
   status       String    @default("PENDING") // PENDING | APPROVED | REJECTED
   reviewedById String?
   reviewNote   String?
@@ -675,7 +700,7 @@ model Conversation {
   turf             Turf      @relation(fields: [turfId], references: [id])
   playerId         String
   player           User      @relation("ConversationPlayer", fields: [playerId], references: [id])
-  bookingId        String?   // booking the chat was started from (context only)
+  bookingId        String? // booking the chat was started from (context only)
   booking          Booking?  @relation(fields: [bookingId], references: [id])
   lastMessageAt    DateTime  @default(now())
   lastMessageText  String?
@@ -724,8 +749,8 @@ model NotificationJob {
   bookingId String?
   booking   Booking?  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   userId    String?
-  channel   String    // IN_APP | SMS | WHATSAPP | EMAIL
-  template  String    // BOOKING_CONFIRMED | REMINDER_24H | REMINDER_2H | BALANCE_PENDING | BOOKING_CANCELLED
+  channel   String // IN_APP | SMS | WHATSAPP | EMAIL
+  template  String // BOOKING_CONFIRMED | REMINDER_24H | REMINDER_2H | BALANCE_PENDING | BOOKING_CANCELLED
   sendAt    DateTime
   status    String    @default("PENDING") // PENDING | SENT | FAILED | CANCELLED | SKIPPED
   attempts  Int       @default(0)
@@ -752,17 +777,17 @@ model AuditLog {
 // ───────────────────────────── Tournaments (phase 2 UI) ─────────────────────────────
 
 model Tournament {
-  id             String   @id @default(cuid())
+  id             String           @id @default(cuid())
   turfId         String?
-  turf           Turf?    @relation(fields: [turfId], references: [id])
+  turf           Turf?            @relation(fields: [turfId], references: [id])
   organiserId    String
   name           String
-  format         String   // KNOCKOUT | LEAGUE
+  format         String // KNOCKOUT | LEAGUE
   playersPerSide Int
-  entryFeePaise  Int      @default(0)
+  entryFeePaise  Int              @default(0)
   startsOn       DateTime
-  status         String   @default("DRAFT") // DRAFT | REGISTRATION | LIVE | DONE
-  createdAt      DateTime @default(now())
+  status         String           @default("DRAFT") // DRAFT | REGISTRATION | LIVE | DONE
+  createdAt      DateTime         @default(now())
   teams          TournamentTeam[]
   fixtures       Fixture[]
 }

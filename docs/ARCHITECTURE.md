@@ -74,7 +74,7 @@ The browser never confirms anything; the checkout page polls `/api/bookings/:id`
 * Webhook verified with HMAC-SHA256 over the raw body and `timingSafeEqual`; events deduplicated by `x-razorpay-event-id`.
 * OTPs: HMAC-hashed, 5-minute TTL, 5 attempts, 5 sends/hour, 30 s resend gap, atomic single use.
 * Every owner/admin mutation re-checks ownership/role server-side (`requireTurfAccess`, `requireUser(["ADMIN"])`) and writes an `AuditLog` row for sensitive actions.
-* Privacy: member phone numbers visible only to the team owner, or teammates if the member opted in. Find-players acceptance shares names, not numbers.
+* Privacy: member phone numbers visible only to the team owner, or teammates if the member opted in. Open games ("short of players"): the chat between the organiser and each player is private to those two; names are shown, phone numbers only between people in the same game who allowed it in their profile.
 * Mock gateway refuses to run when Razorpay keys exist, and in production unless explicitly allowed.
 
 ## Deploying
@@ -89,7 +89,7 @@ The browser never confirms anything; the checkout page polls `/api/bookings/:id`
 |---|---|---|
 | Tournaments (fixtures, leagues, leaderboards, entry fees) | Schema only (`Tournament`, `TournamentTeam`, `Fixture`) | Entry fees reuse the Payment model with `purpose = TOURNAMENT` |
 | Split payments | Built (see below) | |
-| Open matches with per-player payments | Find-players built (pay organiser at venue) | Add per-seat checkout using split-share payments |
+| Open matches with per-player payments | Open games built: list while booking, join requests, private chat, squad (pay organiser at venue) | Add per-seat checkout using split-share payments |
 | Match statistics | Schema (`MatchResult`, goals/assists on `MatchPlayer`) | Add an entry form on the booking page |
 | Loyalty points / memberships | Referral codes + REPEAT/FIRST_BOOKING offers built | Points ledger table + redemption at checkout |
 | Razorpay Route settlement | Ledger built | Linked accounts per owner (KYC) |

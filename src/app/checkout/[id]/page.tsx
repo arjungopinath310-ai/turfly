@@ -14,7 +14,7 @@ export default async function CheckoutPage(props: { params: Promise<{ id: string
   const params = await props.params;
   const user = await currentUser();
   if (!user) redirect(`/login?next=/checkout/${params.id}`);
-  const b = await prisma.booking.findUnique({ where: { id: params.id }, include: { turf: { include: { city: true } }, config: true, team: true } });
+  const b = await prisma.booking.findUnique({ where: { id: params.id }, include: { turf: { include: { city: true } }, config: true, team: true, posts: { where: { status: "DRAFT" }, select: { playersNeeded: true } } } });
   if (!b || b.userId !== user.id) notFound();
   if (b.status === "CONFIRMED") redirect(`/bookings/${b.id}?new=1`);
   const policy = parsePolicy(b.policySnapshot);
@@ -31,6 +31,11 @@ export default async function CheckoutPage(props: { params: Promise<{ id: string
           {digipin && <DigipinChip pin={digipin} className="mt-1" />}
           <div className="pt-2 font-semibold">{formatDateLong(b.startAt)} · {formatTimeRange(b.startAt, b.endAt)}</div>
           <div className="text-sm text-slate-600">{b.config.name} · {b.durationMinutes} min{b.team ? ` · Team ${b.teamName ?? b.team.name}` : ""}</div>
+          {b.posts[0] && (
+            <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              Short of {b.posts[0].playersNeeded} player{b.posts[0].playersNeeded === 1 ? "" : "s"}: your game is listed for others to join as soon as you pay.
+            </div>
+          )}
         </div>
       </div>
       <div className="card h-fit space-y-4 p-4 sm:p-5 md:col-start-2 md:row-span-2 md:row-start-1 md:sticky md:top-20">

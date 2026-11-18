@@ -1,7 +1,10 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ChevronRight, Users } from "lucide-react";
 import { rupees } from "@/lib/engine/pricing";
+import { maxPlayersNeeded } from "@/lib/games-shared";
 
 const ASPECTS = [
   ["turfQuality", "Turf quality"],
@@ -11,7 +14,18 @@ const ASPECTS = [
   ["overall", "Overall experience"],
 ] as const;
 
-export function BookingActions(p: { bookingId: string; canCancel: boolean; canReview: boolean; reviewed: boolean; canDispute: boolean; canPost: boolean }) {
+interface GameLite { id: string; status: string; playersNeeded: number; joined: number; asking: number }
+
+export function BookingActions(p: {
+  bookingId: string;
+  canCancel: boolean;
+  canReview: boolean;
+  reviewed: boolean;
+  canDispute: boolean;
+  canPost: boolean;
+  playersPerSide: number;
+  game: GameLite | null;
+}) {
   const router = useRouter();
   const [preview, setPreview] = useState<{ percent: number; amount: number } | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -31,19 +45,41 @@ export function BookingActions(p: { bookingId: string; canCancel: boolean; canRe
 
   return (
     <div className="space-y-4">
-      {p.canPost && (
+      {p.game ? (
+        <Link href={`/games/${p.game.id}`} className="card flex items-center gap-3 p-4">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-800"><Users size={20} /></span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold">{p.game.status === "CLOSED" ? "Game not taking players" : `Listed for ${p.game.playersNeeded} more player${p.game.playersNeeded === 1 ? "" : "s"}`}</span>
+            <span className="block text-sm text-slate-500">
+              {p.game.joined} joined{p.game.asking ? ` · ${p.game.asking} asking to join` : ""} · chat and choose who plays
+            </span>
+          </span>
+          <ChevronRight className="text-slate-400" />
+        </Link>
+      ) : p.canPost ? (
         <details className="card p-5">
-          <summary className="cursor-pointer font-semibold">Short of players? Post in Find Players</summary>
+          <summary className="cursor-pointer font-semibold">Short of players? List this game</summary>
+          <p className="mt-1 text-sm text-slate-600">Players without a team see it, ask to join and chat with you. You choose who plays.</p>
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <input type="number" min={1} max={10} className="input" value={post.playersNeeded} onChange={(e) => setPost({ ...post, playersNeeded: Number(e.target.value) })} />
-            <input className="input" placeholder="Share per player ₹ (optional)" inputMode="numeric" value={post.sharePerPlayer} onChange={(e) => setPost({ ...post, sharePerPlayer: e.target.value.replace(/\D/g, "") })} />
-            <input className="input" placeholder="Note (skill level etc.)" value={post.note} onChange={(e) => setPost({ ...post, note: e.target.value })} />
+            <label className="text-sm">
+              <span className="label">Players needed</span>
+              <input type="number" min={1} max={maxPlayersNeeded(p.playersPerSide)} className="input" value={post.playersNeeded}
+                onChange={(e) => setPost({ ...post, playersNeeded: Math.max(1, Math.min(maxPlayersNeeded(p.playersPerSide), Number(e.target.value) || 1)) })} />
+            </label>
+            <label className="text-sm">
+              <span className="label">Share per player ₹</span>
+              <input className="input" placeholder="Suggested if empty" inputMode="numeric" value={post.sharePerPlayer} onChange={(e) => setPost({ ...post, sharePerPlayer: e.target.value.replace(/\D/g, "") })} />
+            </label>
+            <label className="text-sm">
+              <span className="label">Note</span>
+              <input className="input" placeholder="e.g. need a goalkeeper" value={post.note} onChange={(e) => setPost({ ...post, note: e.target.value })} />
+            </label>
           </div>
-          <button className="btn-dark mt-3" onClick={() => call("/api/player-posts", { bookingId: p.bookingId, playersNeeded: post.playersNeeded, note: post.note || undefined, sharePerPlayer: post.sharePerPlayer ? Number(post.sharePerPlayer) : undefined }, "Posted! Players can now request to join.")}>
-            Post “Need {post.playersNeeded} players”
+          <button className="btn-dark mt-3" onClick={() => call("/api/player-posts", { bookingId: p.bookingId, playersNeeded: post.playersNeeded, note: post.note || undefined, sharePerPlayer: post.sharePerPlayer ? Number(post.sharePerPlayer) : undefined }, "Listed! Players can now ask to join.")}>
+            List “{post.playersNeeded} player{post.playersNeeded === 1 ? "" : "s"} needed”
           </button>
         </details>
-      )}
+      ) : null}
 
       {p.canReview && (
         <div className="card space-y-3 p-5">

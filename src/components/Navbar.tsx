@@ -15,7 +15,7 @@ export const NAV = {
     { href: "/turfs", label: "Find turfs" },
     { href: "/bookings", label: "My bookings" },
     { href: "/teams", label: "Teams" },
-    { href: "/find-players", label: "Find players" },
+    { href: "/games", label: "Join a game" },
   ],
   owner: [
     { href: "/owner", label: "Dashboard" },

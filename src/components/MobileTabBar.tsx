@@ -12,7 +12,7 @@ const TABS: Record<View, Tab[]> = {
     { href: "/turfs", label: "Turfs", icon: Search },
     { href: "/bookings", label: "Bookings", icon: ClipboardList },
     { href: "/teams", label: "Teams", icon: Trophy },
-    { href: "/find-players", label: "Players", icon: Users },
+    { href: "/games", label: "Games", icon: Users },
   ],
   owner: [
     { href: "/owner", label: "Dashboard", icon: LayoutDashboard, exact: true },

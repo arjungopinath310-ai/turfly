@@ -25,7 +25,9 @@ export function SplitPanel(p: Props) {
   const [msg, setMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [origin, setOrigin] = useState("");
-  useEffect(() => setOrigin(window.location.origin), []);
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   const paid = p.plan?.shares.filter((s) => s.status === "PAID") ?? [];
   const anyPaid = paid.length > 0;

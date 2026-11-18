@@ -16,6 +16,14 @@ const schema = z.object({
   teamName: z.string().max(60).nullish(),
   offerCode: z.string().max(30).optional(),
   payFullOnline: z.boolean().optional(),
+  /** "Short of players": list the game so players without a team can ask to join */
+  openSpots: z
+    .object({
+      playersNeeded: z.number().int().min(1).max(21),
+      note: z.string().max(300).nullish(),
+      skillLevel: z.string().max(30).nullish(),
+    })
+    .nullish(),
 });
 
 /** Creates a temporary HOLD on the slot. Confirmation happens only via the payment webhook. */
