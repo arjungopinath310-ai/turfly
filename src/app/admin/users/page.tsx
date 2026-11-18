@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { formatIst } from "@/lib/time";
 import { ActionForm } from "@/components/ActionForm";
 import { updateUser } from "../actions";
+import { formatPhone } from "@/lib/format";
 
 export default async function Users(props: { searchParams: Promise<{ q?: string; role?: string }> }) {
   const searchParams = await props.searchParams;
@@ -32,7 +33,7 @@ export default async function Users(props: { searchParams: Promise<{ q?: string;
         <tbody>
           {users.map((u) => (
             <tr key={u.id}>
-              <td><b>{u.name ?? "—"}</b><div className="text-xs text-slate-500">{u.phone} {u.email}</div></td>
+              <td><b>{u.name ?? "—"}</b><div className="text-xs text-slate-500">{formatPhone(u.phone)} {u.email}</div></td>
               <td className="text-xs">{formatIst(u.createdAt, { dateStyle: "medium" })}</td>
               <td>{u._count.bookings}</td>
               <td>{u._count.ownedTurfs}</td>

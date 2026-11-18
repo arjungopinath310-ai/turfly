@@ -29,7 +29,7 @@ export const GET = handle(async (req) => {
       b.config.name,
       b.source,
       b.status,
-      b.teamName ?? b.team?.name ?? b.user?.name ?? b.customerName ?? "",
+      b.teamName || b.team?.name || b.user?.name || b.customerName || "",
       ((b.totalPrice - b.discount) / 100).toFixed(2),
       ((b.advanceAmount + b.splitCollected) / 100).toFixed(2), // advance + friends' split shares
       (b.balanceDue / 100).toFixed(2),

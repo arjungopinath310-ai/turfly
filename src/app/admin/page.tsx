@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { rupees } from "@/lib/engine/pricing";
 import { formatIst, formatTimeRange, istToUtc, todayIst } from "@/lib/time";
 import { Stat, StatusBadge } from "@/components/ui";
+import { plural } from "@/lib/format";
 
 export default async function AdminHome() {
   await pageUser("/admin", ["ADMIN"]);
@@ -34,7 +35,7 @@ export default async function AdminHome() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Users" value={users} hint={`${owners} turf owners`} />
         <Stat label="Live turfs" value={count("APPROVED")} hint={`${count("UNCLAIMED")} unclaimed · ${count("DRAFT")} draft`} />
-        <Stat label="Awaiting review" value={<Link href="/admin/turfs" className="hover:underline">{pending} turfs · {claims} claims</Link>} />
+        <Stat label="Awaiting review" value={<Link href="/admin/turfs" className="hover:underline">{plural(pending, "turf")} · {plural(claims, "claim")}</Link>} />
         <Stat label="Open disputes" value={<Link href="/admin/finance" className="hover:underline">{disputes}</Link>} />
         <Stat label="Bookings this month" value={month._count} />
         <Stat label="Booking value (GMV)" value={rupees((month._sum.totalPrice ?? 0) - (month._sum.discount ?? 0))} hint="This month" />

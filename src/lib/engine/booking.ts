@@ -313,7 +313,7 @@ export async function createManualBooking(
           policySnapshot: turfPolicy(v.turf, s),
           customerName: req.customerName,
           customerPhone: req.customerPhone,
-          teamName: req.teamName,
+          teamName: req.teamName?.trim() || null,
           notes: req.notes,
         },
       });

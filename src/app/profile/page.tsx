@@ -48,19 +48,19 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
       <form action={save} className="card space-y-4 p-6">
         <input type="hidden" name="next" value={next} />
         <div>
-          <label className="label">Full name</label>
-          <input name="name" defaultValue={user.name ?? ""} className="input" required />
+          <label className="label" htmlFor="pf-name">Full name</label>
+          <input id="pf-name" name="name" defaultValue={user.name ?? ""} className="input" autoComplete="name" required />
         </div>
         <div>
-          <label className="label">Email (for receipts)</label>
-          <input name="email" type="email" defaultValue={user.email ?? ""} className="input" />
+          <label className="label" htmlFor="pf-email">Email (for receipts)</label>
+          <input id="pf-email" name="email" type="email" defaultValue={user.email ?? ""} className="input" autoComplete="email" />
         </div>
         {isPlayer && (
           <>
             <input type="hidden" name="playerFields" value="1" />
             <div>
-              <label className="label">Preferred position</label>
-              <select name="preferredPosition" defaultValue={user.preferredPosition ?? ""} className="input">
+              <label className="label" htmlFor="pf-position">Preferred position</label>
+              <select id="pf-position" name="preferredPosition" defaultValue={user.preferredPosition ?? ""} className="input">
                 <option value="">—</option>
                 {POSITIONS.map((p) => (
                   <option key={p}>{p}</option>

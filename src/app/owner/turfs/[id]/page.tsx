@@ -55,6 +55,13 @@ export default async function TurfSettings(
         ))}
       </nav>
       <div className="space-y-6">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <Link href="/owner/turfs" className="text-sm font-medium text-slate-500">← My turfs</Link>
+            <h1 className="h1">{turf.name}</h1>
+          </div>
+          <Link href={`/turfs/${turf.slug}`} className="btn-ghost btn-sm">View public page</Link>
+        </div>
         {searchParams.created && <div className="rounded-2xl bg-brand-50 p-4 text-sm text-brand-800">Turf created! Review the pitch layout, hours and prices below, then submit for approval.</div>}
 
         <Section id="status" title="Status & availability">
@@ -62,7 +69,6 @@ export default async function TurfSettings(
             <StatusBadge status={turf.status} />
             {turf.rejectionReason && <span className="text-sm text-red-700">Reason: {turf.rejectionReason}</span>}
             {["DRAFT", "REJECTED"].includes(turf.status) && <ActionButton action={submitForReview.bind(null, turf.id)} label="Submit for approval" className="btn-primary btn-sm" />}
-            <Link href={`/turfs/${turf.slug}`} className="btn-ghost btn-sm">View public page</Link>
           </div>
           <ActionForm action={setAvailabilityMode} className="mt-4 flex flex-wrap items-end gap-3" submit="Update">
             <input type="hidden" name="turfId" value={turf.id} />
@@ -85,12 +91,16 @@ export default async function TurfSettings(
                 <ActionForm key={c.id} action={saveConfig} className={`rounded-xl border p-3 ${c.isActive ? "border-slate-200" : "border-dashed border-slate-300 opacity-70"}`} submit="Save" submitClass="btn-ghost btn-sm mt-2">
                   <input type="hidden" name="turfId" value={turf.id} />
                   <input type="hidden" name="id" value={c.id} />
-                  <div className="grid grid-cols-[1fr_80px_100px] gap-2">
-                    <input name="name" defaultValue={c.name} className="input py-1.5" />
-                    <select name="playersPerSide" defaultValue={c.playersPerSide} className="input py-1.5">
-                      {[5, 6, 7, 8, 9, 11].map((n) => <option key={n} value={n}>{n}s</option>)}
+                  {/* Phones: the name gets its own line so it isn't cut off */}
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_80px_100px]">
+                    <input name="name" defaultValue={c.name} className="input col-span-2 py-1.5 sm:col-span-1" aria-label="Pitch name" />
+                    <select name="playersPerSide" defaultValue={c.playersPerSide} className="input py-1.5" aria-label="Format">
+                      {[5, 6, 7, 8, 9, 11].map((n) => <option key={n} value={n}>{n}-a-side</option>)}
                     </select>
-                    <input name="price" type="number" min={0} step={50} defaultValue={c.basePricePerHour / 100} className="input py-1.5" title="₹ per hour" />
+                    <label className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">₹</span>
+                      <input name="price" type="number" min={0} step={50} defaultValue={c.basePricePerHour / 100} className="input py-1.5 pl-7" aria-label="Base price per hour (₹)" title="₹ per hour" />
+                    </label>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
                     <span className="text-slate-500">Uses:</span>
@@ -213,10 +223,10 @@ export default async function TurfSettings(
             {DAYS.map((d, i) => {
               const h = turf.hours.find((x) => x.weekday === i);
               return (
-                <div key={d} className="grid grid-cols-[60px_1fr_1fr_auto] items-center gap-2 text-sm">
+                <div key={d} className="grid grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-1.5 text-sm sm:grid-cols-[60px_1fr_1fr_auto] sm:gap-2">
                   <span className="font-medium">{d}</span>
-                  <input name={`open_${i}`} type="time" defaultValue={hhmm(h?.openMinute ?? 360)} className="input py-1.5" />
-                  <input name={`close_${i}`} type="time" defaultValue={hhmm(h?.closeMinute ?? 1380)} className="input py-1.5" />
+                  <input name={`open_${i}`} type="time" defaultValue={hhmm(h?.openMinute ?? 360)} className="input min-w-0 px-2 py-1.5" aria-label={`${d} opens`} />
+                  <input name={`close_${i}`} type="time" defaultValue={hhmm(h?.closeMinute ?? 1380)} className="input min-w-0 px-2 py-1.5" aria-label={`${d} closes`} />
                   <label className="flex items-center gap-1 text-xs"><input type="checkbox" name={`closed_${i}`} defaultChecked={h?.isClosed} className="accent-brand-600" /> Closed</label>
                 </div>
               );

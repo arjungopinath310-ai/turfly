@@ -44,7 +44,7 @@ export default async function BookingPage(
   });
   const policy = parsePolicy(b.policySnapshot);
   const played = b.status === "COMPLETED" || (b.status === "CONFIRMED" && b.endAt < new Date());
-  const share = bookingShareText({ ...b, turfName: b.turf.name, configName: b.config.name, teamName: b.teamName ?? b.team?.name, lat: b.turf.lat, lng: b.turf.lng });
+  const share = bookingShareText({ ...b, turfName: b.turf.name, configName: b.config.name, teamName: b.teamName || b.team?.name, lat: b.turf.lat, lng: b.turf.lng });
   const digipin = encodeDigipin(b.turf.lat, b.turf.lng);
   // Area, town and DIGIPIN instead of a street address (calendar entries get the same text).
   const address = `${b.turf.locality ?? b.turf.addressLine}, ${b.turf.city.name} ${b.turf.pincode}${digipin ? ` · DIGIPIN ${formatDigipin(digipin)}` : ""}`;
@@ -86,7 +86,7 @@ export default async function BookingPage(
             <RosterEditor
               bookingId={b.id}
               editable={b.status === "CONFIRMED" && !played}
-              teamName={b.teamName ?? b.team?.name ?? ""}
+              teamName={b.teamName || b.team?.name || ""}
               teamMembers={(b.team?.members ?? []).map((m) => ({ id: m.id, name: m.name }))}
               players={b.roster.map((r) => ({ id: r.id, teamMemberId: r.teamMemberId, name: r.name, status: r.status, isCaptain: r.isCaptain, isSubstitute: r.isSubstitute }))}
               inviteText={share}

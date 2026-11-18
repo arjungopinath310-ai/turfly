@@ -37,6 +37,11 @@ export default async function OwnerCalendar(
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="h1 mr-auto">Calendar</h1>
+        {/* On phones the forms are below the grid: jump straight to them */}
+        <div className="flex w-full gap-2 sm:w-auto lg:hidden">
+          <a href="#walkin" className="btn-primary btn-sm flex-1 sm:flex-none">+ Walk-in booking</a>
+          <a href="#block" className="btn-ghost btn-sm flex-1 sm:flex-none">Block time</a>
+        </div>
         <TurfSwitcher turfs={turfs} current={turf.id} />
         <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-sm">
           {["day", "week", "month"].map((v) => (
@@ -58,7 +63,7 @@ export default async function OwnerCalendar(
       {view === "month" && <MonthView turfId={turf.id} date={date} q={q} />}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="card p-5">
+        <div id="walkin" className="card scroll-mt-20 p-5">
           <h2 className="h2 mb-3">Walk-in / phone booking</h2>
           <ActionForm action={walkIn} className="grid grid-cols-1 gap-2 sm:grid-cols-2" submit="Create booking" submitClass="btn-primary sm:col-span-2">
             <input type="hidden" name="turfId" value={turf.id} />
@@ -78,7 +83,7 @@ export default async function OwnerCalendar(
             <p className="text-[11px] text-slate-500 sm:col-span-2">Saved instantly and blocks the slot online. The database rejects it if the slot (or a conflicting pitch) is already taken.</p>
           </ActionForm>
         </div>
-        <div className="card p-5">
+        <div id="block" className="card scroll-mt-20 p-5">
           <h2 className="h2 mb-3">Block time (maintenance, private event, holiday)</h2>
           <ActionForm action={blockSlot} className="grid grid-cols-1 gap-2 sm:grid-cols-2" submit="Block" submitClass="btn-dark sm:col-span-2">
             <input type="hidden" name="turfId" value={turf.id} />
@@ -150,7 +155,7 @@ async function DayView({ turfId, date, step }: { turfId: string; date: string; s
                 <b>{formatTimeRange(b.startAt, b.endAt)}</b>
                 <span className={clsx("text-xs", b.status === "HELD" ? "text-amber-600" : "text-slate-500")}>{b.status === "HELD" ? "in checkout" : b.source.toLowerCase().replace("_", "-")}</span>
               </div>
-              <div className="text-xs text-slate-500">{b.config.name} · {b.teamName ?? b.team?.name ?? b.customerName ?? b.user?.name ?? "Customer"} · <Link className="underline" href={`/owner/bookings?focus=${b.id}`}>{b.code}</Link></div>
+              <div className="text-xs text-slate-500">{b.config.name} · {b.teamName || b.team?.name || b.customerName || b.user?.name || "Customer"} · <Link className="underline" href={`/owner/bookings?focus=${b.id}`}>{b.code}</Link></div>
             </li>
           ))}
           {blocks.map((bl) => (
@@ -196,7 +201,7 @@ async function RangeView({ turfId, from, days, configs, q }: { turfId: string; f
                 return (
                   <td key={d} className="space-y-1">
                     {list.map((b) => (
-                      <div key={b.id} className="rounded bg-red-50 px-1.5 py-0.5 text-[11px] text-red-800">{formatTimeRange(b.startAt, b.endAt)}<span className="block truncate text-red-600/70">{b.teamName ?? b.team?.name ?? b.customerName ?? ""}</span></div>
+                      <div key={b.id} className="rounded bg-red-50 px-1.5 py-0.5 text-[11px] text-red-800">{formatTimeRange(b.startAt, b.endAt)}<span className="block truncate text-red-600/70">{b.teamName || b.team?.name || b.customerName || ""}</span></div>
                     ))}
                   </td>
                 );

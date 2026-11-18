@@ -9,6 +9,7 @@ import { BarList, ColumnChart, Heatmap, SegmentedBar, TableView } from "@/compon
 import { fmtValue } from "@/lib/chartFormat";
 import { Empty, StatusBadge } from "@/components/ui";
 import { TurfSwitcher } from "@/components/TurfSwitcher";
+import { plural } from "@/lib/format";
 
 const PRESETS = [
   ["7d", "7 days"],
@@ -26,9 +27,9 @@ function Kpi({ label, value, cur, prev, upIsGood = true, hint, hero = false }: {
   const ch = cur != null && prev != null && !(cur === 0 && prev === 0) ? pctChange(cur, prev) : undefined;
   const good = ch != null && ch !== 0 ? (ch > 0) === upIsGood : null;
   return (
-    <div className={clsx("card p-4", hero && "sm:col-span-2")}>
+    <div className={clsx("card min-w-0 p-4", hero && "col-span-2")}>
       <div className="text-xs font-semibold text-[color:var(--viz-ink-2)]">{label}</div>
-      <div className={clsx("mt-1 font-semibold tracking-tight text-[color:var(--viz-ink)]", hero ? "text-5xl" : "text-2xl")}>{value}</div>
+      <div className={clsx("mt-1 font-semibold tracking-tight text-[color:var(--viz-ink)]", hero ? "text-4xl sm:text-5xl" : "text-2xl")}>{value}</div>
       <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs">
         {ch === null && <span className="text-[color:var(--viz-muted)]">new vs previous period</span>}
         {ch != null && (
@@ -100,13 +101,13 @@ export default async function OwnerAnalytics(
         <Kpi label="Cancellation rate" value={fmtValue(k.cancelRate, "percent")} cur={k.cancelRate} prev={p.cancelRate} upIsGood={false} hint={`${k.cancelled} cancelled`} />
         <Kpi label="No-shows" value={String(k.noShows)} cur={k.noShows} prev={p.noShows} upIsGood={false} />
         <Kpi label="Repeat customers" value={fmtValue(repeatShare, "percent")} hint={`${a.repeat.repeatCustomers} of ${a.repeat.customers} online customers`} />
-        <Kpi label="Average rating" value={k.avgRating != null ? `${k.avgRating.toFixed(1)} ★` : "–"} hint={`${a.reviewsCount} reviews`} />
+        <Kpi label="Average rating" value={k.avgRating != null ? `${k.avgRating.toFixed(1)} ★` : "–"} hint={plural(a.reviewsCount, "review")} />
       </div>
 
       {/* Daily value */}
       <section className="card p-5">
         <h2 className="h2">Booking value per day</h2>
-        <p className="muted mb-3">By match date. Hover a bar for the day&apos;s bookings.</p>
+        <p className="muted mb-3">By match date. Tap or hover a bar for the day&apos;s bookings.</p>
         <ColumnChart
           ariaLabel="Booking value per day"
           labels={a.daily.map((d) => shortDate(d.date))}
@@ -142,7 +143,7 @@ export default async function OwnerAnalytics(
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section className="card p-5">
           <h2 className="h2 mb-3">Booked hours by pitch</h2>
-          <BarList rows={a.byPitch.map((r) => ({ label: r.name, value: r.hours, note: `${r.bookings} bookings · ${rupees(r.value)}` }))} format="hours" />
+          <BarList rows={a.byPitch.map((r) => ({ label: r.name, value: r.hours, note: `${plural(r.bookings, "booking")} · ${rupees(r.value)}` }))} format="hours" />
           <TableView head={["Pitch", "Bookings", "Hours", "Value"]} rows={a.byPitch.map((r) => [r.name, r.bookings, r.hours, rupees(r.value)])} />
         </section>
         <section className="card p-5">

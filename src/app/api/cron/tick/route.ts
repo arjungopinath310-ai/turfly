@@ -2,6 +2,21 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { completePastBookings, releaseExpiredHolds } from "@/lib/engine/booking";
 import { processDueJobs } from "@/lib/notifications/service";
+import { isDemoMode } from "@/lib/format";
+import { topUpShowcase } from "@/lib/showcase";
+
+// Demo only: keep the sample turf current (new days of bookings, open games). At most every 30 minutes per server.
+let showcaseCheckedAt = 0;
+async function maybeTopUpShowcase() {
+  if (!isDemoMode() || Date.now() - showcaseCheckedAt < 30 * 60_000) return null;
+  showcaseCheckedAt = Date.now();
+  try {
+    return await topUpShowcase();
+  } catch (e) {
+    console.error("[showcase] top-up failed", e);
+    return null;
+  }
+}
 
 /**
  * Call every minute from a scheduler (Vercel Cron, GitHub Actions, cron + curl):
@@ -25,6 +40,7 @@ export async function POST(req: Request) {
     jobs.batches++;
     if (r.processed < 100 || Date.now() - startedAt > 40_000) break;
   }
-  return NextResponse.json({ releasedOccupancyRows: expired, completed: completed.count, ...jobs });
+  const showcase = await maybeTopUpShowcase();
+  return NextResponse.json({ releasedOccupancyRows: expired, completed: completed.count, ...jobs, ...(showcase ? { showcase } : {}) });
 }
 export const GET = POST;
