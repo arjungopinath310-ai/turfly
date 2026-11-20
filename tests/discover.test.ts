@@ -64,3 +64,45 @@ describe("finding turfs on the public map", () => {
     expect(normalizeState("Bavaria")).toBeNull();
   });
 });
+
+import { photosFrom } from "@/lib/discover";
+import { nearestTown, parseTile, indiaTiles } from "@/lib/import-india";
+describe("photos and the India import", () => {
+  it("takes real photos the map links to", () => {
+    expect(photosFrom({ wikimedia_commons: "File:Kick Off Turf.jpg" })).toEqual(["https://commons.wikimedia.org/wiki/Special:FilePath/Kick_Off_Turf.jpg?width=800"]);
+    expect(photosFrom({ image: "https://example.com/turf.jpg" })).toEqual(["https://example.com/turf.jpg"]);
+    expect(photosFrom({ image: "https://commons.wikimedia.org/wiki/File:Arena%20One.png" })).toEqual(["https://commons.wikimedia.org/wiki/Special:FilePath/Arena_One.png?width=800"]);
+    expect(photosFrom({ image: "http://insecure.example/x.jpg" })).toEqual([]); // https only
+    expect(photosFrom({ image: "https://example.com/page" })).toEqual([]); // not an image
+  });
+
+  it("lists unnamed artificial football turfs, not unnamed grass pitches", () => {
+    expect(looksLikeTurf({ leisure: "pitch", sport: "soccer", surface: "artificial_turf" })).toBe(true);
+    expect(looksLikeTurf({ leisure: "pitch", sport: "soccer" })).toBe(false);
+    expect(looksLikeTurf({ leisure: "pitch", sport: "soccer", surface: "artificial_turf", access: "private" })).toBe(false);
+    expect(toListing({ type: "way", id: 5, center: { lat: 11, lon: 76 }, tags: { leisure: "pitch", sport: "soccer", surface: "artificial_turf", "addr:suburb": "Kacherippadi" } }, {})?.name).toBe("Football Turf, Kacherippadi");
+  });
+
+  it("reads towns with their state from a tile and files turfs under the nearest Indian town", () => {
+    const { places, listings } = parseTile([
+      { type: "way", id: 1, center: { lat: 11.12, lon: 76.12 }, tags: { name: "Crown Football Turf", leisure: "pitch", sport: "soccer" } },
+      { type: "way", id: 2, center: { lat: 26.5, lon: 88.1 }, tags: { name: "Border Futsal Arena", leisure: "pitch", sport: "futsal" } },
+      { type: "node", id: 10, lat: 11.12, lon: 76.11, tags: { place: "town", name: "Manjeri" } },
+      { type: "area", id: 100, tags: { admin_level: "4", name: "Kerala", "ISO3166-2": "IN-KL" } },
+      { type: "node", id: 11, lat: 26.5, lon: 88.12, tags: { place: "town", name: "Bhadrapur" } },
+      { type: "area", id: 101, tags: { admin_level: "4", name: "Koshi Province", "ISO3166-2": "NP-P1" } },
+    ]);
+    expect(places).toEqual([
+      { name: "Manjeri", lat: 11.12, lng: 76.11, state: "Kerala", india: true },
+      { name: "Bhadrapur", lat: 26.5, lng: 88.12, state: null, india: false },
+    ]);
+    expect(nearestTown(listings[0], places)?.name).toBe("Manjeri");
+    expect(nearestTown(listings[1], places)).toBeNull(); // nearest town is in Nepal: skipped
+  });
+
+  it("walks India in 1° tiles, nearest to Malappuram first", () => {
+    const tiles = indiaTiles();
+    expect(tiles[0].key).toBe("tile:11,76");
+    expect(tiles.length).toBe(31 * 30);
+  });
+});

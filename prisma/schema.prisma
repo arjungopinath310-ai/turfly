@@ -37,24 +37,25 @@ model User {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  ownedTurfs    Turf[]              @relation("TurfOwner")
-  bookings      Booking[]           @relation("BookingOrganiser")
-  teams         Team[]              @relation("TeamOwner")
-  memberships   TeamMember[]
-  payments      Payment[]
-  reviews       Review[]
-  notifications Notification[]
-  playerPosts   PlayerPost[]
-  postRequests  PlayerPostRequest[]
-  gameMessages  PlayerPostMessage[]
-  coinEntries   CoinEntry[]
-  claims        TurfClaim[]         @relation("Claimant")
-  disputes      Dispute[]           @relation("DisputeRaiser")
-  matchPlayers  MatchPlayer[]
-  conversations Conversation[]      @relation("ConversationPlayer")
-  messagesSent  Message[]
-  devices       DeviceToken[]
-  splitShares   SplitShare[]        @relation("SplitSharePayer")
+  ownedTurfs       Turf[]                @relation("TurfOwner")
+  bookings         Booking[]             @relation("BookingOrganiser")
+  teams            Team[]                @relation("TeamOwner")
+  memberships      TeamMember[]
+  payments         Payment[]
+  reviews          Review[]
+  notifications    Notification[]
+  playerPosts      PlayerPost[]
+  postRequests     PlayerPostRequest[]
+  gameMessages     PlayerPostMessage[]
+  coinEntries      CoinEntry[]
+  claims           TurfClaim[]           @relation("Claimant")
+  disputes         Dispute[]             @relation("DisputeRaiser")
+  matchPlayers     MatchPlayer[]
+  conversations    Conversation[]        @relation("ConversationPlayer")
+  photoSuggestions TurfPhotoSuggestion[]
+  messagesSent     Message[]
+  devices          DeviceToken[]
+  splitShares      SplitShare[]          @relation("SplitSharePayer")
 }
 
 model OtpCode {
@@ -168,18 +169,19 @@ model Turf {
   createdAt                DateTime         @default(now())
   updatedAt                DateTime         @updatedAt
 
-  hours         OperatingHours[]
-  units         ResourceUnit[]
-  configs       PitchConfig[]
-  bookings      Booking[]
-  blocks        SlotBlock[]
-  reviews       Review[]
-  claims        TurfClaim[]
-  offers        Offer[]
-  ledger        LedgerEntry[]
-  posts         PlayerPost[]
-  tournaments   Tournament[]
-  conversations Conversation[]
+  hours            OperatingHours[]
+  units            ResourceUnit[]
+  configs          PitchConfig[]
+  bookings         Booking[]
+  blocks           SlotBlock[]
+  reviews          Review[]
+  claims           TurfClaim[]
+  offers           Offer[]
+  ledger           LedgerEntry[]
+  posts            PlayerPost[]
+  tournaments      Tournament[]
+  conversations    Conversation[]
+  photoSuggestions TurfPhotoSuggestion[]
 
   @@index([cityId, status])
   @@index([status, availabilityMode])
@@ -852,4 +854,21 @@ model DiscoveryCell {
   fetchedAt DateTime
   found     Int      @default(0)
   added     Int      @default(0)
+}
+
+/// A photo a player added to a listed turf; shown on the turf once an admin approves it.
+model TurfPhotoSuggestion {
+  id         String    @id @default(cuid())
+  turfId     String
+  turf       Turf      @relation(fields: [turfId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  url        String
+  status     String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  createdAt  DateTime  @default(now())
+  reviewedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([turfId])
+  @@index([userId, createdAt])
 }

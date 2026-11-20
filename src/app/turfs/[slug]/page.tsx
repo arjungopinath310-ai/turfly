@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Clock, MapPin, Navigation, Phone, Share2 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
+import { AddTurfPhoto } from "@/components/AddTurfPhoto";
 import { AMENITIES } from "@/lib/brand";
 import { rupees } from "@/lib/engine/pricing";
 import { describePolicy, refundabilityLabel } from "@/lib/engine/policy";
@@ -86,7 +87,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
             <h1 className="mt-2 text-2xl font-extrabold leading-tight tracking-tight sm:mt-3 sm:text-3xl">{turf.name}</h1>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
               {/* DIGIPIN instead of a street address: it pinpoints the turf (about 4 m) and works with India Post. */}
-              <span className="flex items-center gap-1"><MapPin size={15} className="shrink-0" /> {turf.locality ?? turf.addressLine}, {turf.city.name} {turf.pincode}</span>
+              <span className="flex items-center gap-1"><MapPin size={15} className="shrink-0" /> {[turf.locality ?? turf.addressLine, turf.city.name].filter((x, i, all) => x && all.findIndex((y) => y?.toLowerCase() === x.toLowerCase()) === i).join(", ")} {turf.pincode}</span>
               {digipin && <DigipinChip pin={digipin} />}
               {turf.ratingCount > 0 && <span className="flex items-center gap-1"><Stars value={turf.ratingAvg} /> {turf.ratingAvg.toFixed(1)} ({turf.ratingCount})</span>}
             </div>
@@ -98,6 +99,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
               {turf.status === "APPROVED" && turf.ownerId && turf.ownerId !== user?.id && <MessageButton turfId={turf.id} signedIn={Boolean(user)} />}
               <a href={whatsappShare(turfShareText(turf))} target="_blank" className="btn-ghost btn-sm shrink-0"><Share2 size={14} /> Share</a>
               <Link href={`/compare?ids=${turf.id}`} className="btn-ghost btn-sm shrink-0">Compare</Link>
+              {!turf.isDemo && turf.ownerId !== user?.id && <AddTurfPhoto turfId={turf.id} slug={turf.slug} signedIn={Boolean(user)} hasPhotos={turf.photos.length > 0} />}
             </div>
             {turf.description && <p className="mt-3 max-w-2xl text-slate-700">{turf.description}</p>}
         </div>
@@ -133,7 +135,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
               )}
               {turf.source === "osm" && turf.sourceRef ? (
                 <p className="text-xs text-slate-400">
-                  Listing from public map data, © <a href={`https://www.openstreetmap.org/${turf.sourceRef}`} target="_blank" rel="noopener" className="underline">OpenStreetMap</a> contributors. Details may be incomplete until the owner claims it.
+                  Listing from public map data, © <a href={`https://www.openstreetmap.org/${turf.sourceRef}`} target="_blank" rel="noopener" className="underline">OpenStreetMap</a> contributors{turf.photos.some((p) => p.includes("commons.wikimedia.org")) ? "; photo from Wikimedia Commons" : ""}. Details may be incomplete until the owner claims it.
                 </p>
               ) : (
                 turf.sourceNote && <p className="text-xs text-slate-400">Listing info source: {turf.sourceNote}</p>

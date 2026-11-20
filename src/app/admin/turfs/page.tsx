@@ -5,13 +5,13 @@ import { AMENITIES } from "@/lib/brand";
 import { ActionForm } from "@/components/ActionForm";
 import { StatusBadge } from "@/components/ui";
 import { DigipinField } from "@/components/DigipinField";
-import { addUnclaimedTurf, reviewClaim, reviewTurf, setReportedPrice, updateTurfAdmin } from "../actions";
+import { addUnclaimedTurf, reviewClaim, reviewPhoto, reviewTurf, setReportedPrice, updateTurfAdmin } from "../actions";
 import { formatPhone } from "@/lib/format";
 
 export default async function AdminTurfs(props: { searchParams: Promise<{ status?: string }> }) {
   const searchParams = await props.searchParams;
   await pageUser("/admin/turfs", ["ADMIN"]);
-  const [pending, claims, turfs, cities] = await Promise.all([
+  const [pending, claims, turfs, cities, photos] = await Promise.all([
     prisma.turf.findMany({ where: { status: "PENDING_REVIEW" }, include: { owner: true, city: true, configs: true }, orderBy: { updatedAt: "asc" } }),
     prisma.turfClaim.findMany({ where: { status: "PENDING" }, include: { turf: true, user: true }, orderBy: { createdAt: "asc" } }),
     prisma.turf.findMany({
@@ -21,6 +21,7 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
       take: 200,
     }),
     prisma.city.findMany({ where: { isActive: true } }),
+    prisma.turfPhotoSuggestion.findMany({ where: { status: "PENDING" }, include: { turf: { select: { name: true, slug: true } }, user: { select: { name: true } } }, orderBy: { createdAt: "asc" }, take: 60 }),
   ]);
   const app = process.env.APP_URL ?? "";
 
@@ -47,6 +48,27 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
                 <button name="decision" value="APPROVED" className="btn-primary btn-sm">Approve</button>
                 <button name="decision" value="REJECTED" className="btn-danger btn-sm">Reject</button>
               </ActionForm>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="h2 mb-3">Photos from players</h2>
+        {photos.length === 0 && <p className="muted">No photos waiting.</p>}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {photos.map((p) => (
+            <div key={p.id} className="card overflow-hidden p-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <a href={p.url} target="_blank" rel="noopener"><img src={p.url} alt={`Photo of ${p.turf.name}`} className="aspect-[4/3] w-full object-cover" /></a>
+              <div className="space-y-2 p-3 text-xs">
+                <div><Link href={`/turfs/${p.turf.slug}`} className="font-semibold hover:underline">{p.turf.name}</Link><span className="block text-slate-500">by {p.user.name ?? "a player"}</span></div>
+                <ActionForm action={reviewPhoto} submit={null} className="flex gap-2">
+                  <input type="hidden" name="id" value={p.id} />
+                  <button name="decision" value="APPROVED" className="btn-primary btn-sm flex-1">Approve</button>
+                  <button name="decision" value="REJECTED" className="btn-ghost btn-sm flex-1">Reject</button>
+                </ActionForm>
+              </div>
             </div>
           ))}
         </div>

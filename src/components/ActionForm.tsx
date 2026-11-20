@@ -1,6 +1,6 @@
 "use client";
 import { useFormStatus } from "react-dom";
-import { useActionState, useCallback, useMemo, useTransition, useState } from "react";
+import { useActionState, useCallback, useMemo, useRef, useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -40,13 +40,26 @@ export function useSettleAfterAction() {
 
 export function ActionForm({ action, children, className, submit = "Save", submitClass = "btn-primary" }: { action: (s: State, fd: FormData) => Promise<State>; children: React.ReactNode; className?: string; submit?: string | null; submitClass?: string }) {
   const settle = useSettleAfterAction();
+  // Which button was pressed (Approve / Reject…): browsers report it on the submit event, but it doesn't always
+  // reach the action's form data, so it is added here when missing.
+  const pressed = useRef<{ name: string; value: string } | null>(null);
   const [state, formAction] = useActionState(async (s: State, fd: FormData) => {
+    const p = pressed.current;
+    pressed.current = null;
+    if (p && !fd.has(p.name)) fd.append(p.name, p.value);
     const r = await action(s, fd);
     settle();
     return r;
   }, null);
   return (
-    <form action={formAction} className={className}>
+    <form
+      action={formAction}
+      className={className}
+      onSubmit={(e) => {
+        const b = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | HTMLInputElement | null;
+        pressed.current = b?.name ? { name: b.name, value: b.value } : null;
+      }}
+    >
       {children}
       {submit && <Submit label={submit} className={submitClass} />}
       {state?.error && <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}

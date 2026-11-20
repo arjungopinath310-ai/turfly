@@ -12,6 +12,7 @@ import { policySchema } from "@/lib/engine/policy";
 import { refundBooking } from "@/lib/payments/refunds";
 import { notifyInApp } from "@/lib/notifications/service";
 import { setSetting } from "@/lib/settings";
+import { deleteUpload, MAX_TURF_PHOTOS } from "@/lib/uploads";
 import type { ActionState } from "@/app/owner/actions";
 
 async function admin() {
@@ -33,6 +34,31 @@ const audit = (actorId: string, action: string, entity: string, entityId: string
   prisma.auditLog.create({ data: { actorId, action, entity, entityId, data } });
 
 // ───────────── Turfs ─────────────
+
+/** A photo a player added: approve (it joins the turf's photos) or reject (the file is deleted). */
+export async function reviewPhoto(_: ActionState, fd: FormData): Promise<ActionState> {
+  return run(async () => {
+    const a = await admin();
+    const d = z.object({ id: z.string(), decision: z.enum(["APPROVED", "REJECTED"]) }).parse(Object.fromEntries(fd));
+    const s = await prisma.turfPhotoSuggestion.findUnique({ where: { id: d.id }, include: { turf: { select: { id: true, slug: true, photos: true } } } });
+    if (!s || s.status !== "PENDING") throw new AppError(404, "Already reviewed");
+    if (d.decision === "APPROVED") {
+      if (s.turf.photos.length >= MAX_TURF_PHOTOS) throw new AppError(400, `This turf already has ${MAX_TURF_PHOTOS} photos. Remove one first (Inspect).`);
+      await prisma.$transaction([
+        prisma.turf.update({ where: { id: s.turf.id }, data: { photos: { push: s.url } } }),
+        prisma.turfPhotoSuggestion.update({ where: { id: s.id }, data: { status: "APPROVED", reviewedAt: new Date() } }),
+      ]);
+      await notifyInApp(prisma, s.userId, "Your photo is live", "Thanks for adding a photo of the turf.", `/turfs/${s.turf.slug}`);
+    } else {
+      await prisma.turfPhotoSuggestion.update({ where: { id: s.id }, data: { status: "REJECTED", reviewedAt: new Date() } });
+      await deleteUpload(s.url);
+    }
+    await audit(a.id, `PHOTO_${d.decision}`, "Turf", s.turf.id, { suggestion: s.id });
+    revalidatePath("/admin/turfs");
+    revalidatePath(`/turfs/${s.turf.slug}`);
+    return d.decision === "APPROVED" ? "Photo added to the turf" : "Photo removed";
+  });
+}
 
 export async function reviewTurf(_: ActionState, fd: FormData): Promise<ActionState> {
   return run(async () => {
