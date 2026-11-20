@@ -28,6 +28,7 @@ export default async function TurfSettings(
     prisma.turf.findUniqueOrThrow({
       where: { id: t.id },
       include: {
+        city: { select: { name: true, state: true } },
         hours: true,
         units: { orderBy: { sortOrder: "asc" } },
         configs: { orderBy: { sortOrder: "asc" }, include: { units: true, pricingRules: true } },
@@ -257,7 +258,7 @@ export default async function TurfSettings(
         <Section id="details" title="Details & booking rules">
           <ActionForm action={updateTurf} className="space-y-5">
             <input type="hidden" name="turfId" value={turf.id} />
-            <TurfFields cities={cities} turf={turf} />
+            <TurfFields cities={cities} turf={turf} city={turf.city} />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label className="label">Slot start interval</label>

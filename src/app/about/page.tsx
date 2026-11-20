@@ -18,7 +18,7 @@ export default async function About() {
       <section className="relative overflow-hidden bg-pitch-night text-white">
         <div className="absolute inset-0 opacity-30 [background:radial-gradient(60%_60%_at_70%_20%,#12b76a_0%,transparent_60%),repeating-linear-gradient(90deg,transparent_0_78px,rgba(255,255,255,.05)_78px_80px)]" />
         <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:pt-24">
-          <span className="chip border-white/15 bg-white/5 text-brand-200">Now live in Manjeri, Kerala</span>
+          <span className="chip border-white/15 bg-white/5 text-brand-200">Football turfs across India</span>
           <h1 className="mt-5 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
             Book your next match <span className="bg-gradient-to-r from-brand-300 to-lime-300 bg-clip-text text-transparent">in under a minute</span>
           </h1>
@@ -76,7 +76,7 @@ export default async function About() {
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Own a turf? Fill your empty hours.</h2>
             <p className="muted mt-2">
-              Manage bookings, walk-ins, peak pricing and split pitches (7-a-side ↔ two 5-a-side) from one calendar. Listing is free.
+              Turfly already shows turfs near players all over India. Claim yours free to take online bookings: every booking arrives on WhatsApp, payments go through Razorpay, and walk-ins, peak pricing and split pitches (7-a-side ↔ two 5-a-side) live in one calendar.
             </p>
             <Link href={user ? "/owner" : "/signup?as=owner"} className="btn-dark mt-4">List your turf free</Link>
           </div>

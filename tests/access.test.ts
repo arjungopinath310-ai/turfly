@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { homeFor, isAppUserAgent, isPublicPath, resolveView, safeNext } from "@/lib/access";
 
 describe("sign-in gate", () => {
-  it("keeps the sign-in, about, legal, contact and deletion pages public", () => {
-    for (const p of ["/login", "/about", "/about/", "/legal/terms", "/legal/privacy", "/legal/refunds", "/contact", "/account/delete", "/contact/"]) expect(isPublicPath(p), p).toBe(true);
+  it("lets anyone find and compare turfs, and open the sign-in, about, legal, contact and deletion pages", () => {
+    for (const p of ["/", "/turfs", "/turfs/", "/turfs/demo-arena", "/compare", "/login", "/signup", "/about", "/about/", "/legal/terms", "/legal/privacy", "/legal/refunds", "/contact", "/account/delete", "/contact/"]) expect(isPublicPath(p), p).toBe(true);
   });
 
-  it("requires sign-in everywhere else", () => {
-    for (const p of ["/", "/turfs", "/turfs/demo-arena", "/bookings", "/split/abc", "/owner", "/admin", "/messages", "/loginx", "/legal", "/contacts", "/account"])
+  it("requires sign-in to book, join games, chat and run a turf", () => {
+    for (const p of ["/bookings", "/checkout/abc", "/games", "/games/abc", "/split/abc", "/owner", "/owner/calendar", "/admin", "/messages", "/profile", "/teams", "/loginx", "/legal", "/contacts", "/account", "/turfsx"])
       expect(isPublicPath(p), p).toBe(false);
   });
 

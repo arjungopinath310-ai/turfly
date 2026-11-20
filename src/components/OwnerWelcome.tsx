@@ -30,7 +30,7 @@ export async function OwnerWelcome({ userId, name }: { userId: string; name: str
 
       <div className="card space-y-3 p-5">
         <div className="flex items-center gap-2 font-semibold"><Search size={18} className="text-brand-600" /> Is your turf already on Turfly?</div>
-        <p className="muted text-sm">Many turfs around Manjeri and Malappuram are already listed. Find yours and ask to manage it.</p>
+        <p className="muted text-sm">Turfly lists turfs all over India, many before their owners join. Find yours and ask to manage it.</p>
         <form action="/owner/claim" className="flex gap-2">
           <input name="q" className="input flex-1" placeholder="Your turf's name or place" aria-label="Your turf's name or place" />
           <button className="btn-primary">Find</button>

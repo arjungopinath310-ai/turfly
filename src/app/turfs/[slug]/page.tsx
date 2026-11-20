@@ -8,7 +8,6 @@ import { rupees } from "@/lib/engine/pricing";
 import { describePolicy, refundabilityLabel } from "@/lib/engine/policy";
 import { getSettings, turfPolicy } from "@/lib/settings";
 import { directionsUrl, mapsSearchUrl, turfShareText, whatsappShare } from "@/lib/share";
-import { currentView } from "@/lib/view";
 import { BackButton } from "@/components/BackButton";
 import { DigipinChip } from "@/components/DigipinChip";
 import { TurfThumb } from "@/components/TurfThumb";
@@ -36,7 +35,6 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
   const [settings, user] = await Promise.all([getSettings(), currentUser()]);
   // A private sample copy is visible only to the person it belongs to (and admins)
   if (turf.isSandbox && turf.ownerId !== user?.id && user?.role !== "ADMIN") notFound();
-  const view = await currentView(user?.role);
   const policy = turfPolicy(turf, settings);
   const bookable = turf.status === "APPROVED" && turf.availabilityMode === "LIVE";
   // Listed from public information only (or not on the booking calendar): no booking here, so no
@@ -120,11 +118,26 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
                 <p className="text-sm text-slate-600">We don&apos;t have this turf&apos;s phone number yet. Its Google Maps listing usually has it, with photos and reviews.</p>
               )}
               <a href={mapsUrl} target="_blank" rel="noopener" className={`${turf.phone ? "btn-ghost" : "btn-primary"} w-full`}><MapPin size={16} /> Open in Google Maps</a>
-              {/* Owner options only on the owner side; players never see them. */}
-              {turf.status === "UNCLAIMED" && view === "owner" && (
-                <Link href={`/owner/claim?q=${encodeURIComponent(turf.name)}`} className="btn-dark w-full">This is my turf: manage it</Link>
+              {/* Why an owner should claim the listing: shown to everyone, owners browse like players do */}
+              {turf.status === "UNCLAIMED" && (
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                  <div className="font-semibold">Own or run this turf?</div>
+                  <p className="mt-1 text-slate-600">List it free on Turfly. Players nearby book you online, you get every booking on WhatsApp, and payments come through Razorpay. You keep your full price.</p>
+                  <Link
+                    href={user ? `/owner/claim?q=${encodeURIComponent(turf.name)}` : `/signup?${new URLSearchParams({ as: "owner", next: `/owner/claim?q=${turf.name}` })}`}
+                    className="btn-dark mt-3 w-full"
+                  >
+                    This is my turf: claim it free
+                  </Link>
+                </div>
               )}
-              {turf.sourceNote && <p className="text-xs text-slate-400">Listing info source: {turf.sourceNote}</p>}
+              {turf.source === "osm" && turf.sourceRef ? (
+                <p className="text-xs text-slate-400">
+                  Listing from public map data, © <a href={`https://www.openstreetmap.org/${turf.sourceRef}`} target="_blank" rel="noopener" className="underline">OpenStreetMap</a> contributors. Details may be incomplete until the owner claims it.
+                </p>
+              ) : (
+                turf.sourceNote && <p className="text-xs text-slate-400">Listing info source: {turf.sourceNote}</p>
+              )}
             </div>
           ) : (
             <BookingWidget

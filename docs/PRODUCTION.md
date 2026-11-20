@@ -27,7 +27,8 @@
 | 6 | **Firebase project** (free) | Push notifications | `google-services.json` in the app, `FCM_SERVICE_ACCOUNT_JSON` on the server |
 | 7 | **Google Play Console** account (US$25 one-time) | Publishing the app | — |
 | 8 | **Upload signing key** for the app (you create it and keep the password) | Signing releases | `mobile/keystore.properties` |
-| 9 | Optional: WhatsApp Business API, Resend email, Google sign-in | More channels | env |
+| 9 | **WhatsApp Business (Meta Cloud API)**: a business number, a permanent access token, and these approved message templates (English, body variables in this order): `booking_confirmed` (code, turf, when, team, paid online, due at turf, link), `reminder_24h` / `reminder_2h` (turf, when, code, directions), `balance_pending` (amount, turf, when), `owner_new_booking` (code, turf, when, player/team, pitch, to collect, link) | Booking confirmations and reminders to players, and every new booking to the turf owner | `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` env |
+| 9b | Optional: Resend email, Google sign-in | More channels | env |
 | 10 | Lawyer review of Terms/Privacy/Refund pages | They are templates | — |
 
 ## Launch steps (cloud VM with Docker)

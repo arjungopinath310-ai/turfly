@@ -1,9 +1,30 @@
 "use client";
 import { useFormStatus } from "react-dom";
-import { useActionState, useCallback, useTransition, useState } from "react";
+import { useActionState, useCallback, useMemo, useTransition, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 type State = { ok?: string; error?: string } | null;
+
+/** The Next.js router, whose refresh() also gets the nudge described at useSettleAfterAction. */
+export function useRefreshingRouter() {
+  const router = useRouter();
+  const settle = useSettleAfterAction();
+  return useMemo(
+    () => ({
+      push: router.push,
+      replace: router.replace,
+      back: router.back,
+      forward: router.forward,
+      prefetch: router.prefetch,
+      refresh: () => {
+        router.refresh();
+        settle();
+      },
+    }),
+    [router, settle],
+  );
+}
 
 /**
  * Next 15.5 / React 19: when a server action finishes very quickly, the re-rendered page it sends back can sit

@@ -14,7 +14,7 @@ import { mockAllowed } from "@/lib/payments/razorpay";
 const font = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: `${BRAND.name} · Football turfs in Manjeri`,
+  title: `${BRAND.name} · Book football turfs near you`,
   description: BRAND.tagline,
   applicationName: BRAND.name,
   appleWebApp: { capable: true, title: BRAND.name, statusBarStyle: "default" },
@@ -53,7 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 {!user && <Link href="/signup?as=owner" className="hover:text-slate-800">List your turf free</Link>}
               </nav>
               <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
-                <span>© {new Date().getFullYear()} {BRAND.name} · Starting in Manjeri, Kerala</span>
+                <span>© {new Date().getFullYear()} {BRAND.name} · Football turfs across India</span>
                 {view !== "owner" && <span>Live availability is shown only where the turf manages bookings on {BRAND.name}.</span>}
               </div>
             </div>

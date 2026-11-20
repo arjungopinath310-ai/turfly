@@ -8,7 +8,7 @@ export default async function NewTurf() {
   const cities = await prisma.city.findMany({ where: { isActive: true }, orderBy: { name: "asc" } });
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader title="Register your turf" subtitle="Free to list. We review every turf before it goes live." />
+      <PageHeader title="Register your turf" subtitle="Free to list, anywhere in India. Players can then book you online (they pay Turfly a small booking fee; you keep your full price), and you get booking alerts on WhatsApp. We review every turf before it goes live." />
       <ActionForm action={registerTurf} className="card space-y-6 p-6" submit="Create turf & continue">
         <TurfFields cities={cities} />
         <div>

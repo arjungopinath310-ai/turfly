@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { CalendarCheck, ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
-import { freeToday, searchTurfs } from "@/lib/search";
+import { freeToday, haversineKm, searchTurfs } from "@/lib/search";
 import { LOC_COOKIE, parseLoc } from "@/lib/geo";
 import { getSettings } from "@/lib/settings";
 import { rupees } from "@/lib/engine/pricing";
@@ -40,7 +40,10 @@ export default async function Home() {
   ]);
   const free = await freeToday(turfs);
   const fee = rupees(settings.bookingFeePaise);
-  towns.sort((a, b) => b._count.turfs - a._count.turfs);
+  // Towns across India: the closest ones when we know where the player is, else the busiest; a handful only
+  if (loc) towns.sort((a, b) => haversineKm(loc, a) - haversineKm(loc, b));
+  else towns.sort((a, b) => b._count.turfs - a._count.turfs);
+  towns.splice(10);
   const first = user?.name?.trim().split(/\s+/)[0];
 
   return (

@@ -23,7 +23,7 @@ async function isActive(uid: string) {
 }
 
 /**
- * Sign-in gate for every page, the home page included (see src/lib/access.ts for the public exceptions).
+ * Sign-in gate for the pages that need an account (src/lib/access.ts lists the public ones: turf search and turf pages are open to all).
  * A page opens only with a valid session cookie whose account still exists and is not suspended;
  * a cookie for a deleted or suspended account is removed and the visitor is sent to sign in.
  * Each page and API still checks the user's role and ownership itself (pageUser / requireUser).

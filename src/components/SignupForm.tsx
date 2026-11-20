@@ -116,7 +116,7 @@ export function SignupForm({ next, initialView, fee }: { next: string; initialVi
           </div>
           <p className="rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600">
             {view === "owner"
-              ? <>Listing your turf and managing bookings is <b>free</b>. Players pay Turfly a {fee} booking fee online; you collect your full price at the turf.</>
+              ? <>Listing your turf is <b>free</b>, anywhere in India. Players nearby book you online (they pay Turfly a {fee} booking fee), you get every booking on WhatsApp, and you collect your full price at the turf.</>
               : <>Finding turfs is <b>free</b>. To book a slot you pay a {fee} booking fee online; the turf&apos;s price is paid at the turf.</>}
           </p>
 

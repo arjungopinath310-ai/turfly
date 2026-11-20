@@ -92,7 +92,8 @@ export default async function TurfsPage(props: { searchParams: Promise<SP> }) {
           rows={res.cards}
           points={res.points}
           free={free}
-          center={city ? { lat: city.lat, lng: city.lng } : searchF.lat && searchF.lng ? { lat: Number(searchF.lat), lng: Number(searchF.lng) } : { lat: 11.09, lng: 76.09 }}
+          center={city ? { lat: city.lat, lng: city.lng } : searchF.lat && searchF.lng ? { lat: Number(searchF.lat), lng: Number(searchF.lng) } : { lat: 22.5, lng: 79 }}
+          zoom={city || (searchF.lat && searchF.lng) ? 12 : 5}
           footer={
             res.pageCount > 1 && (
               <nav className="mt-5 flex items-center justify-between gap-2" aria-label="Pages">

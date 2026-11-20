@@ -1,5 +1,5 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRefreshingRouter as useRouter } from "./ActionForm";
 
 export function MarkRead() {
   const router = useRouter();

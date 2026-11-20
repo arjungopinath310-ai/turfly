@@ -20,7 +20,7 @@ export function CreateTeam() {
       <h2 className="h2">New team</h2>
       <div>
         <label className="label">Team name</label>
-        <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Manjeri Strikers" />
+        <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Sunday Strikers" />
       </div>
       <div>
         <label className="label">Format</label>

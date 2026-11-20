@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRefreshingRouter as useRouter } from "./ActionForm";
 import { ChevronRight, Users } from "lucide-react";
 import { rupees } from "@/lib/engine/pricing";
 import { maxPlayersNeeded } from "@/lib/games-shared";

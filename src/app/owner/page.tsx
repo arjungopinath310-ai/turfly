@@ -67,7 +67,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
         </div>
       </div>
       <div className="rounded-2xl border border-brand-200 bg-brand-50 p-4 text-sm text-brand-900">
-        <b>Turfly is free for turf owners.</b> Players pay Turfly a small booking fee online to reserve; you collect your full price at the turf.
+        <b>Turfly is free for turf owners: online bookings, WhatsApp alerts and Razorpay payments included.</b> Players pay Turfly a small booking fee online to reserve; you collect your full price at the turf.
       </div>
       {turf.isSandbox && (
         <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">

@@ -12,6 +12,7 @@ import { cancelBooking, createBlock, createManualBooking, removeBlock, reschedul
 import { policySchema } from "@/lib/engine/policy";
 import { istToUtc } from "@/lib/time";
 import { decodeDigipin } from "@/lib/digipin";
+import { INDIAN_STATES, findOrCreateCity } from "@/lib/places";
 
 export type ActionState = { ok?: string; error?: string } | null;
 
@@ -40,7 +41,8 @@ const timeToMin = (v: string) => {
 const turfFields = z.object({
   name: z.string().trim().min(3).max(80),
   description: z.string().max(1500).optional(),
-  cityId: z.string(),
+  town: z.string().trim().min(2, "Enter the town or city").max(60),
+  state: z.enum(INDIAN_STATES, { message: "Choose the state" }),
   addressLine: z.string().trim().max(200).optional(),
   locality: z.string().trim().min(2, "Enter the area or a landmark").max(80),
   pincode: z.string().regex(/^\d{6}$/, "PIN code must be 6 digits"),
@@ -54,12 +56,13 @@ const turfFields = z.object({
   email: z.string().email().optional().or(z.literal("")),
 });
 
-function parseTurf(fd: FormData) {
+async function parseTurf(fd: FormData) {
   const d = turfFields.parse(Object.fromEntries(fd));
+  const city = await findOrCreateCity({ name: d.town, state: d.state, lat: d.digipin.lat, lng: d.digipin.lng });
   return {
     name: d.name,
     description: d.description || null,
-    cityId: d.cityId,
+    cityId: city.id,
     // The form no longer asks for a street address (the DIGIPIN pinpoints the turf); an existing one is kept.
     addressLine: d.addressLine || undefined,
     locality: d.locality,
@@ -77,7 +80,7 @@ export async function registerTurf(_: ActionState, fd: FormData): Promise<Action
   let id = "";
   const res = await run(async () => {
     const user = await requireUser();
-    const data = parseTurf(fd);
+    const data = await parseTurf(fd);
     const preset = String(fd.get("preset") ?? "convertible");
     const price = rupeesToPaise(fd.get("price") || 1200);
     const halfPrice = rupeesToPaise(fd.get("halfPrice") || 800);
@@ -132,7 +135,7 @@ export async function requestClaim(_: ActionState, fd: FormData): Promise<Action
 export async function updateTurf(_: ActionState, fd: FormData): Promise<ActionState> {
   return run(async () => {
     const { turf } = await requireTurfAccess(String(fd.get("turfId")));
-    const data = parseTurf(fd);
+    const data = await parseTurf(fd);
     const ops = z
       .object({
         slotStepMinutes: z.coerce.number().int().refine((v) => [15, 30, 60].includes(v)),
