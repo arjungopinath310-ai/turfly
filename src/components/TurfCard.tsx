@@ -40,6 +40,7 @@ export function TurfCardView({ t, free }: { t: TurfCard; free?: number | null })
           {t.distanceKm != null && <span className="shrink-0 font-medium text-slate-700">· {t.distanceKm.toFixed(1)} km</span>}
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
+          {t.isDemo && <span className="sm:hidden"><DemoBadge /></span>}
           <AvailabilityBadge mode={t.availabilityMode} updatedAt={t.availabilityUpdatedAt} />
           {t.formats.map((f) => (
             <span key={f} className="chip border-slate-200 text-slate-600">{f}s</span>

@@ -85,7 +85,7 @@ export function Empty({ title, children }: { title: string; children?: React.Rea
 }
 
 export function DemoBadge() {
-  return <span className="chip border-violet-200 bg-violet-50 text-violet-700">Demo listing</span>;
+  return <span className="chip border-violet-200 bg-violet-50 text-violet-700">Demo turf · try every feature</span>;
 }
 
 export function PageHeader({ title, subtitle, children }: { title: string; subtitle?: string; children?: React.ReactNode }) {

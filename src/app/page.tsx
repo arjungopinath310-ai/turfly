@@ -35,8 +35,11 @@ export default async function Home() {
     }),
     // Nearest first when the phone shared its location (within 30 km; else simply the closest ones)
     near
-      ? searchTurfs({ ...near, radius: "30" }, { pageSize: 9 }).then((r) => (r.total ? r.cards : searchTurfs(near, { pageSize: 9 }).then((x) => x.cards)))
-      : searchTurfs({}, { pageSize: 6 }).then((r) => r.cards),
+      ? searchTurfs({ ...near, radius: "30" }, { pageSize: 9, pinDemo: true }).then((r) =>
+          // nothing real within 30 km (only the pinned demo): show the closest turfs anywhere instead
+          r.total > (r.cards[0]?.isDemo ? 1 : 0) ? r.cards : searchTurfs(near, { pageSize: 9, pinDemo: true }).then((x) => x.cards),
+        )
+      : searchTurfs({}, { pageSize: 6, pinDemo: true }).then((r) => r.cards),
     user
       ? prisma.booking.findFirst({ where: { userId: user.id, status: "CONFIRMED", startAt: { gte: new Date() } }, include: { turf: { select: { name: true } } }, orderBy: { startAt: "asc" } })
       : null,

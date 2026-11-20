@@ -49,6 +49,18 @@ describe("turfs near you", () => {
     expect(ours[2].distanceKm!).toBeGreaterThan(20);
   });
 
+  it("puts the demo turf first wherever the player is (for sales), without a distance", async () => {
+    const demo = await prisma.turf.findFirst({ where: { isDemo: true, isSandbox: false, status: "APPROVED" }, orderBy: { createdAt: "asc" } });
+    if (!demo) return; // the test database has no sample turf yet (seed-showcase / showcase test makes one)
+    const r = await searchTurfs({ lat: String(HOME.lat), lng: String(HOME.lng), sort: "distance", radius: "30" }, { pageSize: 50, pinDemo: true });
+    expect(r.cards[0]).toMatchObject({ id: demo.id, distanceKm: null });
+    expect(r.cards.filter((c) => c.id === demo.id)).toHaveLength(1);
+    expect(r.cards.filter((c) => c.name.endsWith(tag)).map((c) => c.name.split(" ")[1])).toEqual(["close", "listed", "far"]);
+    // without the option, nothing changes
+    const plain = await searchTurfs({ lat: String(HOME.lat), lng: String(HOME.lng), sort: "distance", radius: "30" }, { pageSize: 50 });
+    expect(plain.cards.some((c) => c.id === demo.id)).toBe(false);
+  });
+
   it("shows the first free hour today for bookable turfs, and follows blocks", async () => {
     const free = await freeToday(turfs);
     const [far, close, listed] = turfs;

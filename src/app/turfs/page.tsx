@@ -31,7 +31,8 @@ export default async function TurfsPage(props: { searchParams: Promise<SP> }) {
   const nearOn = Boolean(f.lat && f.lng) || Boolean(saved && searchF.sort === "distance");
   const [cities, res] = await Promise.all([
     prisma.city.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
-    searchTurfs(searchF, { page: Number(pageParam) || 1 }),
+    // the demo turf leads the list (sales), except when someone searches for a name
+    searchTurfs(searchF, { page: Number(pageParam) || 1, pinDemo: !f.q }),
   ]);
   const free = await freeToday(res.cards);
   const city = cities.find((c) => c.slug === f.city);
