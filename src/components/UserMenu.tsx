@@ -58,6 +58,7 @@ export function UserMenu({ name, hasName, role, view, demo = false }: { name: st
       {open && (
         <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-sm shadow-card" onClick={() => setOpen(false)}>
           <Link className={item} href="/profile">Profile</Link>
+          {view === "player" && <Link className={item} href="/leaderboard">Leaderboard</Link>}
           <Link className={item} href="/messages">Messages</Link>
           <Link className={item} href="/notifications">Notifications</Link>
           {role === "ADMIN" && <Link className={`${item} md:hidden`} href="/admin">Admin</Link>}

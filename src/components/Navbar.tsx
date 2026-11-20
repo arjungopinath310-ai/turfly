@@ -51,7 +51,8 @@ export async function Navbar() {
         ) : (
           // Signed-out visitors can find turfs; booking and the owner side need an account.
           <nav className="flex items-center gap-4 whitespace-nowrap text-sm font-medium text-slate-600">
-            <Link href="/turfs" className="hover:text-slate-900">Find turfs</Link>
+            <Link href="/games" className="hidden hover:text-slate-900 sm:inline">Games</Link>
+            <Link href="/turfs" className="hidden hover:text-slate-900 sm:inline">Turfs</Link>
             <Link href="/signup?as=owner" className="hidden hover:text-slate-900 sm:inline">List your turf</Link>
             <Link href="/about" className="hidden hover:text-slate-900 md:inline">About</Link>
           </nav>

@@ -30,6 +30,8 @@ model User {
   isSuspended           Boolean   @default(false)
   deletedAt             DateTime? // account deleted by the user: personal data erased, financial records kept
   termsAcceptedAt       DateTime? // when the person accepted the terms (sign-up or first sign-in)
+  weeklyGoal            Int? // matches a week the player aims for (profile)
+  hideFromLeaderboard   Boolean   @default(false) // leaves the player's name off leaderboards
   referralCode          String?   @unique
   referredById          String?
   createdAt             DateTime  @default(now())

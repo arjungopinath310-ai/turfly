@@ -1,12 +1,19 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CalendarDays, ClipboardList, Home, LayoutDashboard, MapPin, Search, Shield, Trophy, Users } from "lucide-react";
+import { BarChart3, CalendarDays, ClipboardList, Home, LayoutDashboard, LogIn, MapPin, Search, Shield, Trophy, Users } from "lucide-react";
 import type { View } from "@/lib/access";
 
 /** Bottom tab bar on phones (and in the app), with only the signed-in side's main pages. */
 type Tab = { href: string; label: string; icon: React.ElementType; exact?: boolean };
-const TABS: Record<View, Tab[]> = {
+const TABS: Record<View | "guest", Tab[]> = {
+  // Not signed in: everything that works without an account, and the way in
+  guest: [
+    { href: "/", label: "Home", icon: Home, exact: true },
+    { href: "/turfs", label: "Turfs", icon: Search },
+    { href: "/games", label: "Games", icon: Users },
+    { href: "/login", label: "Sign in", icon: LogIn },
+  ],
   player: [
     { href: "/", label: "Home", icon: Home, exact: true },
     { href: "/turfs", label: "Turfs", icon: Search },
@@ -24,15 +31,15 @@ const TABS: Record<View, Tab[]> = {
 };
 
 /** Detail and payment screens have their own bottom action bar (Book / Call / Pay) and a back button instead. */
-const HIDE_ON = [/^\/turfs\/[^/]+$/, /^\/checkout\//, /^\/split\//];
+const HIDE_ON = [/^\/turfs\/[^/]+$/, /^\/checkout\//, /^\/split\//, /^\/(welcome|login|signup)$/];
 
-export function MobileTabBar({ view, admin }: { view: View; admin: boolean }) {
+export function MobileTabBar({ view, admin }: { view: View | "guest"; admin: boolean }) {
   const path = usePathname() ?? "/";
   if (HIDE_ON.some((r) => r.test(path))) return null;
   const tabs: Tab[] = admin ? [...TABS[view].slice(0, 4), { href: "/admin", label: "Admin", icon: Shield }] : TABS[view];
   return (
     <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur md:hidden" aria-label="Main">
-      <div className="mx-auto grid max-w-md grid-cols-5">
+      <div className="mx-auto grid max-w-md" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
         {tabs.map((t) => {
           const on = t.exact ? path === t.href : path === t.href || path.startsWith(t.href + "/");
           const Icon = t.icon;

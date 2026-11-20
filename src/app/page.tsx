@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { isAppUserAgent } from "@/lib/access";
 import { CalendarCheck, ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
@@ -9,6 +10,8 @@ import { LOC_COOKIE, parseLoc } from "@/lib/geo";
 import { getSettings } from "@/lib/settings";
 import { rupees } from "@/lib/engine/pricing";
 import { LocationSync } from "@/components/LocationSync";
+import { NeighbourhoodMap } from "@/components/NeighbourhoodMap";
+import { nearestCity } from "@/lib/places";
 import { currentView } from "@/lib/view";
 import { formatDateLong, formatTimeRange } from "@/lib/time";
 import { TurfCardView } from "@/components/TurfCard";
@@ -19,6 +22,8 @@ import { findOpenGames } from "@/lib/games";
 export default async function Home() {
   const user = await currentUser();
   if (user && (await currentView(user.role)) === "owner") redirect("/owner");
+  // First time in the app: the welcome screens (they set the cookie, so this happens once per phone)
+  if (!user && isAppUserAgent((await headers()).get("user-agent")) && !(await cookies()).get("turfly_welcomed")) redirect("/welcome");
   const loc = parseLoc((await cookies()).get(LOC_COOKIE)?.value);
   const near = loc ? { lat: String(loc.lat), lng: String(loc.lng), sort: "distance" } : null;
 
@@ -38,7 +43,7 @@ export default async function Home() {
     findOpenGames({ take: 8 }).then((g) => g.filter((x) => x.userId !== user?.id)),
     getSettings(),
   ]);
-  const free = await freeToday(turfs);
+  const [free, here] = await Promise.all([freeToday(turfs), loc ? nearestCity(loc.lat, loc.lng, 40) : null]);
   const fee = rupees(settings.bookingFeePaise);
   // Towns across India: the closest ones when we know where the player is, else the busiest; a handful only
   if (loc) towns.sort((a, b) => haversineKm(loc, a) - haversineKm(loc, b));
@@ -50,11 +55,15 @@ export default async function Home() {
     <>
       <section className="relative overflow-hidden bg-pitch-night text-white">
         <div className="absolute inset-0 opacity-30 [background:radial-gradient(60%_60%_at_70%_20%,#12b76a_0%,transparent_60%),repeating-linear-gradient(90deg,transparent_0_78px,rgba(255,255,255,.05)_78px_80px)]" />
-        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-10 sm:pb-16 sm:pt-16">
-          <h1 className="max-w-3xl text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-            {first ? `Hi ${first}, ready to play?` : "Ready to play?"}
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-12 pt-7 sm:pb-16 sm:pt-12 lg:grid-cols-[1.15fr_1fr]">
+          <div className="min-w-0">
+          {/* Where you are: tap to update; it also finds turfs around you that Turfly doesn't list yet */}
+          <LocationSync active={Boolean(near)} ask tone="dark" label={here ? `📍 ${here.name}` : "📍 Near you"} />
+          {first && <p className="mt-5 font-semibold text-brand-300">Hi {first}, ready to play?</p>}
+          <h1 className={`${first ? "mt-1" : "mt-5"} max-w-3xl text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl`}>
+            Book turfs. Join games.<br />Find players near you.
           </h1>
-          <p className="mt-2 text-slate-300">Find a turf near you and book for {fee}. Pay the rest at the turf.</p>
+          <p className="mt-3 text-slate-300">Every turf around you with free slots and prices. Book for {fee} and pay the rest at the turf.</p>
           <form action="/turfs" className="mt-6 flex max-w-2xl gap-2 rounded-2xl bg-white p-2 text-slate-900 shadow-2xl">
             <input name="q" className="input flex-1 border-0 focus:ring-0" placeholder="Search by turf name" aria-label="Search by turf name" />
             <button className="btn-primary px-5">Search</button>
@@ -65,6 +74,10 @@ export default async function Home() {
                 {t.name} <span className="text-slate-400">{t._count.turfs}</span>
               </Link>
             ))}
+          </div>
+          </div>
+          <div className="hidden overflow-hidden rounded-3xl ring-1 ring-white/10 lg:block">
+            <NeighbourhoodMap variant="players" className="block h-auto w-full" />
           </div>
         </div>
       </section>
@@ -105,7 +118,6 @@ export default async function Home() {
               <h2 className="text-xl font-bold tracking-tight">{near ? "Turfs near you" : "Turfs"}</h2>
               <p className="text-sm text-slate-500">{near ? "Closest first, with today's free slots." : "Share your location to see the closest turfs first."}</p>
             </div>
-            <LocationSync active={Boolean(near)} ask />
             <Link href={near ? `/turfs?${new URLSearchParams(near)}` : "/turfs"} className="text-sm font-semibold text-brand-700 hover:underline">See all & map →</Link>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

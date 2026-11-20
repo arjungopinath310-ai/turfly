@@ -12,6 +12,17 @@ import { currentView } from "@/lib/view";
 import { coinBalance, coinHistory } from "@/lib/coins";
 import { getSettings } from "@/lib/settings";
 import { rupees } from "@/lib/engine/pricing";
+import { homeCityOf, leaderboard, playerProfile } from "@/lib/player-stats";
+import { PlayerCard } from "@/components/PlayerCard";
+
+async function setGoal(_: unknown, fd: FormData): Promise<{ ok?: string; error?: string } | null> {
+  "use server";
+  const user = await requireUser();
+  const goal = z.coerce.number().int().min(0).max(7).parse(fd.get("goal"));
+  await prisma.user.update({ where: { id: user.id }, data: { weeklyGoal: goal || null } });
+  revalidatePath("/profile");
+  return { ok: goal ? `Goal set: ${goal} match${goal > 1 ? "es" : ""} a week` : "Goal removed" };
+}
 
 async function save(fd: FormData) {
   "use server";
@@ -24,7 +35,7 @@ async function save(fd: FormData) {
     if (taken) throw new Error("That email is linked to another account");
   }
   // Player-only fields are only on the form for the player side; the owner side's form must not reset them.
-  const playerFields = fd.get("playerFields") === "1" ? { preferredPosition: d.preferredPosition || null, shareContactWithTeams: d.share === "on" } : {};
+  const playerFields = fd.get("playerFields") === "1" ? { preferredPosition: d.preferredPosition || null, shareContactWithTeams: d.share === "on", hideFromLeaderboard: fd.get("leaderboard") !== "on" } : {};
   await prisma.user.update({ where: { id: user.id }, data: { name: d.name, email: d.email || null, ...playerFields } });
   // keep the user's own team-member rows in sync with their profile name
   await prisma.teamMember.updateMany({ where: { userId: user.id }, data: { name: d.name } });
@@ -42,6 +53,13 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
   const isPlayer = (await currentView(user.role)) === "player";
   const settings = await getSettings();
   const coins = { balance: await coinBalance(user.id), history: await coinHistory(user.id), perBooking: settings.coinsPerBooking, valuePaise: settings.coinValuePaise };
+  // The player card: stats, goal, level, badges and this month's rank in their town
+  const card = isPlayer && !searchParams.welcome ? await (async () => {
+    const [p, cityId] = await Promise.all([playerProfile(user.id), homeCityOf(user.id)]);
+    const [board, city] = await Promise.all([leaderboard({ cityId }), cityId ? prisma.city.findUnique({ where: { id: cityId }, select: { name: true } }) : null]);
+    const mine = board.rankOf(user.id);
+    return { p, rank: mine ? { rank: mine.rank, of: board.players, town: city?.name ?? null } : null };
+  })() : null;
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
       <PageHeader title={searchParams.welcome ? "Welcome to Turfly! 👋" : "Your profile"} subtitle={formatPhone(user.phone) ?? user.email ?? ""} />
@@ -49,6 +67,11 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
         <p className="mb-4 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-800">
           {isPlayer ? "Tell us your name so teammates and turf owners know who booked." : "Tell us your name so players and our team know who runs the turf."}
         </p>
+      )}
+      {card && (
+        <div className="mb-6">
+          <PlayerCard name={user.name} p={card.p} rank={card.rank} setGoal={setGoal} />
+        </div>
       )}
       <form action={save} className="card space-y-4 p-6">
         <input type="hidden" name="next" value={next} />
@@ -77,6 +100,13 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
               <span>
                 <b>Share my phone number with my teammates</b>
                 <span className="block text-slate-500">Off by default. When off, other players only see your name.</span>
+              </span>
+            </label>
+            <label className="flex items-start gap-3 rounded-xl bg-slate-50 p-3 text-sm">
+              <input type="checkbox" name="leaderboard" defaultChecked={!user.hideFromLeaderboard} className="mt-0.5 accent-brand-600" />
+              <span>
+                <b>Show me on leaderboards</b>
+                <span className="block text-slate-500">Other players see your first name and initial, and how many matches you played this month.</span>
               </span>
             </label>
             {user.referralCode && <p className="text-sm text-slate-600">Your referral code: <b className="font-mono">{user.referralCode}</b></p>}

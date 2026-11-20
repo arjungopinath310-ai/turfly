@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import clsx from "clsx";
 import { ChevronRight } from "lucide-react";
@@ -19,7 +18,7 @@ const REQ_TEXT: Record<string, string> = { PENDING: "Waiting for reply", ACCEPTE
 export default async function Games(props: { searchParams: Promise<{ town?: string; format?: string }> }) {
   const sp = await props.searchParams;
   const user = await currentUser();
-  if (!user) redirect("/login?next=/games");
+  // Anyone can see the games; joining one (the game's page) needs an account
   const town = sp.town || undefined;
   const format = [5, 6, 7, 8, 9, 11].includes(Number(sp.format)) ? Number(sp.format) : undefined;
   const now = new Date();
@@ -28,12 +27,12 @@ export default async function Games(props: { searchParams: Promise<{ town?: stri
     findOpenGames({ town, format, take: 60 }),
     prisma.city.findMany({ where: { posts: { some: openGamesWhere() } }, select: { slug: true, name: true }, orderBy: { name: "asc" } }),
     prisma.playerPost.groupBy({ by: ["playersPerSide"], where: openGamesWhere(), orderBy: { playersPerSide: "asc" } }),
-    prisma.playerPost.findMany({
+    !user ? [] : prisma.playerPost.findMany({
       where: { userId: user.id, startAt: { gt: now }, status: { in: ["DRAFT", "OPEN", "FILLED"] }, booking: { status: { in: ["HELD", "CONFIRMED"] } } },
       include: { turf: { select: { name: true } }, booking: { select: { endAt: true } }, requests: { where: { status: { in: ["PENDING", "ACCEPTED"] } }, select: { status: true } } },
       orderBy: { startAt: "asc" },
     }),
-    prisma.playerPostRequest.findMany({
+    !user ? [] : prisma.playerPostRequest.findMany({
       where: { userId: user.id, status: { in: ["PENDING", "ACCEPTED", "DECLINED"] }, post: { startAt: { gt: now } } },
       include: { post: { include: { turf: { select: { name: true } }, booking: { select: { endAt: true } } } } },
       orderBy: { post: { startAt: "asc" } },
@@ -97,7 +96,7 @@ export default async function Games(props: { searchParams: Promise<{ town?: stri
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {games.map((g) => <GameCardView key={g.id} g={g} mine={g.userId === user.id} />)}
+        {games.map((g) => <GameCardView key={g.id} g={g} mine={g.userId === user?.id} />)}
       </div>
       {games.length === 0 && (
         <div className="mt-4">
