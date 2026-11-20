@@ -12,7 +12,7 @@ export const metadata = { title: `About · ${BRAND.name}` };
  */
 export default async function About() {
   const user = await currentUser().catch(() => null);
-  const cta = user ? { href: "/turfs", label: "Find turfs" } : { href: "/login", label: "Sign in to get started" };
+  const cta = user ? { href: "/turfs", label: "Find turfs" } : { href: "/signup", label: "Sign up free" };
   return (
     <>
       <section className="relative overflow-hidden bg-pitch-night text-white">
@@ -23,14 +23,14 @@ export default async function About() {
             Book your next match <span className="bg-gradient-to-r from-brand-300 to-lime-300 bg-clip-text text-transparent">in under a minute</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg text-slate-300">
-            {BRAND.name} lists the football turfs around Manjeri with their real availability. Reserve a slot with a ₹49 advance,
-            pay the rest at the turf, and bring your whole team.
+            {BRAND.name} shows the football turfs near you with their real availability. It&apos;s free to use: book a slot for a ₹49
+            booking fee, pay the turf&apos;s price at the turf, and bring your whole team.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href={cta.href} className="btn-primary px-6">{cta.label}</Link>
             <Link href="/legal/refunds" className="btn border border-white/20 text-white hover:bg-white/10">Cancellation &amp; refunds</Link>
           </div>
-          {!user && <p className="mt-3 text-sm text-slate-400">An account is free. Sign in with your mobile number or Google account.</p>}
+          {!user && <p className="mt-3 text-sm text-slate-400">An account is free. Already have one? <Link href="/login" className="underline">Sign in</Link>.</p>}
         </div>
       </section>
 
@@ -38,7 +38,7 @@ export default async function About() {
       <section className="relative z-10 mx-auto -mt-8 grid grid-cols-1 max-w-6xl gap-3 px-4 sm:grid-cols-3">
         {[
           { icon: <Zap size={18} />, t: "Live slot grid", d: "See which hours are free right now. No calling around." },
-          { icon: <Wallet size={18} />, t: "₹49 to reserve", d: "Pay the rest at the turf, or split it with friends online. Refund rules shown upfront." },
+          { icon: <Wallet size={18} />, t: "₹49 to book", d: "A small booking fee online; the turf's price is paid at the turf. Refund rules shown upfront." },
           { icon: <Users size={18} />, t: "Teams built in", d: "Invite your squad on WhatsApp, track who's in, find extra players." },
         ].map((f) => (
           <div key={f.t} className="card flex gap-3 p-4">
@@ -55,10 +55,10 @@ export default async function About() {
         <h2 className="text-2xl font-bold tracking-tight">How it works</h2>
         <ol className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
           {[
-            ["Sign in", "With your mobile number (one-time code) or your Google account."],
+            ["Sign up free", "With your mobile number (one-time code). Allow location to see the turfs nearest you."],
             ["Pick a turf and hour", "Compare turfs, prices and amenities, and see which hours are free."],
-            ["Pay the advance", "Pay ₹49 online to hold the slot. The booking is confirmed instantly."],
-            ["Play", "Pay the balance at the turf. Reminders and directions arrive before the match."],
+            ["Pay the booking fee", "Pay ₹49 online to book the slot. The booking is confirmed instantly."],
+            ["Play", "Pay the turf's price at the turf. Reminders and directions arrive before the match."],
           ].map(([t, d], i) => (
             <li key={t} className="card p-4">
               <div className="text-sm font-bold text-brand-700">Step {i + 1}</div>
@@ -78,7 +78,7 @@ export default async function About() {
             <p className="muted mt-2">
               Manage bookings, walk-ins, peak pricing and split pitches (7-a-side ↔ two 5-a-side) from one calendar. Listing is free.
             </p>
-            <Link href="/login?as=owner" className="btn-dark mt-4">I own or run a turf</Link>
+            <Link href={user ? "/owner" : "/signup?as=owner"} className="btn-dark mt-4">List your turf free</Link>
           </div>
           <ul className="grid gap-3 text-sm">
             <li className="flex gap-2"><CalendarCheck className="text-brand-600" size={18} /> Double-booking impossible, enforced by the database</li>

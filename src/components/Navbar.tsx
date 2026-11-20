@@ -68,7 +68,10 @@ export async function Navbar() {
               <UserMenu name={displayName(user)} hasName={Boolean(user.name?.trim())} role={user.role} view={view} demo={isDemoMode()} />
             </>
           ) : (
-            <Link href="/login" className="btn-primary">Sign in</Link>
+            <>
+              <Link href="/login" className="btn-ghost btn-sm whitespace-nowrap">Sign in</Link>
+              <Link href="/signup" className="btn-primary btn-sm whitespace-nowrap">Sign up<span className="hidden sm:inline">&nbsp;free</span></Link>
+            </>
           )}
         </div>
       </div>

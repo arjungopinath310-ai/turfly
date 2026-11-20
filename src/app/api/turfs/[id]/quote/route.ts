@@ -23,9 +23,8 @@ export const POST = handle(async (req, { params }) => {
   return NextResponse.json({
     quote: q.quote,
     offer: q.offer ? { code: q.offer.code, title: q.offer.title } : null,
-    policy: { label: refundabilityLabel(q.policy), lines: describePolicy(q.policy, q.quote.onlineAmount - q.quote.platformFee) },
+    policy: { label: refundabilityLabel(q.policy), lines: describePolicy(q.policy, q.quote.onlineAmount) },
     holdMinutes: q.settings.holdMinutes,
-    fullOnlineAvailable: q.turf.fullOnlinePaymentEnabled,
     // Turf coins the player could put towards this booking's online advance
     coins: user ? await (async () => {
       const balance = await coinBalance(user.id);

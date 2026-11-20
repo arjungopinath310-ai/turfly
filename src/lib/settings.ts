@@ -2,17 +2,13 @@ import { prisma } from "./db";
 import { DEFAULT_POLICY, parsePolicy, type CancellationPolicy } from "./engine/policy";
 
 export interface PlatformSettings {
-  advanceAmountPaise: number;
-  platformFeePaise: number;
+  /**
+   * Turfly's booking fee, paid online by the player to book a slot (Turfly's only charge; free for turf owners).
+   * The turf's whole price is paid at the turf.
+   */
+  bookingFeePaise: number;
   holdMinutes: number;
   maxActiveHoldsPerUser: number;
-  defaultCommissionPercent: number;
-  /** Owner pricing: days with no Turfly fee, counted from the turf's first online booking */
-  freeTrialDays: number;
-  /** Turfly's fee per online booking after the free period (paise); walk-ins and phone bookings are always free */
-  onlineBookingFeePaise: number;
-  /** the most one turf pays Turfly in a calendar month (paise) */
-  monthlyFeeCapPaise: number;
   /** Turf coins a player earns for each online booking they played */
   coinsPerBooking: number;
   /** what one coin is worth on an online advance (paise) */
@@ -22,14 +18,9 @@ export interface PlatformSettings {
 }
 
 export const DEFAULT_SETTINGS: PlatformSettings = {
-  advanceAmountPaise: 4900,
-  platformFeePaise: 0,
+  bookingFeePaise: 4900,
   holdMinutes: 5,
   maxActiveHoldsPerUser: 2,
-  defaultCommissionPercent: 0,
-  freeTrialDays: 90,
-  onlineBookingFeePaise: 3000,
-  monthlyFeeCapPaise: 49900,
   coinsPerBooking: 10,
   coinValuePaise: 100,
   defaultCancellationPolicy: DEFAULT_POLICY,

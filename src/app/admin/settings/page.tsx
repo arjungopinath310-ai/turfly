@@ -30,16 +30,12 @@ export default async function Settings() {
         <p className="muted mb-4">Changes apply to new bookings. Existing bookings keep the amounts and policy shown when they were paid.</p>
         <ActionForm action={savePlatformSettings} className="space-y-4 text-sm">
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="label">Advance per booking (₹)</label><input name="advance" type="number" step="1" min={1} defaultValue={s.advanceAmountPaise / 100} className="input" /></div>
-            <div><label className="label">Platform fee to customer (₹)</label><input name="fee" type="number" step="1" min={0} defaultValue={s.platformFeePaise / 100} className="input" /></div>
+            <div><label className="label">Booking fee paid to Turfly (₹)</label><input name="fee" type="number" step="1" min={0} max={500} defaultValue={s.bookingFeePaise / 100} className="input" /></div>
             <div><label className="label">Checkout hold (minutes)</label><input name="holdMinutes" type="number" min={2} max={30} defaultValue={s.holdMinutes} className="input" /></div>
-            <div><label className="label">Free period for new turfs (days)</label><input name="freeTrialDays" type="number" min={0} max={730} defaultValue={s.freeTrialDays} className="input" /></div>
-            <div><label className="label">Turfly fee per online booking (₹)</label><input name="feePerBooking" type="number" step="1" min={0} max={1000} defaultValue={s.onlineBookingFeePaise / 100} className="input" /></div>
-            <div><label className="label">Monthly fee cap per turf (₹)</label><input name="feeCap" type="number" step="1" min={0} max={100000} defaultValue={s.monthlyFeeCapPaise / 100} className="input" /></div>
             <div><label className="label">Turf coins per played booking</label><input name="coinsPerBooking" type="number" min={0} max={1000} defaultValue={s.coinsPerBooking} className="input" /></div>
             <div><label className="label">Value of one coin (₹)</label><input name="coinValue" type="number" step="0.5" min={0.5} max={10} defaultValue={s.coinValuePaise / 100} className="input" /></div>
           </div>
-          <p className="text-xs text-slate-500">Platform fee is shown as its own line and added on top. Commission is charged to turf owners in their ledger, never deducted silently from the customer&apos;s advance. Per-turf commission overrides are in Turfs.</p>
+          <p className="text-xs text-slate-500">Turfly is free for players and turf owners. The booking fee is the only charge: players pay it online to book, and the turf&apos;s full price is paid at the turf. Coins can pay part or all of the booking fee.</p>
           <div>
             <label className="label">Default cancellation policy</label>
             {[0, 1, 2].map((i) => (
@@ -48,7 +44,7 @@ export default async function Settings() {
                 <input name={`p_${i}`} type="number" min={0} max={100} defaultValue={s.defaultCancellationPolicy.tiers[i]?.refundPercent ?? ""} className="input w-20 py-1.5" /> % refund
               </div>
             ))}
-            <ul className="mt-2 list-disc pl-4 text-xs text-slate-500">{describePolicy(s.defaultCancellationPolicy, s.advanceAmountPaise).map((l) => <li key={l}>{l}</li>)}</ul>
+            <ul className="mt-2 list-disc pl-4 text-xs text-slate-500">{describePolicy(s.defaultCancellationPolicy, s.bookingFeePaise).map((l) => <li key={l}>{l}</li>)}</ul>
           </div>
           <div>
             <label className="label">Reminders</label>
@@ -87,7 +83,7 @@ export default async function Settings() {
             <input name="usageLimit" type="number" placeholder="Usage limit" className="input" />
             <input name="minBookings" type="number" placeholder="Min bookings (repeat)" className="input" />
             <input name="validTo" type="date" className="input" />
-            <p className="col-span-2 text-[11px] text-slate-500">Discounts reduce the amount paid at the venue. The online advance stays fixed.</p>
+            <p className="col-span-2 text-[11px] text-slate-500">Discounts reduce the price paid at the turf. The booking fee stays fixed.</p>
           </ActionForm>
           <ul className="mt-4 divide-y divide-slate-100 text-sm">
             {offers.map((o) => (

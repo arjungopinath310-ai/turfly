@@ -134,8 +134,8 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
               maxDays={Math.min(turf.maxAdvanceDays, 30)}
               bookable={bookable}
               signedIn={Boolean(user)}
-              advance={settings.advanceAmountPaise}
-              fullOnline={turf.fullOnlinePaymentEnabled}
+              advance={settings.bookingFeePaise}
+              fullOnline={false}
             />
           )}
         </aside>
@@ -203,7 +203,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
             <section>
               <h2 className="h2 mb-2">Cancellation policy · <span className="text-brand-700">{refundabilityLabel(policy)}</span></h2>
               <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
-                {describePolicy(policy, settings.advanceAmountPaise).map((l) => (
+                {describePolicy(policy, settings.bookingFeePaise).map((l) => (
                   <li key={l}>{l}</li>
                 ))}
               </ul>

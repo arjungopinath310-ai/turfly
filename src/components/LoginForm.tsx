@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { getSession, signIn } from "next-auth/react";
 import { Loader2 } from "lucide-react";
 import { homeFor, VIEW_COOKIE, VIEW_COOKIE_MAX_AGE, type View } from "@/lib/access";
@@ -118,7 +119,7 @@ export function LoginForm({ next, google, initialView }: { next: string; google:
           <button className="btn-ghost w-full" onClick={() => { rememberView(view); signIn("google", { callbackUrl: destination }); }}>Continue with Google</button>
         </>
       )}
-      <p className="text-center text-xs text-slate-400">By continuing you agree to the terms and privacy policy.</p>
+      <p className="text-center text-xs text-slate-400">By continuing you agree to the <Link href="/legal/terms" className="underline">terms</Link> and <Link href="/legal/privacy" className="underline">privacy policy</Link>.</p>
     </div>
   );
 }

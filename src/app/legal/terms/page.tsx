@@ -22,8 +22,9 @@ export default async function Terms() {
       </ul>
       <H>3. Bookings and payments</H>
       <ul className="list-disc space-y-1 pl-5">
-        <li>A slot is reserved only after the online advance (currently {rupees(s.advanceAmountPaise)} per booking unless shown otherwise) is confirmed by our payment partner. The remaining amount is paid to the turf at the venue unless you chose to pay in full online.</li>
-        <li>Prices, the advance, any platform fee and the cancellation policy are shown before you pay. The policy shown at the time of booking applies to that booking.</li>
+        <li>{b.brand} is free to use. To book a slot online you pay {b.brand} a booking fee (currently {rupees(s.bookingFeePaise)} per booking); the slot is reserved once our payment partner confirms it. The turf&apos;s price is paid to the turf at the venue.</li>
+        <li>The turf&apos;s price, the booking fee and the cancellation policy are shown before you pay. The policy shown at the time of booking applies to that booking.</li>
+        <li>Turf coins are a loyalty reward: earned on bookings you play, usable only on {b.brand}&apos;s booking fee, with no cash value; they cannot be bought, sold or transferred.</li>
         <li>Payments are processed by Razorpay. We never store your card or UPI details.</li>
         <li>Turf owners may cancel for reasons such as weather, maintenance or safety; you then receive a full refund of what you paid online.</li>
       </ul>
@@ -34,7 +35,7 @@ export default async function Terms() {
         <li>Reviews must reflect a genuine experience; we may remove fake or abusive reviews.</li>
       </ul>
       <H>5. Turf owners</H>
-      <p>Owners must have the right to list the turf, keep their calendar accurate (including walk-in and phone bookings when using live availability), honour confirmed bookings, and follow the cancellation policy they publish. Commission or fees, if any, are agreed separately and shown in the owner dashboard.</p>
+      <p>Owners must have the right to list the turf, keep their calendar accurate (including walk-in and phone bookings when using live availability), honour confirmed bookings, and follow the cancellation policy they publish. Listing a turf and managing bookings on {b.brand} is free for owners and managers; {b.brand} earns only the booking fee players pay to book online.</p>
       <H>6. Liability</H>
       <p>Football carries a risk of injury; you play at your own risk. To the extent permitted by law, we are not liable for injuries, loss or damage at the venue, or for indirect losses. Our total liability for a booking is limited to the amount you paid us online for it.</p>
       <H>7. Changes and law</H>

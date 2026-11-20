@@ -10,13 +10,13 @@ export default async function AdminHome() {
   await pageUser("/admin", ["ADMIN"]);
   const monthStart = istToUtc(todayIst().slice(0, 8) + "01", 0);
   const active = { in: ["CONFIRMED", "COMPLETED"] as ("CONFIRMED" | "COMPLETED")[] };
-  const [users, owners, turfs, pending, claims, month, captured, refunds, disputes, recent, byCity, ledger] = await Promise.all([
+  const [users, owners, turfs, pending, claims, month, captured, refunds, disputes, recent, byCity] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { role: "OWNER" } }),
     prisma.turf.groupBy({ by: ["status"], where: { isSandbox: false }, _count: true }),
     prisma.turf.count({ where: { status: "PENDING_REVIEW" } }),
     prisma.turfClaim.count({ where: { status: "PENDING" } }),
-    prisma.booking.aggregate({ where: { status: active, confirmedAt: { gte: monthStart }, turf: { isSandbox: false } }, _count: true, _sum: { totalPrice: true, discount: true } }),
+    prisma.booking.aggregate({ where: { status: active, confirmedAt: { gte: monthStart }, turf: { isSandbox: false } }, _count: true, _sum: { totalPrice: true, discount: true, coinsValue: true } }),
     prisma.payment.aggregate({ where: { status: { in: ["CAPTURED", "PARTIALLY_REFUNDED", "REFUNDED"] }, capturedAt: { gte: monthStart }, booking: { turf: { isSandbox: false } } }, _sum: { amount: true }, _count: true }),
     prisma.refund.aggregate({ where: { createdAt: { gte: monthStart }, payment: { booking: { turf: { isSandbox: false } } } }, _sum: { amount: true }, _count: true }),
     prisma.dispute.count({ where: { status: "OPEN" } }),
@@ -25,7 +25,6 @@ export default async function AdminHome() {
       SELECT c.name AS city, COUNT(b.id) AS bookings FROM "Booking" b
       JOIN "Turf" t ON t.id = b."turfId" JOIN "City" c ON c.id = t."cityId"
       WHERE b.status IN ('CONFIRMED','COMPLETED') GROUP BY c.name ORDER BY 2 DESC LIMIT 10`,
-    prisma.ledgerEntry.aggregate({ where: { type: "COMMISSION", turf: { isSandbox: false } }, _sum: { amount: true } }),
   ]);
   const count = (s: string) => turfs.find((t) => t.status === s)?._count ?? 0;
 
@@ -38,9 +37,9 @@ export default async function AdminHome() {
         <Stat label="Awaiting review" value={<Link href="/admin/turfs" className="hover:underline">{plural(pending, "turf")} · {plural(claims, "claim")}</Link>} />
         <Stat label="Open disputes" value={<Link href="/admin/finance" className="hover:underline">{disputes}</Link>} />
         <Stat label="Bookings this month" value={month._count} />
-        <Stat label="Booking value (GMV)" value={rupees((month._sum.totalPrice ?? 0) - (month._sum.discount ?? 0))} hint="This month" />
-        <Stat label="Collected online" value={rupees(captured._sum.amount ?? 0)} hint={`${captured._count} payments · refunds ${rupees(refunds._sum.amount ?? 0)}`} />
-        <Stat label="Commission earned (all time)" value={rupees(-(ledger._sum.amount ?? 0))} />
+        <Stat label="Booking value (GMV)" value={rupees((month._sum.totalPrice ?? 0) - (month._sum.discount ?? 0))} hint="This month, paid at the turfs" />
+        <Stat label="Turfly booking fees" value={rupees((captured._sum.amount ?? 0) - (refunds._sum.amount ?? 0))} hint={`This month · ${captured._count} payments, ${rupees(refunds._sum.amount ?? 0)} refunded`} />
+        <Stat label="Coins used on fees" value={rupees(month._sum.coinsValue ?? 0)} hint="This month, funded by Turfly" />
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="card overflow-x-auto p-5">

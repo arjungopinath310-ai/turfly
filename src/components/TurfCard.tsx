@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
 import type { TurfCard } from "@/lib/search";
 import { rupees } from "@/lib/engine/pricing";
+import { shortTime } from "@/lib/time";
 import { AvailabilityBadge, DemoBadge } from "./ui";
 import { CompareToggle } from "./CompareBar";
 import { TurfThumb } from "./TurfThumb";
@@ -10,7 +11,7 @@ import { TurfThumb } from "./TurfThumb";
  * Phones: a compact row (small picture left, facts right) so a whole list fits on screen, like booking apps.
  * Larger screens: the usual card with a picture on top. The whole card is one big tap target.
  */
-export function TurfCardView({ t }: { t: TurfCard }) {
+export function TurfCardView({ t, free }: { t: TurfCard; free?: number | null }) {
   const price = t.minPrice ?? t.reportedPriceFrom;
   return (
     <div className="card group relative flex gap-3 overflow-hidden p-3 transition active:scale-[.99] sm:block sm:p-0 sm:hover:-translate-y-0.5 sm:hover:shadow-lg">
@@ -47,6 +48,12 @@ export function TurfCardView({ t }: { t: TurfCard }) {
             <span className="flex items-center gap-0.5 text-xs font-semibold text-slate-700"><Star size={12} className="fill-amber-400 text-amber-400" /> {t.ratingAvg.toFixed(1)} <span className="font-normal text-slate-400">({t.ratingCount})</span></span>
           )}
         </div>
+        {free !== undefined && (
+          <div className={`flex items-center gap-1.5 text-xs font-semibold ${free != null ? "text-brand-700" : "text-slate-400"}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${free != null ? "bg-brand-500" : "bg-slate-300"}`} />
+            {free != null ? `Free today from ${shortTime(free)}` : "Full today · check tomorrow"}
+          </div>
+        )}
         <div className="relative z-10 hidden justify-end pt-1 text-sm sm:flex">
           <CompareToggle id={t.id} name={t.name} />
         </div>

@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import { getAvailability } from "./engine/booking";
-import { isValidDate } from "./time";
+import { isValidDate, todayIst } from "./time";
 
 export interface TurfFilters {
   q?: string;
@@ -182,6 +182,27 @@ export async function searchTurfs(f: TurfFilters, opts: { page?: number; pageSiz
   });
   const points = rows.map((r) => ({ id: r.id, slug: r.slug, name: r.name, locality: r.locality, lat: r.lat, lng: r.lng, availabilityMode: r.availabilityMode, minPrice: r.minPrice }));
   return { cards, points, total, page, pageCount, pageSize };
+}
+
+/**
+ * For turfs that take bookings on Turfly: the first one-hour slot still free today (any pitch), or null when
+ * today is full or closed. Turfs that don't show live availability are left out.
+ */
+export async function freeToday(cards: { id: string; availabilityMode: string }[]): Promise<Record<string, number | null>> {
+  const live = cards.filter((c) => c.availabilityMode === "LIVE");
+  const today = todayIst();
+  const firsts = await mapLimit(live, AVAILABILITY_CONCURRENCY, async (c) => {
+    try {
+      const a = await getAvailability(c.id, today, 60);
+      const free = a.configs.flatMap((cfg) => cfg.slots.filter((s) => s.status === "available").map((s) => s.startMinute));
+      return free.length ? Math.min(...free) : null;
+    } catch {
+      return undefined; // a turf with broken setup shouldn't break the list
+    }
+  });
+  const out: Record<string, number | null> = {};
+  live.forEach((c, i) => { if (firsts[i] !== undefined) out[c.id] = firsts[i] as number | null; });
+  return out;
 }
 
 export type SearchResult = Awaited<ReturnType<typeof searchTurfs>>;

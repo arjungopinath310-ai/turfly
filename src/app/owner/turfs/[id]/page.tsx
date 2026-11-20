@@ -242,10 +242,10 @@ export default async function TurfSettings(
             {[0, 1, 2].map((i) => (
               <div key={i} className="flex items-center gap-2">
                 Cancel ≥ <input name={`h_${i}`} type="number" min={0} defaultValue={effective.tiers[i]?.minHoursBefore ?? ""} className="input w-20 py-1.5" /> hours before →
-                <input name={`p_${i}`} type="number" min={0} max={100} defaultValue={effective.tiers[i]?.refundPercent ?? ""} className="input w-20 py-1.5" /> % refund of advance
+                <input name={`p_${i}`} type="number" min={0} max={100} defaultValue={effective.tiers[i]?.refundPercent ?? ""} className="input w-20 py-1.5" /> % refund of booking fee
               </div>
             ))}
-            <p className="text-xs text-slate-500">Leave all tiers empty to make the advance non-refundable. Turf-initiated cancellations always refund 100%.</p>
+            <p className="text-xs text-slate-500">This is for the {rupees(settings.bookingFeePaise)} booking fee players pay online; your price is paid at the turf. Leave all tiers empty to make the booking fee non-refundable. Turf-initiated cancellations always refund 100%.</p>
             <input name="note" placeholder="Extra note (optional, e.g. rain policy)" defaultValue={effective.note} className="input" />
           </ActionForm>
         </Section>
@@ -282,7 +282,6 @@ export default async function TurfSettings(
                 ))}
               </div>
             </div>
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="fullOnline" defaultChecked={turf.fullOnlinePaymentEnabled} className="accent-brand-600" /> Let customers pay the full amount online (optional)</label>
           </ActionForm>
         </Section>
       </div>

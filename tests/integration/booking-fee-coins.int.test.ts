@@ -1,8 +1,7 @@
 /**
- * Owner pricing and Turf coins against a real PostgreSQL (npm run test:integration).
- * Pricing: free period from the first online booking, then a flat fee per online booking capped per month, given
- * back on cancellation. Coins: spent on the online advance (Turfly covers it in the turf's ledger), returned when a
- * booking doesn't happen, earned once per played online booking.
+ * The booking-fee model and Turf coins against a real PostgreSQL (npm run test:integration).
+ * Turfly's only charge is the booking fee a player pays online; the turf's full price is paid at the turf and owners
+ * pay nothing. Coins: spent on the booking fee, returned when a booking doesn't happen, earned once per played booking.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomBytes, randomInt } from "node:crypto";
@@ -32,7 +31,6 @@ async function paidBooking(startMinute: number, useCoins = false): Promise<Booki
   } else await confirmFromPayment(b.id);
   return prisma.booking.findUniqueOrThrow({ where: { id: b.id } });
 }
-const fees = (bookingId: string) => prisma.ledgerEntry.aggregate({ where: { bookingId, type: "COMMISSION" }, _sum: { amount: true } }).then((a) => a._sum.amount ?? 0);
 
 beforeAll(async () => {
   const city = await prisma.city.upsert({ where: { slug: "it-city" }, update: {}, create: { slug: "it-city", name: "IT City", state: "KL", lat: 11, lng: 76, pincodes: [] } });
@@ -55,47 +53,33 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-describe("owner pricing", () => {
-  it("the first online booking starts the free period: no fee", async () => {
+describe("booking fee model", () => {
+  it("the player pays only Turfly's booking fee online; the turf's full price is due at the turf; owners are charged nothing", async () => {
     const s = await getSettings();
     const b = await paidBooking(7 * 60);
-    const turf = await prisma.turf.findUniqueOrThrow({ where: { id: turfId } });
-    const days = (turf.freeUntil!.getTime() - Date.now()) / 86_400_000;
-    expect(Math.round(days)).toBe(s.freeTrialDays);
-    expect(await fees(b.id)).toBe(0);
+    expect(b).toMatchObject({ status: "CONFIRMED", advanceAmount: 0, platformFee: s.bookingFeePaise, onlineAmount: s.bookingFeePaise, balanceDue: b.totalPrice - b.discount });
+    expect(await prisma.ledgerEntry.count({ where: { bookingId: b.id } })).toBe(0);
   });
 
-  it("after the free period: a flat fee per online booking, capped per month, given back on cancellation", async () => {
+  it("cancelling refunds the booking fee per the policy (in full well before the match)", async () => {
     const s = await getSettings();
-    await prisma.turf.update({ where: { id: turfId }, data: { freeUntil: new Date(Date.now() - 1000) } });
-    const b1 = await paidBooking(8 * 60);
-    expect(await fees(b1.id)).toBe(-s.onlineBookingFeePaise);
-
-    // nearly at the cap: only the rest of the cap is charged, then nothing
-    const already = s.onlineBookingFeePaise;
-    await prisma.ledgerEntry.create({ data: { turfId, type: "COMMISSION", amount: -(s.monthlyFeeCapPaise - already - 1000), note: "test: earlier fees this month" } });
-    const b2 = await paidBooking(9 * 60);
-    expect(await fees(b2.id)).toBe(-1000);
-    const b3 = await paidBooking(10 * 60);
-    expect(await fees(b3.id)).toBe(0);
-
-    await cancelBooking(player, b1.id, "Plans changed", "customer");
-    expect(await fees(b1.id)).toBe(0);
+    const b = await paidBooking(8 * 60);
+    const r = await cancelBooking(player, b.id, "Plans changed", "customer");
+    expect(r.refunded).toBe(s.bookingFeePaise);
   });
 });
 
 describe("Turf coins", () => {
-  it("coins pay the whole advance: confirmed without the gateway, the turf still gets the full advance", async () => {
+  it("coins pay the whole booking fee: confirmed without the gateway", async () => {
     await prisma.coinEntry.create({ data: { userId: player.id, amount: 60, kind: "ADJUST", note: "test grant" } });
     const b = await paidBooking(11 * 60, true);
     expect(b).toMatchObject({ status: "CONFIRMED", onlineAmount: 0, coinsUsed: 49, coinsValue: 4900 });
-    const owed = await prisma.ledgerEntry.findFirstOrThrow({ where: { bookingId: b.id, type: "ADVANCE_COLLECTED" } });
-    expect(owed.amount).toBe(4900);
+    expect(await prisma.ledgerEntry.count({ where: { bookingId: b.id } })).toBe(0);
     expect(await prisma.payment.count({ where: { bookingId: b.id } })).toBe(0);
     expect(await coinBalance(player.id)).toBe(11);
   });
 
-  it("part of the advance with coins; a hold that is abandoned gives the coins back", async () => {
+  it("part of the fee with coins; a hold that is abandoned gives the coins back", async () => {
     const b = await createHold(player, { turfId, configId: fiveId, date: D, startMinute: 12 * 60, durationMinutes: 60, useCoins: true });
     expect(b).toMatchObject({ coinsUsed: 11, onlineAmount: 3800 });
     expect(await coinBalance(player.id)).toBe(0);

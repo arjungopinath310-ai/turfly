@@ -15,7 +15,7 @@ export function Stat({ label, value, hint }: { label: string; value: React.React
 export function AvailabilityBadge({ mode, updatedAt }: { mode: string; updatedAt?: Date | null }) {
   if (mode === "LIVE")
     return (
-      <span className="chip border-brand-200 bg-brand-50 text-brand-700" title="Free slots are live; book and pay the advance here">
+      <span className="chip border-brand-200 bg-brand-50 text-brand-700" title="Free slots are live; book here for a small booking fee">
         <BadgeCheck size={14} /> Book online
       </span>
     );

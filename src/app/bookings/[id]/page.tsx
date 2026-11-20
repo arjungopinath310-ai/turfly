@@ -11,7 +11,6 @@ import { StatusBadge } from "@/components/ui";
 import { RosterEditor } from "@/components/RosterEditor";
 import { BookingActions } from "@/components/BookingActions";
 import { MessageButton } from "@/components/MessageButton";
-import { SplitPanel } from "@/components/SplitPanel";
 import { DigipinChip } from "@/components/DigipinChip";
 import { encodeDigipin, formatDigipin } from "@/lib/digipin";
 
@@ -94,27 +93,7 @@ export default async function BookingPage(
             />
           )}
 
-          {(() => {
-            const plan = b.split && !b.split.cancelledAt ? b.split : null;
-            const editable = b.status === "CONFIRMED" && b.startAt > new Date() && !b.balanceCollectedAt;
-            if (!plan && !(editable && b.balanceDue > 0)) return null;
-            const now = new Date();
-            return (
-              <SplitPanel
-                bookingId={b.id}
-                editable={editable}
-                money={{ totalPrice: b.totalPrice, discount: b.discount, advanceAmount: b.advanceAmount, balanceDue: b.balanceDue, splitCollected: b.splitCollected }}
-                defaultPlayers={Math.min(30, Math.max(2, b.config.playersPerSide * 2))}
-                plan={plan && {
-                  token: plan.token,
-                  players: plan.players,
-                  shareAmount: plan.shareAmount,
-                  shares: plan.shares.map((s) => ({ seq: s.seq, status: s.status, paidByName: s.paidBy?.name ?? null, inCheckout: s.status === "OPEN" && Boolean(s.claimExpiresAt && s.claimExpiresAt > now) })),
-                }}
-                inviteLine={`football at ${b.turf.name} on ${formatDateLong(b.startAt)}, ${formatTimeRange(b.startAt, b.endAt)}`}
-              />
-            );
-          })()}
+          {/* Split payments are off: online money is Turfly's booking fee only; the turf's price is paid at the turf. */}
 
           <BookingActions
             bookingId={b.id}
@@ -140,7 +119,7 @@ export default async function BookingPage(
             <dl className="space-y-1.5 text-sm">
               <Row k="Turf booking" v={rupees(b.totalPrice)} />
               {b.discount > 0 && <Row k="Discount" v={`− ${rupees(b.discount)}`} />}
-              <Row k="Paid online" v={rupees(b.onlineAmount)} />
+              <Row k="Turfly booking fee (online)" v={rupees(b.onlineAmount)} />
               {b.splitCollected > 0 && <Row k="Paid by friends (split)" v={rupees(b.splitCollected)} />}
               {b.platformFee > 0 && <Row k="incl. platform fee" v={rupees(b.platformFee)} />}
               <Row k="Balance at venue" v={b.balanceCollectedAt ? "Paid ✓" : rupees(b.balanceDue)} />

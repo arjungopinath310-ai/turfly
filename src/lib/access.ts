@@ -5,7 +5,7 @@
  * shows turfs, prices of turfs or any other part of the app. Everything else redirects to /login and
  * comes back afterwards. Pure functions: used by the middleware and by tests.
  */
-const PUBLIC_EXACT = new Set(["/login", "/about", "/contact", "/account/delete"]);
+const PUBLIC_EXACT = new Set(["/login", "/signup", "/about", "/contact", "/account/delete"]);
 const PUBLIC_PREFIXES = ["/legal/"];
 
 export function isPublicPath(pathname: string) {

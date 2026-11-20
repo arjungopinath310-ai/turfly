@@ -27,7 +27,7 @@ export const authOptions: NextAuthOptions = {
         if (!phone) return null;
         const user = await prisma.user.upsert({
           where: { phone },
-          create: { phone, role: adminPhones().includes(phone) ? "ADMIN" : "PLAYER", referralCode: token(5) },
+          create: { phone, role: adminPhones().includes(phone) ? "ADMIN" : "PLAYER", referralCode: token(5), termsAcceptedAt: new Date() },
           update: adminPhones().includes(phone) ? { role: "ADMIN" } : {}, // promote numbers listed in ADMIN_PHONES
         });
         if (user.isSuspended) return null;

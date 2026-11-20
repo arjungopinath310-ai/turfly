@@ -13,7 +13,6 @@ import { cancelBookingJobs, notifyInApp, scheduleBookingJobs } from "../notifica
 import { refundBooking } from "../payments/refunds";
 import { refundSplitShares } from "../split";
 import { closeGamesForBooking, listGame, moveGamesForBooking, openGamesForBooking, type ListingInput } from "../games";
-import { chargeOnlineBookingFee, returnOnlineBookingFee } from "../fees";
 import { coinBalance, coinsUsable, returnCoins } from "../coins";
 
 // ───────────── Hold expiry ─────────────
@@ -159,10 +158,11 @@ export async function quoteSlot(req: SlotRequest & { offerCode?: string; payFull
   const policy = turfPolicy(v.turf, s);
   const q = quote({
     totalPrice: v.price,
-    advancePaise: s.advanceAmountPaise,
-    platformFeePaise: s.platformFeePaise,
+    // Nothing is collected online for the turf: the player pays Turfly's booking fee, and the turf's price at the turf
+    advancePaise: 0,
+    platformFeePaise: s.bookingFeePaise,
     offer: offer as OfferLite | null,
-    payFullOnline: Boolean(req.payFullOnline && v.turf.fullOnlinePaymentEnabled),
+    payFullOnline: false,
   });
   return { ...v, quote: q, offer, policy, settings: s };
 }
@@ -279,11 +279,10 @@ async function afterConfirm(bookingId: string) {
     // Ledger + offer usage exactly once per booking
     const exists = await tx.ledgerEntry.findFirst({ where: { bookingId, type: "ADVANCE_COLLECTED" } });
     if (!exists) {
-      // The turf is owed the whole advance, including any part paid with Turf coins (Turfly covers that)
+      // Money the turf is owed from what was paid online: none under the booking-fee model (the fee is Turfly's,
+      // the turf's price is paid at the turf). Kept for bookings that carry an advance for the turf.
       const owed = b.onlineAmount + b.coinsValue - b.platformFee;
-      await tx.ledgerEntry.create({ data: { turfId: b.turfId, bookingId, type: "ADVANCE_COLLECTED", amount: owed, note: b.coinsValue ? "Online advance (part paid with Turf coins, covered by Turfly)" : "Online advance collected by platform" } });
-      // Turfly's fee: free period first, then a flat fee per online booking, capped per month (lib/fees.ts)
-      await chargeOnlineBookingFee(tx, b.turf, bookingId);
+      if (owed > 0) await tx.ledgerEntry.create({ data: { turfId: b.turfId, bookingId, type: "ADVANCE_COLLECTED", amount: owed, note: "Online advance collected by platform" } });
       if (b.offerId) await tx.offer.update({ where: { id: b.offerId }, data: { usedCount: { increment: 1 } } });
       await scheduleBookingJobs(tx, bookingId);
       if (b.turf.ownerId) await notifyInApp(tx, b.turf.ownerId, `New booking ${b.code}`, `${b.turf.name}`, `/owner/bookings?focus=${b.id}`);
@@ -395,7 +394,6 @@ export async function cancelBooking(actor: User, bookingId: string, reason: stri
   const refunded = await refundBooking(b.id, refund, `Cancelled by ${by}: ${reason}`, actor.id);
   await refundSplitShares(b.id, `Booking ${b.code} was cancelled`, actor.id);
   await returnCoins(prisma, b, "Booking cancelled");
-  await returnOnlineBookingFee(prisma, b.id);
   if (b.userId && by !== "customer")
     await notifyInApp(prisma, b.userId, `Booking ${b.code} cancelled by the turf`, `Refund of ₹${refunded / 100} initiated.`, `/bookings/${b.id}`);
   if (b.turf.ownerId && by === "customer") await notifyInApp(prisma, b.turf.ownerId, `Booking ${b.code} cancelled`, reason, `/owner/bookings`);

@@ -116,9 +116,11 @@ describe("payments", () => {
     expect(replay.status).toBe("duplicate");
     const after = await prisma.booking.findUniqueOrThrow({ where: { id: b.id } });
     expect(after.status).toBe("CONFIRMED");
-    expect(after.advanceAmount).toBe(4900);
-    expect(after.balanceDue).toBe(after.totalPrice - 4900);
-    expect(await prisma.ledgerEntry.count({ where: { bookingId: b.id, type: "ADVANCE_COLLECTED" } })).toBe(1);
+    // booking-fee model: the online payment is Turfly's fee; the turf's whole price is due at the turf
+    expect(after.advanceAmount).toBe(0);
+    expect(after.platformFee).toBe(4900);
+    expect(after.balanceDue).toBe(after.totalPrice - after.discount);
+    expect(await prisma.ledgerEntry.count({ where: { bookingId: b.id, type: "ADVANCE_COLLECTED" } })).toBe(0);
     expect(await prisma.notificationJob.count({ where: { bookingId: b.id, template: "BOOKING_CONFIRMED" } })).toBeGreaterThan(0);
   });
 

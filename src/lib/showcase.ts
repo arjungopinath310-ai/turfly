@@ -101,7 +101,7 @@ async function loadTurfCtx(db: Tx, turf: Turf, players: User[], owner?: User): P
     players,
     configs,
     unitIds: units.map((u) => u.id),
-    advance: settings.advanceAmountPaise,
+    advance: settings.bookingFeePaise, // Turfly's booking fee on online bookings
     policy: turfPolicy({ cancellationPolicy: null }, settings) as object,
   };
 }
@@ -202,10 +202,10 @@ function planShowcaseDay(c: ShowcaseCtx, day: string, busy: Map<string, Set<numb
         endAt,
         durationMinutes: minutes,
         totalPrice,
-        advanceAmount: online ? c.advance : 0,
-        platformFee: 0,
+        advanceAmount: 0,
+        platformFee: online ? c.advance : 0,
         onlineAmount: online ? c.advance : 0,
-        balanceDue: online ? totalPrice - c.advance : totalPrice,
+        balanceDue: totalPrice,
         balanceCollectedAt: collected ? new Date(endAt.getTime() - 15 * 60_000) : null,
         balanceCollectedBy: collected ? c.owner.id : null,
         policySnapshot: c.policy,
@@ -242,11 +242,10 @@ function planShowcaseDay(c: ShowcaseCtx, day: string, busy: Map<string, Set<numb
           refundedAmount: status === "CANCELLED" ? c.advance : 0,
           createdAt,
         };
-        plan.ledger.push({ turfId: c.turf.id, bookingId, paymentId, type: "ADVANCE_COLLECTED", amount: c.advance, note: "Online advance collected by platform", createdAt: new Date(createdAt.getTime() + 60_000) });
+        // the booking fee is Turfly's: nothing goes into the turf's ledger
         if (status === "CANCELLED") {
           const why = "Cancelled 24 h or more before the match: full refund";
           plan.refund = { paymentId, amount: c.advance, status: "PROCESSED", providerRefundId: `sample_rfnd_${code}`, reason: why, createdAt: cancelledAt! };
-          plan.ledger.push({ turfId: c.turf.id, bookingId, paymentId, type: "REFUND", amount: -c.advance, note: why, createdAt: cancelledAt! });
         }
       }
       out.push(plan);

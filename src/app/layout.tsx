@@ -50,7 +50,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/legal/refunds" className="hover:text-slate-800">Cancellation &amp; refunds</Link>
                 <Link href="/contact" className="hover:text-slate-800">{view === "owner" ? "Help & contact" : "Contact"}</Link>
                 {/* Signed-out visitors: a way in for turf owners. Signed-in players never see owner options. */}
-                {!user && <Link href="/login?as=owner" className="hover:text-slate-800">For turf owners</Link>}
+                {!user && <Link href="/signup?as=owner" className="hover:text-slate-800">List your turf free</Link>}
               </nav>
               <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span>© {new Date().getFullYear()} {BRAND.name} · Starting in Manjeri, Kerala</span>

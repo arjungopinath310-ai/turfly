@@ -8,7 +8,7 @@ These were made before implementation. Each is a deliberate default that can be 
 3. **Time zone is IST (UTC+05:30) for all cities.** India has a single time zone without DST, so slot maths uses a fixed offset. All timestamps are stored in UTC.
 4. **Operating hours may cross midnight** (common for Kerala turfs that run till 1–2 AM). An operating day is described as minutes from 00:00 of that day, and `closeMinute` may be up to 1800 (06:00 next day).
 5. **Money is stored as integer paise.** ₹49 = `4900`. No floating-point money anywhere.
-6. **The ₹49 advance is a platform setting (`advanceAmountPaise`)**, default 4900, editable by the admin. It is never larger than the slot price.
+6. **The ₹49 booking fee is a platform setting (`bookingFeePaise`)**, default 4900, editable by the admin. It is Turfly's only charge: players pay it online to book; the turf's price is paid at the turf. Owners list for free.
 7. **The advance is part of the turf price, not an extra charge.** ₹1,500 slot → ₹49 online + ₹1,451 at venue. Any platform/convenience fee is a separate, admin-configured line item (default ₹0) and is always displayed before payment.
 8. **Commission is never silently taken from the advance.** Commission is configured per turf (falling back to a platform default, initially 0%), recorded as explicit ledger entries, and shown to the owner in their dashboard. Customers never see it reduce their balance.
 9. **Discounts/offers reduce the venue price (balance), never the advance**, so an offer can't make the online amount zero and break the reservation mechanism.

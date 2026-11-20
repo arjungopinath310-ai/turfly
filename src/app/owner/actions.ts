@@ -147,7 +147,7 @@ export async function updateTurf(_: ActionState, fd: FormData): Promise<ActionSt
     if (bad.length) throw new AppError(400, `With ${ops.slotStepMinutes}-minute slots, durations must be multiples of ${ops.slotStepMinutes} (remove ${bad.join(", ")} min)`);
     await prisma.turf.update({
       where: { id: turf.id },
-      data: { ...data, ...ops, allowedDurations: durations.sort((a, b) => a - b), fullOnlinePaymentEnabled: fd.get("fullOnline") === "on" },
+      data: { ...data, ...ops, allowedDurations: durations.sort((a, b) => a - b) },
     });
     revalidatePath(`/owner/turfs/${turf.id}`);
   });
@@ -349,6 +349,30 @@ export async function blockSlot(_: ActionState, fd: FormData): Promise<ActionSta
   });
 }
 
+/** Block straight from the day chart: one pitch (or the whole turf) for a stretch of slots on one day. */
+export async function blockFromChart(
+  turfId: string,
+  input: { configId: string | null; date: string; startMinute: number; endMinute: number; reason: string; note?: string }
+): Promise<ActionState> {
+  return run(async () => {
+    const { user, turf } = await requireTurfAccess(turfId);
+    const d = z
+      .object({
+        configId: z.string().min(1).nullable(),
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        startMinute: z.number().int().min(0).max(2880),
+        endMinute: z.number().int().min(1).max(2880),
+        reason: z.enum(["MAINTENANCE", "PRIVATE_EVENT", "HOLIDAY", "OTHER"]),
+        note: z.string().trim().max(200).optional(),
+      })
+      .refine((x) => x.endMinute > x.startMinute, "End must be after start")
+      .parse(input);
+    await createBlock(user, turf, { configId: d.configId, startAt: istToUtc(d.date, d.startMinute), endAt: istToUtc(d.date, d.endMinute), reason: d.reason, note: d.note || undefined });
+    revalidatePath("/owner/calendar");
+    return "Blocked. Players can no longer book that time.";
+  });
+}
+
 export async function unblock(turfId: string, blockId: string): Promise<ActionState> {
   return run(async () => {
     await requireTurfAccess(turfId);
@@ -356,6 +380,7 @@ export async function unblock(turfId: string, blockId: string): Promise<ActionSt
     if (!b) throw new AppError(404, "Block not found");
     await removeBlock(blockId);
     revalidatePath("/owner/calendar");
+    return "Unblocked. The time is open for booking again.";
   });
 }
 
@@ -368,7 +393,7 @@ export async function walkIn(_: ActionState, fd: FormData): Promise<ActionState>
         date: z.string(),
         start: z.string(),
         duration: z.coerce.number().int(),
-        customerName: z.string().trim().min(1).max(60),
+        customerName: z.string().trim().min(1, "Enter the customer's name").max(60),
         customerPhone: z.string().max(16).optional(),
         teamName: z.string().max(60).optional(),
         source: z.enum(["WALK_IN", "PHONE"]),

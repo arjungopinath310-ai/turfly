@@ -9,7 +9,6 @@ import { Stat, StatusBadge } from "@/components/ui";
 import { TurfSwitcher } from "@/components/TurfSwitcher";
 import { OwnerWelcome } from "@/components/OwnerWelcome";
 import { plural } from "@/lib/format";
-import { turfPlan } from "@/lib/fees";
 import { formatDateLong } from "@/lib/time";
 
 const LEDGER_LABEL: Record<string, string> = {
@@ -33,7 +32,6 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
   const monthStart = istToUtc(today.slice(0, 8) + "01", 0);
   const active = { in: ["CONFIRMED", "COMPLETED"] as ("CONFIRMED" | "COMPLETED")[] };
 
-  const plan = await turfPlan(turf);
   const [todays, upcoming, month, cancelled, pending, ledger, recent, avail] = await Promise.all([
     prisma.booking.findMany({ where: { turfId: turf.id, status: active, startAt: { gte: dayStart, lt: dayEnd } }, include: { config: true, team: true, user: { select: { name: true } } }, orderBy: { startAt: "asc" } }),
     prisma.booking.count({ where: { turfId: turf.id, status: "CONFIRMED", startAt: { gte: new Date() } } }),
@@ -46,7 +44,6 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
   ]);
 
   const revenue = month.reduce((a, b) => a + b.totalPrice - b.discount, 0);
-  const advances = month.reduce((a, b) => a + b.onlineAmount - b.platformFee + b.splitCollected, 0);
   const freeSlots = avail ? avail.configs.reduce((a, c) => a + c.slots.filter((s) => s.status === "available").length, 0) : 0;
   const cancelRate = month.length + cancelled ? Math.round((cancelled / (month.length + cancelled)) * 100) : 0;
   const owed = ledger.reduce((a, l) => a + (l._sum.amount ?? 0), 0);
@@ -70,17 +67,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
         </div>
       </div>
       <div className="rounded-2xl border border-brand-200 bg-brand-50 p-4 text-sm text-brand-900">
-        <b>Your Turfly plan:</b>{" "}
-        {plan.sample ? (
-          <>sample turf, no fees.</>
-        ) : !plan.freeUntil ? (
-          <>your {Math.round(plan.freeTrialDays / 30)} free months start with your first online booking.</>
-        ) : plan.inFreePeriod ? (
-          <>free until {formatDateLong(plan.freeUntil)}. No Turfly fee on any booking.</>
-        ) : (
-          <>{rupees(plan.feePaise)} per online booking, at most {rupees(plan.capPaise)} a month. This month: {rupees(plan.chargedThisMonth)} of {rupees(plan.capPaise)}.</>
-        )}{" "}
-        Walk-in and phone bookings are always free.
+        <b>Turfly is free for turf owners.</b> Players pay Turfly a small booking fee online to reserve; you collect your full price at the turf.
       </div>
       {turf.isSandbox && (
         <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
@@ -121,7 +108,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
         <Stat label="Free 1-hr slots today" value={freeSlots} />
         <Stat label="Bookings this month" value={month.length} hint={`${month.filter((m) => m.source !== "ONLINE").length} walk-in / phone`} />
         <Stat label="Booking value this month" value={rupees(revenue)} />
-        <Stat label="Advances received" value={rupees(advances)} hint="Collected online by the platform" />
+        <Stat label="Booked online" value={String(month.filter((b) => b.source === "ONLINE").length)} hint="This month, through Turfly" />
         <Stat label="Pending balances" value={rupees(pending._sum.balanceDue ?? 0)} hint={plural(pending._count, "booking")} />
         <Stat label="Cancellations" value={`${cancelled}`} hint={`${cancelRate}% this month`} />
       </div>
@@ -141,13 +128,15 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
               </div>
             ))}
           </div>
-          <div className="mt-5 border-t border-slate-100 pt-4 text-sm">
-            <div className="flex justify-between"><span className="text-slate-500">Settlement balance (ledger)</span><b>{rupees(owed)}</b></div>
-            {ledger.map((l) => (
-              <div key={l.type} className="flex justify-between text-xs text-slate-500"><span>{LEDGER_LABEL[l.type] ?? l.type.replace("_", " ").toLowerCase()}</span><span>{rupees(l._sum.amount ?? 0)}</span></div>
-            ))}
-            <p className="mt-2 text-[11px] text-slate-400">Turfly&apos;s fees are a separate line here, never hidden in the advance. Walk-in and phone bookings are always free.</p>
-          </div>
+          {owed !== 0 && (
+            <div className="mt-5 border-t border-slate-100 pt-4 text-sm">
+              <div className="flex justify-between"><span className="text-slate-500">Earlier online advances (ledger)</span><b>{rupees(owed)}</b></div>
+              {ledger.map((l) => (
+                <div key={l.type} className="flex justify-between text-xs text-slate-500"><span>{LEDGER_LABEL[l.type] ?? l.type.replace("_", " ").toLowerCase()}</span><span>{rupees(l._sum.amount ?? 0)}</span></div>
+              ))}
+            </div>
+          )}
+          <p className="mt-3 text-[11px] text-slate-400">Turfly never holds your money: players pay your full price at the turf.</p>
         </div>
       </div>
     </div>

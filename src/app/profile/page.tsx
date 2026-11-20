@@ -91,7 +91,7 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
             <span className="text-2xl font-extrabold text-brand-700">{coins.balance}</span>
           </div>
           <p className="mt-1 text-sm text-slate-600">
-            Earn {coins.perBooking} coins for every online booking you play. Use them on the online advance of your next booking: 1 coin = {rupees(coins.valuePaise)}.
+            Earn {coins.perBooking} coins for every online booking you play. Use them on the booking fee of your next booking: 1 coin = {rupees(coins.valuePaise)}.
             Coins have no cash value and can&apos;t be transferred.
           </p>
           {coins.history.length > 0 && (
