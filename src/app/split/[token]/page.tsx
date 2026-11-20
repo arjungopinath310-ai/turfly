@@ -33,10 +33,10 @@ export default async function SplitPage(props: { params: Promise<{ token: string
   return (
     <div className="mx-auto max-w-lg px-4 py-8">
       <div className="card overflow-hidden">
-        <div className="bg-gradient-to-br from-brand-600 to-brand-800 p-6 text-white">
-          <div className="text-sm opacity-85">{organiser} is splitting the cost</div>
-          <div className="mt-1 text-3xl font-bold">{rupees(plan.shareAmount)} <span className="text-base font-medium opacity-85">per player</span></div>
-          <div className="mt-1 text-sm opacity-85">{paid.length} of {friends} shares paid so far</div>
+        <div className="pitch-bg border-b-4 border-volt p-6 text-white">
+          <div className="kicker text-volt">{organiser} is splitting the cost</div>
+          <div className="score mt-1 text-5xl leading-none">{rupees(plan.shareAmount)} <span className="font-display text-base font-semibold uppercase tracking-[.06em] text-slate-300">per player</span></div>
+          <div className="mt-2 text-sm text-slate-300">{paid.length} of {friends} shares paid so far</div>
         </div>
         <div className="space-y-4 p-6">
           <div className="space-y-2 text-sm">

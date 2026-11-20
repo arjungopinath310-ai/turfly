@@ -5,8 +5,8 @@ import { relativeTime } from "@/lib/time";
 export function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint?: string }) {
   return (
     <div className="card p-4">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</div>
-      <div className="mt-1 text-2xl font-bold tracking-tight">{value}</div>
+      <div className="font-display text-[13px] font-bold uppercase tracking-[.1em] text-slate-500">{label}</div>
+      <div className="score mt-1 text-3xl leading-none">{value}</div>
       {hint && <div className="mt-0.5 text-xs text-slate-500">{hint}</div>}
     </div>
   );
@@ -15,7 +15,7 @@ export function Stat({ label, value, hint }: { label: string; value: React.React
 export function AvailabilityBadge({ mode, updatedAt }: { mode: string; updatedAt?: Date | null }) {
   if (mode === "LIVE")
     return (
-      <span className="chip border-brand-200 bg-brand-50 text-brand-700" title="Free slots are live; book here for a small booking fee">
+      <span className="chip border-brand-600 bg-brand-600 text-white" title="Free slots are live; book here for a small booking fee">
         <BadgeCheck size={14} /> Book online
       </span>
     );
@@ -26,7 +26,7 @@ export function AvailabilityBadge({ mode, updatedAt }: { mode: string; updatedAt
       </span>
     );
   return (
-    <span className="chip border-slate-200 bg-slate-50 text-slate-600" title="This turf doesn't take bookings on Turfly yet">
+    <span className="chip border-slate-300 text-slate-600" title="This turf doesn't take bookings on Turfly yet">
       <HelpCircle size={14} /> Call to book
     </span>
   );
@@ -77,7 +77,7 @@ export function Stars({ value }: { value: number }) {
 export function Empty({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <div className="card flex flex-col items-center gap-2 p-10 text-center">
-      <div className="text-3xl">🥅</div>
+      <GoalIcon />
       <div className="font-semibold">{title}</div>
       {children && <div className="muted max-w-md">{children}</div>}
     </div>
@@ -85,7 +85,7 @@ export function Empty({ title, children }: { title: string; children?: React.Rea
 }
 
 export function DemoBadge() {
-  return <span className="chip border-violet-200 bg-violet-50 text-violet-700">Demo turf · try every feature</span>;
+  return <span className="chip border-ink bg-volt text-ink">Demo turf · try every feature</span>;
 }
 
 export function PageHeader({ title, subtitle, children }: { title: string; subtitle?: string; children?: React.ReactNode }) {
@@ -97,5 +97,19 @@ export function PageHeader({ title, subtitle, children }: { title: string; subti
       </div>
       {children && <div className="flex flex-wrap gap-2">{children}</div>}
     </div>
+  );
+}
+
+/** An empty goal, for "nothing here yet". */
+export function GoalIcon({ className = "", size = 64 }: { className?: string; size?: number }) {
+  return (
+    <svg viewBox="0 0 64 40" width={size} height={(size * 40) / 64} className={`text-slate-400 ${className}`} aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeWidth="1" opacity=".55">
+        {[14, 22, 30, 38, 46, 54].map((x) => <path key={x} d={`M${x} 8v28`} />)}
+        {[15, 22, 29].map((y) => <path key={y} d={`M8 ${y}h48`} />)}
+      </g>
+      <path d="M6 38V6h52v32" fill="none" stroke="#0f1a13" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M2 38h60" stroke="#0f1a13" strokeWidth="2" />
+    </svg>
   );
 }

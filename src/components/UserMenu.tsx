@@ -49,14 +49,14 @@ export function UserMenu({ name, hasName, role, view, demo = false }: { name: st
 
   return (
     <div className="relative" ref={box}>
-      <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium" aria-label="Account menu" aria-expanded={open} aria-haspopup="menu">
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-800">
+      <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 rounded-lg border border-white/20 px-1.5 py-1 text-sm font-medium text-white hover:border-white/50 sm:px-2" aria-label="Account menu" aria-expanded={open} aria-haspopup="menu">
+        <span className="grid h-7 w-7 place-items-center rounded-full bg-volt font-display text-[13px] font-bold text-ink">
           {hasName ? name.slice(0, 1).toUpperCase() : <UserRound size={15} />}
         </span>
         <span className="hidden max-w-[140px] truncate sm:block">{name}</span>
       </button>
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-sm shadow-card" onClick={() => setOpen(false)}>
+        <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-ink bg-white py-1 text-sm text-slate-900 shadow-lift" onClick={() => setOpen(false)}>
           <Link className={item} href="/profile">Profile</Link>
           {view === "player" && <Link className={item} href="/leaderboard">Leaderboard</Link>}
           <Link className={item} href="/messages">Messages</Link>

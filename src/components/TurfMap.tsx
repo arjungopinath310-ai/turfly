@@ -9,7 +9,7 @@ import { rupees } from "@/lib/engine/pricing";
 const pin = (live: boolean) =>
   L.divIcon({
     className: "",
-    html: `<div style="width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${live ? "#039855" : "#64748b"};border:3px solid white;box-shadow:0 4px 10px rgba(0,0,0,.3)"></div>`,
+    html: `<div style="width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${live ? "#d7f74a" : "#6a685b"};border:3px solid #0f1a13;box-shadow:2px 2px 0 rgba(15,26,19,.5)"></div>`,
     iconSize: [30, 30],
     iconAnchor: [15, 30],
   });

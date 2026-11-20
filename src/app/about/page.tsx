@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PitchLines } from "@/components/PitchLines";
 import { CalendarCheck, MapPin, ShieldCheck, Users, Wallet, Zap } from "lucide-react";
 import { currentUser } from "@/lib/auth";
 import { BRAND } from "@/lib/brand";
@@ -15,12 +16,12 @@ export default async function About() {
   const cta = user ? { href: "/turfs", label: "Find turfs" } : { href: "/signup", label: "Sign up free" };
   return (
     <>
-      <section className="relative overflow-hidden bg-pitch-night text-white">
-        <div className="absolute inset-0 opacity-30 [background:radial-gradient(60%_60%_at_70%_20%,#12b76a_0%,transparent_60%),repeating-linear-gradient(90deg,transparent_0_78px,rgba(255,255,255,.05)_78px_80px)]" />
+      <section className="pitch-bg relative overflow-hidden border-b-[6px] border-volt text-white">
+        <PitchLines />
         <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:pt-24">
-          <span className="chip border-white/15 bg-white/5 text-brand-200">Football turfs across India</span>
-          <h1 className="mt-5 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
-            Book your next match <span className="bg-gradient-to-r from-brand-300 to-lime-300 bg-clip-text text-transparent">in under a minute</span>
+          <span className="kicker text-volt">Football turfs across India</span>
+          <h1 className="mt-4 max-w-3xl font-display text-5xl font-extrabold uppercase italic leading-[.88] sm:text-7xl">
+            Book your next match <span className="text-volt">in under a minute</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg text-slate-300">
             {BRAND.name} shows the football turfs near you with their real availability. It&apos;s free to use: book a slot for a ₹49
@@ -28,7 +29,7 @@ export default async function About() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href={cta.href} className="btn-primary px-6">{cta.label}</Link>
-            <Link href="/legal/refunds" className="btn border border-white/20 text-white hover:bg-white/10">Cancellation &amp; refunds</Link>
+            <Link href="/legal/refunds" className="btn border border-white/30 text-white hover:border-white">Cancellation &amp; refunds</Link>
           </div>
           {!user && <p className="mt-3 text-sm text-slate-400">An account is free. Already have one? <Link href="/login" className="underline">Sign in</Link>.</p>}
         </div>
@@ -52,7 +53,7 @@ export default async function About() {
       </section>
 
       <section className="mx-auto mt-14 max-w-6xl px-4">
-        <h2 className="text-2xl font-bold tracking-tight">How it works</h2>
+        <h2 className="h1">How it works</h2>
         <ol className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
           {[
             ["Sign up free", "With your mobile number (one-time code). Allow location to see the turfs nearest you."],
@@ -74,7 +75,7 @@ export default async function About() {
       <section className="mx-auto mt-16 max-w-6xl px-4">
         <div className="card grid grid-cols-1 gap-6 overflow-hidden p-8 sm:grid-cols-[1.2fr_1fr] sm:items-center">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Own a turf? Fill your empty hours.</h2>
+            <h2 className="h1">Own a turf? Fill your empty hours.</h2>
             <p className="muted mt-2">
               Turfly already shows turfs near players all over India. Claim yours free to take online bookings: every booking arrives on WhatsApp, payments go through Razorpay, and walk-ins, peak pricing and split pitches (7-a-side ↔ two 5-a-side) live in one calendar.
             </p>

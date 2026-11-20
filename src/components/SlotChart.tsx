@@ -13,12 +13,12 @@ export type ChartBlock = { id: string; configId: string | null; configName: stri
 
 const CELL: Record<string, string> = {
   available: "bg-brand-100 border-brand-200 hover:bg-brand-200",
-  booked: "bg-red-400 border-red-500",
+  booked: "bg-ink border-ink",
   held: "bg-amber-300 border-amber-400",
   blocked: "bg-slate-400 border-slate-500 bg-[repeating-linear-gradient(135deg,transparent_0_4px,rgba(255,255,255,.25)_4px_8px)]",
   unavailable: "bg-slate-100 border-slate-200 cursor-default",
 };
-const SELECTED = "bg-brand-600 border-brand-700 ring-2 ring-brand-300";
+const SELECTED = "bg-volt border-ink ring-2 ring-ink";
 const REASONS = [
   ["MAINTENANCE", "Maintenance"],
   ["PRIVATE_EVENT", "Private event"],
@@ -135,7 +135,7 @@ export function SlotChart({ turfId, date, step, rows, bookings, blocks, onBlock,
   return (
     <>
       <div className="mb-3 flex flex-wrap gap-3 text-[11px] text-slate-500">
-        {[["bg-brand-100", "Free"], ["bg-red-400", "Booked"], ["bg-amber-300", "In checkout"], ["bg-slate-400", "Blocked"], ["bg-slate-100", "Past"]].map(([c, t]) => (
+        {[["bg-brand-100", "Free"], ["bg-ink", "Booked"], ["bg-amber-300", "In checkout"], ["bg-slate-400", "Blocked"], ["bg-slate-100", "Past"]].map(([c, t]) => (
           <span key={t} className="flex items-center gap-1"><span className={`h-2.5 w-2.5 rounded-sm ${c}`} /> {t}</span>
         ))}
       </div>

@@ -23,7 +23,7 @@ export default async function CheckoutPage(props: { params: Promise<{ id: string
   return (
     <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 px-4 py-5 sm:gap-6 sm:py-10 md:grid-cols-[1fr_360px]">
       <div className="space-y-4 md:col-start-1 md:row-start-1">
-        <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Confirm & pay</h1>
+        <h1 className="h1">Confirm & pay</h1>
         <div className="card space-y-1 p-4 sm:p-5">
           <div className="text-xs font-medium text-slate-500">Booking {b.code}</div>
           <div className="text-lg font-bold leading-tight">{b.turf.name}</div>

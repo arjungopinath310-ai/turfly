@@ -62,7 +62,7 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
   })() : null;
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
-      <PageHeader title={searchParams.welcome ? "Welcome to Turfly! 👋" : "Your profile"} subtitle={formatPhone(user.phone) ?? user.email ?? ""} />
+      <PageHeader title={searchParams.welcome ? "Welcome to Turfly" : "Your profile"} subtitle={formatPhone(user.phone) ?? user.email ?? ""} />
       {searchParams.welcome && (
         <p className="mb-4 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-800">
           {isPlayer ? "Tell us your name so teammates and turf owners know who booked." : "Tell us your name so players and our team know who runs the turf."}
@@ -118,7 +118,7 @@ export default async function Profile(props: { searchParams: Promise<{ welcome?:
         <section id="coins" className="card mt-6 scroll-mt-20 p-5">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="h2">Turf coins</h2>
-            <span className="text-2xl font-extrabold text-brand-700">{coins.balance}</span>
+            <span className="score text-3xl text-brand-700">{coins.balance}</span>
           </div>
           <p className="mt-1 text-sm text-slate-600">
             Earn {coins.perBooking} coins for every online booking you play. Use them on the booking fee of your next booking: 1 coin = {rupees(coins.valuePaise)}.

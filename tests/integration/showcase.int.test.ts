@@ -31,6 +31,9 @@ beforeAll(async () => {
   const existing = await prisma.turf.findUnique({ where: { slug: SHOWCASE_SLUG } });
   if (existing) {
     turfId = existing.id;
+    // Games that earlier runs filled keep their bookings from taking a new game: clear them, so repeated runs
+    // in the same week still have bookings to list games on
+    await prisma.playerPost.deleteMany({ where: { turfId, status: "FILLED" } });
     return;
   }
   const city = await prisma.city.upsert({ where: { slug: "manjeri" }, update: {}, create: { slug: "manjeri", name: "Manjeri", state: "Kerala", lat: 11.12, lng: 76.12, pincodes: [] } });
@@ -70,9 +73,12 @@ describe("sample turf top-up", () => {
   });
 
   it("lists another game when one fills up", async () => {
-    // leave exactly three open games, whatever earlier runs left behind
-    const open = await findOpenGames({ turfId });
-    await prisma.playerPost.updateMany({ where: { id: { in: open.slice(3).map((g) => g.id) } }, data: { status: "FILLED" } });
+    // leave exactly three open games, whatever earlier runs left behind. Only games more than 3 hours away count
+    // (the top-up ignores ones about to start), so the test passes at any time of day. The others are removed,
+    // not marked filled, so their bookings can take a game again and repeated runs don't use up the week.
+    const soon = Date.now() + 3 * 3_600_000;
+    const later = (await findOpenGames({ turfId })).filter((g) => g.startAt.getTime() > soon);
+    await prisma.playerPost.deleteMany({ where: { id: { in: later.slice(3).map((g) => g.id) } } });
     const r = await topUpShowcase();
     expect(r).toMatchObject({ games: 1 });
     expect((await findOpenGames({ turfId })).length).toBeGreaterThanOrEqual(4);

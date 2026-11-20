@@ -84,7 +84,7 @@ export function LocationSync({ active, ask = false, quiet = false, className = "
 
   if (state === "unsupported" || quiet) return null;
   return (
-    <button type="button" onClick={() => locate(false)} disabled={state === "busy"} className={`chip shrink-0 whitespace-nowrap ${tone === "dark" ? "border-white/20 bg-white/10 text-white hover:bg-white/20" : active ? "border-brand-200 bg-brand-50 text-brand-800" : "border-slate-200 bg-white text-slate-700"} ${className}`}>
+    <button type="button" onClick={() => locate(false)} disabled={state === "busy"} className={`chip shrink-0 whitespace-nowrap ${tone === "dark" ? "border-volt/60 py-1 font-display text-[13px] uppercase tracking-[.08em] text-volt hover:bg-volt hover:text-ink" : active ? "border-brand-200 bg-brand-50 text-brand-800" : "border-slate-200 bg-white text-slate-700"} ${className}`}>
       {state === "busy" || finding ? <Loader2 size={13} className="animate-spin" /> : state === "denied" ? <MapPinOff size={13} /> : <LocateFixed size={13} />}
       {state === "denied" ? "Location is off · tap to retry" : finding ? "Finding turfs near you…" : active ? (label ?? "Near you · update") : "Use my location"}
     </button>

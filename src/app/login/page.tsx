@@ -22,7 +22,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ next?: 
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <NeighbourhoodMap variant={initialView === "owner" ? "owner" : "players"} crop className="block h-40 w-full sm:h-56 md:h-auto" />
         <div className="hidden space-y-4 p-6 md:block">
-          <h2 className="text-2xl font-extrabold leading-tight tracking-tight">Book turfs. Join games.<br />Find players near you.</h2>
+          <h2 className="font-display font-extrabold uppercase italic leading-[.92] text-[2rem]">Book turfs. Join games.<br /><span className="text-brand-700">Find players near you.</span></h2>
           <ul className="space-y-3 text-sm text-slate-600">
             <li className="flex gap-2.5"><MapPin size={18} className="shrink-0 text-brand-600" /> Every turf around you, with free slots, prices and directions.</li>
             <li className="flex gap-2.5"><Users size={18} className="shrink-0 text-brand-600" /> Short of players? Join a game nearby or fill yours.</li>

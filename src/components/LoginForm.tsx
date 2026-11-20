@@ -2,12 +2,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { getSession, signIn } from "next-auth/react";
-import { Loader2 } from "lucide-react";
+import { LandPlot, Loader2, Shirt } from "lucide-react";
 import { homeFor, VIEW_COOKIE, VIEW_COOKIE_MAX_AGE, type View } from "@/lib/access";
 
-const CHOICES: { view: View; icon: string; title: string; hint: string }[] = [
-  { view: "player", icon: "⚽", title: "I want to play", hint: "Find and book turfs" },
-  { view: "owner", icon: "🏟️", title: "I own or run a turf", hint: "Manage your bookings" },
+const CHOICES: { view: View; icon: React.ElementType; title: string; hint: string }[] = [
+  { view: "player", icon: Shirt, title: "I want to play", hint: "Find and book turfs" },
+  { view: "owner", icon: LandPlot, title: "I own or run a turf", hint: "Manage your bookings" },
 ];
 
 function rememberView(view: View) {
@@ -73,11 +73,11 @@ export function LoginForm({ next, google, initialView }: { next: string; google:
               aria-checked={on}
               disabled={step === "code"}
               onClick={() => choose(c.view)}
-              className={`rounded-2xl border-2 p-3 text-left transition ${on ? "border-brand-600 bg-brand-50" : "border-slate-200 bg-white hover:border-slate-300"} disabled:opacity-60`}
+              className={`rounded-xl border-2 bg-white p-3 text-left transition ${on ? "border-ink shadow-lift" : "border-slate-200 hover:border-slate-400"} disabled:opacity-60`}
             >
-              <div className="text-2xl" aria-hidden>{c.icon}</div>
-              <div className="mt-1 text-sm font-bold leading-tight">{c.title}</div>
-              <div className="text-xs text-slate-500">{c.hint}</div>
+              <span className={`grid h-9 w-9 place-items-center rounded-md ${on ? "bg-ink text-volt" : "bg-slate-100 text-slate-700"}`} aria-hidden><c.icon size={19} /></span>
+              <div className="mt-2 font-display text-[17px] font-bold uppercase leading-none tracking-[.02em]">{c.title}</div>
+              <div className="mt-1 text-xs text-slate-500">{c.hint}</div>
             </button>
           );
         })}

@@ -44,7 +44,7 @@ export function WelcomeSlides({ fee }: { fee: string }) {
             <div className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 shadow-sm">
               <NeighbourhoodMap variant={s.variant} className="block h-auto w-full" />
             </div>
-            <h1 className="mt-7 text-center text-2xl font-extrabold tracking-tight">{s.title}</h1>
+            <h1 className="mt-7 text-center font-display font-extrabold uppercase italic leading-[.92] text-[2.2rem]">{s.title}</h1>
             <p className="mt-2 max-w-sm text-center text-slate-600">{s.text}</p>
           </section>
         ))}

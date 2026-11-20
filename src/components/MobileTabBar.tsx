@@ -38,14 +38,15 @@ export function MobileTabBar({ view, admin }: { view: View | "guest"; admin: boo
   if (HIDE_ON.some((r) => r.test(path))) return null;
   const tabs: Tab[] = admin ? [...TABS[view].slice(0, 4), { href: "/admin", label: "Admin", icon: Shield }] : TABS[view];
   return (
-    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur md:hidden" aria-label="Main">
+    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 bg-ink md:hidden" aria-label="Main">
       <div className="mx-auto grid max-w-md" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
         {tabs.map((t) => {
           const on = t.exact ? path === t.href : path === t.href || path.startsWith(t.href + "/");
           const Icon = t.icon;
           return (
             <Link key={t.href} href={t.href} aria-current={on ? "page" : undefined}
-              className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${on ? "text-brand-700" : "text-slate-500"}`}>
+              className={`relative flex flex-col items-center gap-0.5 pb-2 pt-2.5 font-display text-[11px] font-bold uppercase tracking-[.08em] ${on ? "text-volt" : "text-slate-400"}`}>
+              {on && <span className="absolute inset-x-5 top-0 h-[3px] bg-volt" />}
               <Icon size={20} strokeWidth={on ? 2.4 : 1.8} />
               {t.label}
             </Link>

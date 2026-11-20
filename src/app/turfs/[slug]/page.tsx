@@ -84,7 +84,7 @@ export default async function TurfPage(props: { params: Promise<{ slug: string }
               {turf.isDemo && <DemoBadge />}
               {turf.status === "UNCLAIMED" && <span className="chip border-sky-200 bg-sky-50 text-sky-700">Unclaimed listing</span>}
             </div>
-            <h1 className="mt-2 text-2xl font-extrabold leading-tight tracking-tight sm:mt-3 sm:text-3xl">{turf.name}</h1>
+            <h1 className="mt-2 font-display text-[2rem] font-extrabold uppercase italic leading-[.92] sm:mt-3 sm:text-[2.6rem]">{turf.name}</h1>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
               {/* DIGIPIN instead of a street address: it pinpoints the turf (about 4 m) and works with India Post. */}
               <span className="flex items-center gap-1"><MapPin size={15} className="shrink-0" /> {[turf.locality ?? turf.addressLine, turf.city.name].filter((x, i, all) => x && all.findIndex((y) => y?.toLowerCase() === x.toLowerCase()) === i).join(", ")} {turf.pincode}</span>

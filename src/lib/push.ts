@@ -69,7 +69,7 @@ export async function sendPushToUser(userId: string, msg: PushMessage) {
             token: d.token,
             notification: { title: msg.title.slice(0, 100), body: msg.body.slice(0, 240) },
             data: { link: msg.link ?? "/notifications" },
-            android: { priority: "HIGH", notification: { channel_id: "turfly_default", tag: msg.tag, color: "#039855", icon: "ic_stat_turfly" } },
+            android: { priority: "HIGH", notification: { channel_id: "turfly_default", tag: msg.tag, color: "#458323", icon: "ic_stat_turfly" } },
           },
         }),
       });
