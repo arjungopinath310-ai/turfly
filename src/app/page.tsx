@@ -27,7 +27,7 @@ export default async function Home() {
   const loc = parseLoc((await cookies()).get(LOC_COOKIE)?.value);
   const near = loc ? { lat: String(loc.lat), lng: String(loc.lng), sort: "distance" } : null;
 
-  const [towns, turfs, nextMatch, games, settings] = await Promise.all([
+  const [towns, list, nextMatch, games, settings] = await Promise.all([
     // Towns that have turfs, busiest first, for one-tap search buttons.
     prisma.city.findMany({
       where: { isActive: true, turfs: { some: { status: { in: ["APPROVED", "UNCLAIMED"] }, isSandbox: false } } },
@@ -35,18 +35,21 @@ export default async function Home() {
     }),
     // Nearest first when the phone shared its location (within 30 km; else simply the closest ones)
     near
-      ? searchTurfs({ ...near, radius: "30" }, { pageSize: 9, pinDemo: true }).then((r) =>
+      ? searchTurfs({ ...near, radius: "30" }, { pageSize: 12, pinDemo: true }).then((r) =>
           // nothing real within 30 km (only the pinned demo): show the closest turfs anywhere instead
-          r.total > (r.cards[0]?.isDemo ? 1 : 0) ? r.cards : searchTurfs(near, { pageSize: 9, pinDemo: true }).then((x) => x.cards),
+          r.total > (r.cards[0]?.isDemo ? 1 : 0) ? { ...r, within: 30 as number | null } : searchTurfs(near, { pageSize: 12, pinDemo: true }).then((x) => ({ ...x, within: null as number | null })),
         )
-      : searchTurfs({}, { pageSize: 6, pinDemo: true }).then((r) => r.cards),
+      : searchTurfs({}, { pageSize: 9, pinDemo: true }).then((r) => ({ ...r, within: null as number | null })),
     user
       ? prisma.booking.findFirst({ where: { userId: user.id, status: "CONFIRMED", startAt: { gte: new Date() } }, include: { turf: { select: { name: true } } }, orderBy: { startAt: "asc" } })
       : null,
     findOpenGames({ take: 8 }).then((g) => g.filter((x) => x.userId !== user?.id)),
     getSettings(),
   ]);
+  const turfs = list.cards;
   const [free, here] = await Promise.all([freeToday(turfs), loc ? nearestCity(loc.lat, loc.lng, 40) : null]);
+  // the full list (with the map) for this place
+  const allHref = near ? `/turfs?${new URLSearchParams({ ...near, ...(list.within ? { radius: String(list.within) } : {}) })}` : "/turfs";
   const fee = rupees(settings.bookingFeePaise);
   // Towns across India: the closest ones when we know where the player is, else the busiest; a handful only
   if (loc) towns.sort((a, b) => haversineKm(loc, a) - haversineKm(loc, b));
@@ -121,13 +124,18 @@ export default async function Home() {
               <h2 className="text-xl font-bold tracking-tight">{near ? "Turfs near you" : "Turfs"}</h2>
               <p className="text-sm text-slate-500">{near ? "Closest first, with today's free slots." : "Share your location to see the closest turfs first."}</p>
             </div>
-            <Link href={near ? `/turfs?${new URLSearchParams(near)}` : "/turfs"} className="text-sm font-semibold text-brand-700 hover:underline">See all & map →</Link>
+            <Link href={allHref} className="text-sm font-semibold text-brand-700 hover:underline">See all & map →</Link>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {turfs.map((t) => (
               <TurfCardView key={t.id} t={t} free={free[t.id]} />
             ))}
           </div>
+          {list.total > turfs.length && (
+            <Link href={allHref} className="btn-ghost mt-4 w-full">
+              See all {list.total} turfs{near && list.within ? ` within ${list.within} km` : ""} →
+            </Link>
+          )}
         </section>
       </div>
     </>

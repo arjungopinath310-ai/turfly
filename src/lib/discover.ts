@@ -42,9 +42,10 @@ const GENERIC = /^(football |soccer )?(turf|ground|field)$/i;
 /** Whether a map feature looks like a bookable football turf (named, not a school or public ground). */
 export function looksLikeTurf(tags: Record<string, string> = {}) {
   const name = tags.name?.trim();
-  if (!name || name.length < 3) return false;
   const sport = (tags.sport ?? "").toLowerCase();
   const football = /soccer|football|futsal/.test(sport);
+  // An unnamed pitch counts only when it is clearly a football turf (artificial grass); unnamed grass pitches are mostly school fields
+  if (!name || name.length < 3) return football && /artificial|synthetic/.test(tags.surface ?? "") && tags.access !== "private";
   const otherSportOnly = Boolean(sport) && !football;
   if (otherSportOnly && !/turf|futsal|football|soccer/i.test(name)) return false; // badminton courts etc.
   if (NOT_A_TURF.test(name) && !/turf|futsal|arena/i.test(name)) return false;
@@ -74,7 +75,19 @@ export function areasFrom(elements: OsmElement[]): Areas {
   return { town, district: byLevel["5"], state: byLevel["4"] };
 }
 
-export type Listing = { ref: string; name: string; lat: number; lng: number; town?: string; locality?: string; addressLine?: string; pincode: string; phone: string | null; amenities: string[] };
+export type Listing = { ref: string; name: string; lat: number; lng: number; town?: string; locality?: string; addressLine?: string; pincode: string; phone: string | null; amenities: string[]; photos: string[] };
+
+/** Real photos the map links to: an image URL, or a Wikimedia Commons file (served as an 800 px thumbnail). */
+export function photosFrom(t: Record<string, string> = {}): string[] {
+  const out: string[] = [];
+  const img = (t.image ?? "").trim();
+  if (/^https:\/\/\S+\.(jpe?g|png|webp)(\?\S*)?$/i.test(img) && !/commons\.wikimedia\.org\/wiki\//.test(img)) out.push(img);
+  const fromImage = img.match(/commons\.wikimedia\.org\/wiki\/(File:[^?#]+)/i)?.[1];
+  const commons = (t.wikimedia_commons ?? "").trim() || (fromImage ? decodeURIComponent(fromImage) : "");
+  if (/^File:.+\.(jpe?g|png|webp)$/i.test(commons))
+    out.push(`https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(commons.replace(/^File:/i, "").replace(/ /g, "_"))}?width=800`);
+  return [...new Set(out)].slice(0, 3);
+}
 
 /** A map feature as a turf listing (or null if it isn't one). */
 export function toListing(e: OsmElement, areas: Areas): Listing | null {
@@ -87,8 +100,8 @@ export function toListing(e: OsmElement, areas: Areas): Listing | null {
   const cityTag = (t["addr:city"] || t["addr:town"] || "").split(",").map((x) => x.trim()).filter(Boolean);
   const town = cityTag.length ? cityTag[cityTag.length - 1] : areas.town;
   const locality = t["addr:suburb"] || t["addr:village"] || t["addr:place"] || t["addr:hamlet"] || (cityTag.length > 1 ? cityTag[0] : undefined);
-  const nice = t.name.trim().replace(/\s+/g, " ").replace(/,(?=\S)/g, ", ");
-  const name = GENERIC.test(nice) ? `Football Turf, ${locality ?? town ?? "nearby"}` : nice.replace(/\b[a-z]/g, (c) => c.toUpperCase());
+  const nice = (t.name ?? "").trim().replace(/\s+/g, " ").replace(/,(?=\S)/g, ", ");
+  const name = !nice || GENERIC.test(nice) ? `Football Turf, ${locality ?? town ?? "nearby"}` : nice.replace(/\b[a-z]/g, (c) => c.toUpperCase());
   const street = [t["addr:housename"], t["addr:housenumber"], t["addr:street"]].filter(Boolean).join(", ");
   const phoneRaw = t.phone || t["contact:phone"] || t["contact:mobile"] || "";
   const phone = phoneRaw ? normalizePhone(phoneRaw.split(/[;,/]/)[0]) : null;
@@ -104,6 +117,7 @@ export function toListing(e: OsmElement, areas: Areas): Listing | null {
     pincode: /^\d{6}$/.test(t["addr:postcode"] ?? "") ? t["addr:postcode"] : "",
     phone,
     amenities,
+    photos: photosFrom(t),
   };
 }
 
@@ -115,26 +129,30 @@ function query(lat: number, lng: number) {
 
 export type Fetcher = (lat: number, lng: number) => Promise<OsmElement[]>;
 
-/** Asks the public map servers in turn; throws if none answers. */
-export const overpassFetcher: Fetcher = async (lat, lng) => {
+/** Runs an Overpass query on the public map servers in turn; throws if none answers. */
+export async function overpassQuery(q: string, timeoutMs = 90_000): Promise<OsmElement[]> {
   let last: unknown = null;
   for (const url of SERVERS) {
     try {
       const r = await fetch(url, {
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "Turfly/1.0 (football turf finder)" },
-        body: new URLSearchParams({ data: query(lat, lng) }),
-        signal: AbortSignal.timeout(90_000), // busy public servers can take over a minute for a big city
+        body: new URLSearchParams({ data: q }),
+        signal: AbortSignal.timeout(timeoutMs),
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const j = (await r.json()) as { elements?: OsmElement[] };
+      const j = (await r.json()) as { elements?: OsmElement[]; remark?: string };
+      if (j.remark && /runtime error|timed out|out of memory/i.test(j.remark)) throw new Error(j.remark.slice(0, 200));
       return j.elements ?? [];
     } catch (e) {
       last = e;
     }
   }
   throw new Error(`map servers unavailable: ${String(last)}`);
-};
+}
+
+/** The turfs around a square's centre (busy public servers can take over a minute for a big city). */
+export const overpassFetcher: Fetcher = (lat, lng) => overpassQuery(query(lat, lng), 90_000);
 
 const running = new Map<string, Promise<{ found: number; added: number }>>();
 const recentLookups: number[] = [];
@@ -181,23 +199,39 @@ export async function importListings(elements: OsmElement[], centre: { lat: numb
   const state = normalizeState(areas.state);
   const listings = elements.map((e) => toListing(e, areas)).filter((x): x is Listing => x != null);
   if (!listings.length || !state) return { found: listings.length, added: 0 };
+  const centreTown = areas.town ? await findOrCreateCity({ name: areas.town, state, lat: centre.lat, lng: centre.lng, district: areas.district }) : await nearestCity(centre.lat, centre.lng, 30);
+  const r = await saveListings(listings, async (l) =>
+    l.town && l.town.toLowerCase() !== centreTown?.name.toLowerCase()
+      ? ((await nearestCity(l.lat, l.lng, 6)) ?? (await findOrCreateCity({ name: l.town, state, lat: l.lat, lng: l.lng, district: areas.district })))
+      : (centreTown ?? (await nearestCity(l.lat, l.lng, 30))),
+  );
+  return { found: listings.length, added: r.added };
+}
 
-  // Existing turfs around here (any source), to skip ones already listed
+/**
+ * Saves the listings that aren't on Turfly yet (same map id, or any turf at the same spot) as unclaimed turfs in
+ * the town `cityFor` picks. Listings already saved get the map's photos if they still have none.
+ */
+export async function saveListings(listings: Listing[], cityFor: (l: Listing) => Promise<{ id: string; name: string } | null>) {
+  if (!listings.length) return { added: 0, photos: 0 };
+  const lat = listings.map((l) => l.lat);
+  const lng = listings.map((l) => l.lng);
   const near = await prisma.turf.findMany({
-    where: { isSandbox: false, lat: { gte: centre.lat - 0.25, lte: centre.lat + 0.25 }, lng: { gte: centre.lng - 0.25, lte: centre.lng + 0.25 } },
+    where: { isSandbox: false, lat: { gte: Math.min(...lat) - 0.01, lte: Math.max(...lat) + 0.01 }, lng: { gte: Math.min(...lng) - 0.01, lte: Math.max(...lng) + 0.01 } },
     select: { lat: true, lng: true, sourceRef: true },
   });
   const refs = new Set(near.map((t) => t.sourceRef).filter(Boolean));
   const spots: { lat: number; lng: number }[] = near.map((t) => ({ lat: t.lat, lng: t.lng }));
-  const centreTown = areas.town ? await findOrCreateCity({ name: areas.town, state, lat: centre.lat, lng: centre.lng, district: areas.district }) : await nearestCity(centre.lat, centre.lng, 30);
 
   let added = 0;
+  let photos = 0;
   for (const l of listings) {
-    if (refs.has(l.ref) || spots.some((s) => haversineKm(s, l) < SAME_PLACE_KM)) continue;
-    const city =
-      l.town && l.town.toLowerCase() !== centreTown?.name.toLowerCase()
-        ? ((await nearestCity(l.lat, l.lng, 6)) ?? (await findOrCreateCity({ name: l.town, state, lat: l.lat, lng: l.lng, district: areas.district })))
-        : (centreTown ?? (await nearestCity(l.lat, l.lng, 30)));
+    if (refs.has(l.ref)) {
+      if (l.photos.length) photos += (await prisma.turf.updateMany({ where: { sourceRef: l.ref, status: "UNCLAIMED", photos: { isEmpty: true } }, data: { photos: l.photos } })).count;
+      continue;
+    }
+    if (spots.some((s) => haversineKm(s, l) < SAME_PLACE_KM)) continue;
+    const city = await cityFor(l);
     if (!city) continue;
     let slug = slugify(`${l.name}-${city.name}`) || `turf-${l.ref.replace("/", "-")}`;
     if (await prisma.turf.findUnique({ where: { slug }, select: { id: true } })) slug = `${slug}-${l.ref.split("/")[1].slice(-5)}`;
@@ -214,6 +248,7 @@ export async function importListings(elements: OsmElement[], centre: { lat: numb
           lng: l.lng,
           phone: l.phone,
           amenities: l.amenities,
+          photos: l.photos,
           status: "UNCLAIMED",
           availabilityMode: "NONE",
           source: "osm",
@@ -228,5 +263,5 @@ export async function importListings(elements: OsmElement[], centre: { lat: numb
       if ((e as { code?: string }).code !== "P2002") throw e; // another request listed it first
     }
   }
-  return { found: listings.length, added };
+  return { added, photos };
 }

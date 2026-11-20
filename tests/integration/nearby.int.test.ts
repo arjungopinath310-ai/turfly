@@ -56,6 +56,10 @@ describe("turfs near you", () => {
     expect(r.cards[0]).toMatchObject({ id: demo.id, distanceKm: null });
     expect(r.cards.filter((c) => c.id === demo.id)).toHaveLength(1);
     expect(r.cards.filter((c) => c.name.endsWith(tag)).map((c) => c.name.split(" ")[1])).toEqual(["close", "listed", "far"]);
+    // even when searching for a name, the demo stays first
+    const named = await searchTurfs({ q: `Near close ${tag}` }, { pinDemo: true });
+    expect(named.cards.map((c) => c.id)).toEqual([demo.id, ...named.cards.slice(1).map((c) => c.id)]);
+    expect(named.cards[1]?.name).toBe(`Near close ${tag}`);
     // without the option, nothing changes
     const plain = await searchTurfs({ lat: String(HOME.lat), lng: String(HOME.lng), sort: "distance", radius: "30" }, { pageSize: 50 });
     expect(plain.cards.some((c) => c.id === demo.id)).toBe(false);

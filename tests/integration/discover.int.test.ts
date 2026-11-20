@@ -87,3 +87,26 @@ describe("WhatsApp alerts for turf owners", () => {
     expect(alerts[0]).toMatchObject({ bookingId: online.id, userId: owner.id, channel: "WHATSAPP" });
   });
 });
+
+import { importTile } from "@/lib/import-india";
+describe("importing a map tile", () => {
+  it("files turfs under their nearest town, skips ones already listed, and adds map photos later", async () => {
+    const b = { lat: +(15 + Math.random() * 3).toFixed(3), lng: +(74 + Math.random() * 3).toFixed(3) };
+    const turfA: OsmElement & { tags: Record<string, string> } = { type: "way", id: id(), center: { lat: b.lat, lon: b.lng }, tags: { name: `Gamma Turf ${tag}`, leisure: "pitch", sport: "soccer" } };
+    const turfB: OsmElement = { type: "node", id: id(), lat: b.lat + 0.05, lon: b.lng + 0.05, tags: { name: `Delta Futsal ${tag}`, leisure: "pitch", sport: "futsal", "addr:city": `Deltapur ${tag}` } };
+    const town: OsmElement[] = [
+      { type: "node", id: id(), lat: b.lat + 0.01, lon: b.lng, tags: { place: "town", name: `Gammaville ${tag}` } },
+      { type: "area", id: 1, tags: { admin_level: "4", name: "Karnataka", "ISO3166-2": "IN-KA" } },
+    ];
+    const r = await importTile([turfA, turfB, ...town]);
+    expect(r).toMatchObject({ found: 2, added: 2, towns: 1 });
+    const a = await prisma.turf.findFirstOrThrow({ where: { sourceRef: `way/${turfA.id}` }, include: { city: true } });
+    expect(a.city).toMatchObject({ name: `Gammaville ${tag}`, state: "Karnataka" });
+    const d = await prisma.turf.findFirstOrThrow({ where: { sourceRef: `node/${turfB.id}` }, include: { city: true } });
+    expect(d.city.name).toBe(`Deltapur ${tag}`); // the town in its address wins
+    // later the map gets a photo for Gamma: the listing picks it up; nothing is listed twice
+    const withPhoto = { ...turfA, tags: { ...turfA.tags, wikimedia_commons: "File:Gamma.jpg" } };
+    expect(await importTile([withPhoto, turfB, ...town])).toMatchObject({ added: 0, photos: 1 });
+    expect((await prisma.turf.findFirstOrThrow({ where: { sourceRef: `way/${turfA.id}` } })).photos).toEqual(["https://commons.wikimedia.org/wiki/Special:FilePath/Gamma.jpg?width=800"]);
+  });
+});
