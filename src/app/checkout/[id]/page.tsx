@@ -42,8 +42,8 @@ export default async function CheckoutPage(props: { params: Promise<{ id: string
         <dl className="space-y-1.5 text-sm">
           <div className="flex justify-between"><dt className="text-slate-600">Turf price</dt><dd>{rupees(b.totalPrice)}</dd></div>
           {b.discount > 0 && <div className="flex justify-between text-brand-700"><dt>Discount</dt><dd>− {rupees(b.discount)}</dd></div>}
-          <div className="flex justify-between"><dt className="text-slate-600">{b.payFullOnline ? "Paid online" : "Advance (online)"}</dt><dd>{rupees(b.advanceAmount)}</dd></div>
-          {b.platformFee > 0 && <div className="flex justify-between"><dt className="text-slate-600">Platform fee</dt><dd>{rupees(b.platformFee)}</dd></div>}
+          {b.advanceAmount > 0 && <div className="flex justify-between"><dt className="text-slate-600">{b.payFullOnline ? "Paid online" : "Advance (online)"}</dt><dd>{rupees(b.advanceAmount)}</dd></div>}
+          {b.platformFee > 0 && <div className="flex justify-between"><dt className="text-slate-600">Turfly booking fee</dt><dd>{rupees(b.platformFee)}</dd></div>}
           <div className="flex justify-between"><dt className="text-slate-600">Pay at the turf</dt><dd>{rupees(b.balanceDue)}</dd></div>
           {b.coinsUsed > 0 && <div className="flex justify-between text-brand-700"><dt>Turf coins ({b.coinsUsed})</dt><dd>− {rupees(b.coinsValue)}</dd></div>}
           <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold"><dt>Pay now</dt><dd>{rupees(b.onlineAmount)}</dd></div>

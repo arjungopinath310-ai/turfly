@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { CalendarCheck, ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
-import { searchTurfs } from "@/lib/search";
+import { freeToday, haversineKm, searchTurfs } from "@/lib/search";
+import { LOC_COOKIE, parseLoc } from "@/lib/geo";
+import { getSettings } from "@/lib/settings";
+import { rupees } from "@/lib/engine/pricing";
+import { LocationSync } from "@/components/LocationSync";
 import { currentView } from "@/lib/view";
 import { formatDateLong, formatTimeRange } from "@/lib/time";
 import { TurfCardView } from "@/components/TurfCard";
@@ -14,20 +19,31 @@ import { findOpenGames } from "@/lib/games";
 export default async function Home() {
   const user = await currentUser();
   if (user && (await currentView(user.role)) === "owner") redirect("/owner");
+  const loc = parseLoc((await cookies()).get(LOC_COOKIE)?.value);
+  const near = loc ? { lat: String(loc.lat), lng: String(loc.lng), sort: "distance" } : null;
 
-  const [towns, turfs, nextMatch, games] = await Promise.all([
+  const [towns, turfs, nextMatch, games, settings] = await Promise.all([
     // Towns that have turfs, busiest first, for one-tap search buttons.
     prisma.city.findMany({
       where: { isActive: true, turfs: { some: { status: { in: ["APPROVED", "UNCLAIMED"] }, isSandbox: false } } },
       include: { _count: { select: { turfs: { where: { status: { in: ["APPROVED", "UNCLAIMED"] }, isSandbox: false } } } } },
     }),
-    searchTurfs({}, { pageSize: 6 }).then((r) => r.cards),
+    // Nearest first when the phone shared its location (within 30 km; else simply the closest ones)
+    near
+      ? searchTurfs({ ...near, radius: "30" }, { pageSize: 9 }).then((r) => (r.total ? r.cards : searchTurfs(near, { pageSize: 9 }).then((x) => x.cards)))
+      : searchTurfs({}, { pageSize: 6 }).then((r) => r.cards),
     user
       ? prisma.booking.findFirst({ where: { userId: user.id, status: "CONFIRMED", startAt: { gte: new Date() } }, include: { turf: { select: { name: true } } }, orderBy: { startAt: "asc" } })
       : null,
     findOpenGames({ take: 8 }).then((g) => g.filter((x) => x.userId !== user?.id)),
+    getSettings(),
   ]);
-  towns.sort((a, b) => b._count.turfs - a._count.turfs);
+  const free = await freeToday(turfs);
+  const fee = rupees(settings.bookingFeePaise);
+  // Towns across India: the closest ones when we know where the player is, else the busiest; a handful only
+  if (loc) towns.sort((a, b) => haversineKm(loc, a) - haversineKm(loc, b));
+  else towns.sort((a, b) => b._count.turfs - a._count.turfs);
+  towns.splice(10);
   const first = user?.name?.trim().split(/\s+/)[0];
 
   return (
@@ -38,7 +54,7 @@ export default async function Home() {
           <h1 className="max-w-3xl text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
             {first ? `Hi ${first}, ready to play?` : "Ready to play?"}
           </h1>
-          <p className="mt-2 text-slate-300">Find a football turf near you.</p>
+          <p className="mt-2 text-slate-300">Find a turf near you and book for {fee}. Pay the rest at the turf.</p>
           <form action="/turfs" className="mt-6 flex max-w-2xl gap-2 rounded-2xl bg-white p-2 text-slate-900 shadow-2xl">
             <input name="q" className="input flex-1 border-0 focus:ring-0" placeholder="Search by turf name" aria-label="Search by turf name" />
             <button className="btn-primary px-5">Search</button>
@@ -84,13 +100,17 @@ export default async function Home() {
         )}
 
         <section>
-          <div className="mb-4 flex items-end justify-between">
-            <h2 className="text-xl font-bold tracking-tight">Turfs</h2>
-            <Link href="/turfs" className="text-sm font-semibold text-brand-700 hover:underline">See all & map →</Link>
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+            <div className="mr-auto">
+              <h2 className="text-xl font-bold tracking-tight">{near ? "Turfs near you" : "Turfs"}</h2>
+              <p className="text-sm text-slate-500">{near ? "Closest first, with today's free slots." : "Share your location to see the closest turfs first."}</p>
+            </div>
+            <LocationSync active={Boolean(near)} ask />
+            <Link href={near ? `/turfs?${new URLSearchParams(near)}` : "/turfs"} className="text-sm font-semibold text-brand-700 hover:underline">See all & map →</Link>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {turfs.map((t) => (
-              <TurfCardView key={t.id} t={t} />
+              <TurfCardView key={t.id} t={t} free={free[t.id]} />
             ))}
           </div>
         </section>

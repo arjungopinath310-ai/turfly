@@ -1,12 +1,50 @@
 "use client";
 import { useFormStatus } from "react-dom";
-import { useActionState, useTransition, useState } from "react";
+import { useActionState, useCallback, useMemo, useTransition, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 type State = { ok?: string; error?: string } | null;
 
+/** The Next.js router, whose refresh() also gets the nudge described at useSettleAfterAction. */
+export function useRefreshingRouter() {
+  const router = useRouter();
+  const settle = useSettleAfterAction();
+  return useMemo(
+    () => ({
+      push: router.push,
+      replace: router.replace,
+      back: router.back,
+      forward: router.forward,
+      prefetch: router.prefetch,
+      refresh: () => {
+        router.refresh();
+        settle();
+      },
+    }),
+    [router, settle],
+  );
+}
+
+/**
+ * Next 15.5 / React 19: when a server action finishes very quickly, the re-rendered page it sends back can sit
+ * uncommitted (button still spinning, list not updated) until something else on the page changes. A few tiny
+ * state updates right after the action lets React finish the update. Harmless when nothing is stuck.
+ */
+export function useSettleAfterAction() {
+  const [, setTick] = useState(0);
+  return useCallback(() => {
+    for (const ms of [30, 250, 900]) setTimeout(() => setTick((t) => t + 1), ms);
+  }, []);
+}
+
 export function ActionForm({ action, children, className, submit = "Save", submitClass = "btn-primary" }: { action: (s: State, fd: FormData) => Promise<State>; children: React.ReactNode; className?: string; submit?: string | null; submitClass?: string }) {
-  const [state, formAction] = useActionState(action, null);
+  const settle = useSettleAfterAction();
+  const [state, formAction] = useActionState(async (s: State, fd: FormData) => {
+    const r = await action(s, fd);
+    settle();
+    return r;
+  }, null);
   return (
     <form action={formAction} className={className}>
       {children}
@@ -30,6 +68,7 @@ function Submit({ label, className }: { label: string; className: string }) {
 export function ActionButton({ action, label, className = "btn-ghost btn-sm", confirmText }: { action: () => Promise<State>; label: string; className?: string; confirmText?: string }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<State>(null);
+  const settle = useSettleAfterAction();
   return (
     <span className="inline-flex flex-col">
       <button
@@ -37,7 +76,10 @@ export function ActionButton({ action, label, className = "btn-ghost btn-sm", co
         disabled={pending}
         onClick={() => {
           if (confirmText && !confirm(confirmText)) return;
-          start(async () => setMsg(await action()));
+          start(async () => {
+            setMsg(await action());
+            settle();
+          });
         }}
       >
         {pending && <Loader2 size={13} className="animate-spin" />} {label}

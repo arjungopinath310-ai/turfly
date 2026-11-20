@@ -49,9 +49,11 @@ export async function Navbar() {
             {user.role === "ADMIN" && <Link href="/admin" className="hover:text-slate-900">Admin</Link>}
           </nav>
         ) : (
-          // Signed-out visitors only get "About" and "Sign in": every app page needs an account.
-          <nav className="flex items-center text-sm font-medium text-slate-600">
-            <Link href="/about" className="hover:text-slate-900">About</Link>
+          // Signed-out visitors can find turfs; booking and the owner side need an account.
+          <nav className="flex items-center gap-4 whitespace-nowrap text-sm font-medium text-slate-600">
+            <Link href="/turfs" className="hover:text-slate-900">Find turfs</Link>
+            <Link href="/signup?as=owner" className="hidden hover:text-slate-900 sm:inline">List your turf</Link>
+            <Link href="/about" className="hidden hover:text-slate-900 md:inline">About</Link>
           </nav>
         )}
         <div className="ml-auto flex items-center gap-3">
@@ -68,7 +70,10 @@ export async function Navbar() {
               <UserMenu name={displayName(user)} hasName={Boolean(user.name?.trim())} role={user.role} view={view} demo={isDemoMode()} />
             </>
           ) : (
-            <Link href="/login" className="btn-primary">Sign in</Link>
+            <>
+              <Link href="/login" className="btn-ghost btn-sm whitespace-nowrap">Sign in</Link>
+              <Link href="/signup" className="btn-primary btn-sm whitespace-nowrap">Sign up<span className="hidden sm:inline">&nbsp;free</span></Link>
+            </>
           )}
         </div>
       </div>

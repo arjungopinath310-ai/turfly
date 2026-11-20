@@ -14,10 +14,10 @@ const pin = (live: boolean) =>
     iconAnchor: [15, 30],
   });
 
-export default function TurfMap({ rows, center, height = 560 }: { rows: MapPoint[]; center: { lat: number; lng: number }; height?: number }) {
+export default function TurfMap({ rows, center, zoom = 13, height = 560 }: { rows: MapPoint[]; center: { lat: number; lng: number }; zoom?: number; height?: number }) {
   return (
     <div className="card overflow-hidden p-0" style={{ height }}>
-      <MapContainer center={[center.lat, center.lng]} zoom={13} style={{ height: "100%", width: "100%" }} scrollWheelZoom>
+      <MapContainer center={[center.lat, center.lng]} zoom={zoom} style={{ height: "100%", width: "100%" }} scrollWheelZoom>
         <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {rows.map((t) => (
           <Marker key={t.id} position={[t.lat, t.lng]} icon={pin(t.availabilityMode === "LIVE")}>

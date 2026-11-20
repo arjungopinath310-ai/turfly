@@ -24,7 +24,7 @@ export async function notifyInApp(db: Tx, userId: string, title: string, body: s
 /** Called inside the confirmation transaction. Idempotent thanks to @@unique(bookingId, template, channel). */
 export async function scheduleBookingJobs(db: Tx, bookingId: string) {
   const s = await getSettings();
-  const b = await db.booking.findUniqueOrThrow({ where: { id: bookingId } });
+  const b = await db.booking.findUniqueOrThrow({ where: { id: bookingId }, include: { turf: { select: { ownerId: true, isSandbox: true } } } });
   const now = Date.now();
   const start = b.startAt.getTime();
   const jobs: { template: string; sendAt: Date }[] = [{ template: "BOOKING_CONFIRMED", sendAt: new Date() }];
@@ -33,10 +33,11 @@ export async function scheduleBookingJobs(db: Tx, bookingId: string) {
   if (s.reminders.balance && b.balanceDue > 0 && start - 3 * 3600_000 > now)
     jobs.push({ template: "BALANCE_PENDING", sendAt: new Date(start - 3 * 3600_000) });
   const channels = ["IN_APP", ...s.reminders.channels];
-  await db.notificationJob.createMany({
-    data: jobs.flatMap((j) => channels.map((channel) => ({ bookingId, userId: b.userId, channel, template: j.template, sendAt: j.sendAt }))),
-    skipDuplicates: true,
-  });
+  const data = jobs.flatMap((j) => channels.map((channel) => ({ bookingId, userId: b.userId, channel, template: j.template, sendAt: j.sendAt })));
+  // The turf gets every online booking on WhatsApp (once per booking; the in-app alert is sent separately)
+  if (b.source === "ONLINE" && b.turf.ownerId && !b.turf.isSandbox)
+    data.push({ bookingId, userId: b.turf.ownerId, channel: "WHATSAPP", template: "OWNER_NEW_BOOKING", sendAt: new Date() });
+  await db.notificationJob.createMany({ data, skipDuplicates: true });
 }
 
 export async function cancelBookingJobs(db: Tx, bookingId: string) {
@@ -69,6 +70,16 @@ function render(template: string, b: Awaited<ReturnType<typeof loadBooking>>) {
         html: `<p>Reminder: ${base}. Booking ${b.code}.</p><p><a href="${directionsUrl(b.turf)}">Directions</a></p>`,
         params: [b.turf.name, when, b.code, directionsUrl(b.turf)],
       };
+    case "OWNER_NEW_BOOKING": {
+      const who = b.teamName || b.team?.name || b.customerName || b.user?.name || "A player";
+      const ownerLink = `${APP()}/owner/bookings?focus=${b.id}`;
+      return {
+        title: `New booking ${b.code}`,
+        body: `${who} booked ${b.config.name} at ${b.turf.name}, ${when}. Collect ${rupees(b.balanceDue)} at the turf.`,
+        html: `<p>${who} booked ${b.config.name} at <b>${b.turf.name}</b>, ${when}.</p><p>Collect ${rupees(b.balanceDue)} at the turf. <a href="${ownerLink}">Open booking</a></p>`,
+        params: [b.code, b.turf.name, when, who, b.config.name, rupees(b.balanceDue), ownerLink],
+      };
+    }
     case "BALANCE_PENDING":
       return {
         title: `Balance ${rupees(b.balanceDue)} due at the turf`,
@@ -82,7 +93,7 @@ function render(template: string, b: Awaited<ReturnType<typeof loadBooking>>) {
 }
 
 const loadBooking = (id: string) =>
-  prisma.booking.findUniqueOrThrow({ where: { id }, include: { turf: { include: { city: true } }, config: true, team: true, user: true } });
+  prisma.booking.findUniqueOrThrow({ where: { id }, include: { turf: { include: { city: true, owner: { select: { id: true, phone: true, email: true } } } }, config: true, team: true, user: true } });
 
 /** Processes due jobs. Called by /api/cron/tick every minute. */
 export async function processDueJobs(limit = 50) {
@@ -106,11 +117,14 @@ export async function processDueJobs(limit = 50) {
         continue;
       }
       const msg = render(job.template, b);
-      const u = b.user;
-      if (job.channel === "IN_APP" && u) await notifyInApp(prisma, u.id, msg.title, msg.body, `/bookings/${b.id}`);
+      // Owner alerts go to the turf's WhatsApp number (or the owner's phone); everything else to the player
+      const forOwner = job.template.startsWith("OWNER_");
+      const u = forOwner ? b.turf.owner : b.user;
+      const phone = forOwner ? (b.turf.whatsapp ?? b.turf.owner?.phone ?? null) : (b.user?.phone ?? null);
+      if (job.channel === "IN_APP" && u) await notifyInApp(prisma, u.id, msg.title, msg.body, forOwner ? `/owner/bookings?focus=${b.id}` : `/bookings/${b.id}`);
       const smsKey = smsKeyFor(job.template);
-      if (job.channel === "SMS" && u?.phone && smsKey) await sendSms(u.phone, smsKey, smsVars(job.template, b));
-      if (job.channel === "WHATSAPP" && u?.phone) await sendWhatsApp(u.phone, job.template, msg.params);
+      if (job.channel === "SMS" && phone && smsKey) await sendSms(phone, smsKey, smsVars(job.template, b));
+      if (job.channel === "WHATSAPP" && phone) await sendWhatsApp(phone, job.template, msg.params);
       if (job.channel === "EMAIL" && u?.email) await sendEmail(u.email, msg.title, msg.html);
       await prisma.notificationJob.update({ where: { id: job.id }, data: { status: "SENT", sentAt: new Date() } });
       sent++;

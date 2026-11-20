@@ -1,12 +1,12 @@
 /**
- * Sign-in is required for the whole app, including the home page: signed-out visitors land on /login.
- * These pages stay public because payment gateways (Razorpay website checks), Google sign-in
- * verification and the Play Store review must be able to open them without an account. None of them
- * shows turfs, prices of turfs or any other part of the app. Everything else redirects to /login and
- * comes back afterwards. Pure functions: used by the middleware and by tests.
+ * Turfly is useful without an account: anyone can find turfs near them, see prices, photos, free slots
+ * and directions, and compare turfs. An account is needed to book, join games, chat, and for the owner
+ * and admin sides; those pages send signed-out visitors to /login and bring them back afterwards.
+ * The sign-in, legal and help pages are public too (payment-gateway, Google and Play Store reviews).
+ * Pure functions: used by the middleware and by tests.
  */
-const PUBLIC_EXACT = new Set(["/login", "/about", "/contact", "/account/delete"]);
-const PUBLIC_PREFIXES = ["/legal/"];
+const PUBLIC_EXACT = new Set(["/", "/turfs", "/compare", "/login", "/signup", "/about", "/contact", "/account/delete"]);
+const PUBLIC_PREFIXES = ["/legal/", "/turfs/"];
 
 export function isPublicPath(pathname: string) {
   const p = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;

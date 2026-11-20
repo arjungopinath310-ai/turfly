@@ -376,8 +376,8 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
                 <dl className="space-y-1.5 text-sm">
                   <Row k="Turf price" v={rupees(quote.quote.totalPrice)} />
                   {quote.quote.discount > 0 && <Row k={`Offer ${quote.offer?.code ?? ""}`} v={`− ${rupees(quote.quote.discount)}`} className="text-brand-700" />}
-                  <Row k={payFull ? "Paid online" : "Advance (online)"} v={rupees(quote.quote.advanceAmount)} />
-                  {quote.quote.platformFee > 0 && <Row k="Platform fee" v={rupees(quote.quote.platformFee)} />}
+                  {quote.quote.advanceAmount > 0 && <Row k={payFull ? "Paid online" : "Advance (online)"} v={rupees(quote.quote.advanceAmount)} />}
+                  {quote.quote.platformFee > 0 && <Row k="Turfly booking fee (online)" v={rupees(quote.quote.platformFee)} />}
                   {coinsOff > 0 && <Row k={`Turf coins (${quote.coins!.usable})`} v={`− ${rupees(coinsOff)}`} className="text-brand-700" />}
                   <Row k="Pay at the turf" v={rupees(quote.quote.balanceDue)} />
                   <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold">
@@ -387,7 +387,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
                 {quote.coins && quote.coins.usable > 0 && (
                   <label className="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
                     <input type="checkbox" className="h-4 w-4 accent-brand-600" checked={useCoins} onChange={(e) => setUseCoins(e.target.checked)} />
-                    Use {quote.coins.usable} of your {quote.coins.balance} Turf coins on the advance
+                    Use {quote.coins.usable} of your {quote.coins.balance} Turf coins on the booking fee
                   </label>
                 )}
                 </dl>
@@ -427,7 +427,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
               ) : (
                 <>
                   <div className="text-sm font-semibold">{fromPrice != null ? `From ${rupees(fromPrice)} / ${durationLabel(duration)}` : "Pick a day and time"}</div>
-                  <div className="text-xs text-slate-500">Reserve with {rupees(p.advance)} online</div>
+                  <div className="text-xs text-slate-500">Book for {rupees(p.advance)} · pay the rest at the turf</div>
                 </>
               )}
             </div>

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRefreshingRouter as useRouter } from "./ActionForm";
 import clsx from "clsx";
 import { Loader2, Minus, Plus } from "lucide-react";
 import { SKILL_LEVELS } from "@/lib/games-shared";

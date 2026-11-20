@@ -29,6 +29,7 @@ model User {
   shareContactWithTeams Boolean   @default(false) // consent to show phone to teammates
   isSuspended           Boolean   @default(false)
   deletedAt             DateTime? // account deleted by the user: personal data erased, financial records kept
+  termsAcceptedAt       DateTime? // when the person accepted the terms (sign-up or first sign-in)
   referralCode          String?   @unique
   referredById          String?
   createdAt             DateTime  @default(now())
@@ -146,8 +147,6 @@ model Turf {
   fullOnlinePaymentEnabled Boolean          @default(false)
   cancellationPolicy       Json? // null → platform default
   commissionPercent        Float? // null → platform default
-  /// Owner pricing: no Turfly fee until this moment. Set at the turf's first online booking (free period).
-  freeUntil                DateTime?
   isDemo                   Boolean          @default(false)
   /// A private sample copy of the demo turf for one signed-in person (demo mode): hidden from players and other owners.
   isSandbox                Boolean          @default(false)
@@ -155,6 +154,9 @@ model Turf {
   ratingAvg                Float            @default(0)
   ratingCount              Int              @default(0)
   sourceNote               String? // where public info came from (unclaimed listings)
+  /// Where an unclaimed listing was found, e.g. "osm" (OpenStreetMap), and its id there ("way/123"); null for turfs added by people.
+  source                   String?
+  sourceRef                String?          @unique
   // Price players report for a turf that doesn't manage bookings here (no pitch prices of its own).
   // Shown as "reported", never used for charging. Set by an admin; cleared once the owner sets real prices.
   reportedPriceFrom        Int? // paise per hour, lowest reported
@@ -840,4 +842,12 @@ model CoinEntry {
 
   @@unique([bookingId, kind])
   @@index([userId, createdAt])
+}
+
+/// One ~10 km square of the map whose turfs were looked up on OpenStreetMap, so it isn't asked again for a while.
+model DiscoveryCell {
+  key       String   @id // "11.1,76.1": latitude and longitude rounded down to 0.1°
+  fetchedAt DateTime
+  found     Int      @default(0)
+  added     Int      @default(0)
 }

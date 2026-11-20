@@ -49,8 +49,9 @@ beforeAll(async () => {
     const row = await prisma.pitchConfig.create({ data: { turfId, name: c.name, playersPerSide: c.playersPerSide, basePricePerHour: c.basePricePerHour, units: { create: c.unitKeys.map((k) => ({ unitId: ids[k] })) } } });
     if (c.playersPerSide === 7) fullId = row.id;
   }
-  const digits = tag.replace(/\D/g, "").padEnd(4, "2").slice(0, 4);
-  for (let i = 0; i < 8; i++) users.push(await prisma.user.create({ data: { phone: `+9171${digits}${String(i).padStart(4, "0")}`, name: `Split ${i}` } }));
+  // unique per run: earlier runs leave their users in the test database
+  const stamp = String(Date.now()).slice(-7);
+  for (let i = 0; i < 8; i++) users.push(await prisma.user.create({ data: { phone: `+9172${stamp}${i}`, name: `Split ${i}` } }));
 });
 
 afterAll(async () => {
@@ -61,7 +62,7 @@ describe("split payments", () => {
   it("a friend's share is confirmed by the webhook: balance, ledger, squad and notification", async () => {
     const [org, f1] = users;
     const b = await confirmedBooking(org, 8 * 60);
-    expect(b.balanceDue).toBe(145100);
+    expect(b.balanceDue).toBe(150000);
     const plan = await createSplit(org, b.id, 10); // ₹150 each, 9 friends
     expect(plan.shareAmount).toBe(15000);
     expect(plan.shares).toHaveLength(9);
@@ -73,7 +74,7 @@ describe("split payments", () => {
     expect((await applyGatewayEvent(evt, "payment.captured", {}, true)).status).toBe("duplicate");
 
     const after = await prisma.booking.findUniqueOrThrow({ where: { id: b.id } });
-    expect(after.balanceDue).toBe(145100 - 15000);
+    expect(after.balanceDue).toBe(150000 - 15000);
     expect(after.splitCollected).toBe(15000);
     expect(await prisma.splitShare.count({ where: { planId: plan.id, status: "PAID", paidById: f1.id } })).toBe(1);
     expect(await prisma.ledgerEntry.count({ where: { bookingId: b.id, type: "SPLIT_COLLECTED", amount: 15000 } })).toBe(1);

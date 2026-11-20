@@ -97,7 +97,7 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
           ))}
         </div>
         <table className="table min-w-[1100px]">
-          <thead><tr><th>Turf</th><th>Status</th><th>Owner</th><th>Bookings</th><th>Commission % / featured</th><th>Reported price (₹/hour)</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Turf</th><th>Status</th><th>Owner</th><th>Bookings</th><th>Featured</th><th>Reported price (₹/hour)</th><th>Actions</th></tr></thead>
           <tbody>
             {turfs.map((t) => (
               <tr key={t.id}>
@@ -114,7 +114,6 @@ export default async function AdminTurfs(props: { searchParams: Promise<{ status
                 <td>
                   <ActionForm action={updateTurfAdmin} className="flex items-center gap-2" submit="Save" submitClass="btn-ghost btn-sm">
                     <input type="hidden" name="turfId" value={t.id} />
-                    <input name="commission" type="number" step="0.5" min={0} max={50} defaultValue={t.commissionPercent ?? ""} placeholder="default" className="input w-24 py-1" />
                     <label className="flex items-center gap-1 text-xs"><input type="checkbox" name="featured" defaultChecked={t.isFeatured} className="accent-brand-600" /> featured</label>
                   </ActionForm>
                 </td>

@@ -37,7 +37,9 @@ describe("private sample turfs", () => {
     expect(await prisma.booking.count({ where: { turfId: turf.id, status: "COMPLETED" } })).toBeGreaterThan(200);
     expect(await prisma.booking.count({ where: { turfId: turf.id, status: "CONFIRMED", startAt: { gt: now } } })).toBeGreaterThan(30);
     expect(await prisma.review.count({ where: { turfId: turf.id } })).toBeGreaterThan(20);
-    expect(await prisma.ledgerEntry.count({ where: { turfId: turf.id } })).toBeGreaterThan(100);
+    // online bookings carry Turfly's booking fee as a payment; nothing goes into the turf's ledger
+    expect(await prisma.payment.count({ where: { booking: { turfId: turf.id } } })).toBeGreaterThan(100);
+    expect(await prisma.ledgerEntry.count({ where: { turfId: turf.id } })).toBe(0);
     expect(await prisma.notification.count({ where: { userId: owner.id, title: { startsWith: "New booking" } } })).toBe(3);
     expect(await prisma.conversation.count({ where: { turfId: turf.id } })).toBe(3);
     expect((await findOpenGames({ turfId: turf.id })).length).toBeGreaterThanOrEqual(1);

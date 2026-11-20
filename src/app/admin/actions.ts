@@ -55,10 +55,9 @@ export async function reviewTurf(_: ActionState, fd: FormData): Promise<ActionSt
 export async function updateTurfAdmin(_: ActionState, fd: FormData): Promise<ActionState> {
   return run(async () => {
     const a = await admin();
-    const d = z.object({ turfId: z.string(), commission: z.string().optional() }).parse(Object.fromEntries(fd));
-    const commissionPercent = d.commission === "" || d.commission == null ? null : z.coerce.number().min(0).max(50).parse(d.commission);
-    await prisma.turf.update({ where: { id: d.turfId }, data: { commissionPercent, isFeatured: fd.get("featured") === "on" } });
-    await audit(a.id, "TURF_COMMERCIALS", "Turf", d.turfId, { commissionPercent, featured: fd.get("featured") === "on" });
+    const d = z.object({ turfId: z.string() }).parse(Object.fromEntries(fd));
+    await prisma.turf.update({ where: { id: d.turfId }, data: { isFeatured: fd.get("featured") === "on" } });
+    await audit(a.id, "TURF_COMMERCIALS", "Turf", d.turfId, { featured: fd.get("featured") === "on" });
     revalidatePath("/admin/turfs");
   });
 }
@@ -190,12 +189,8 @@ export async function savePlatformSettings(_: ActionState, fd: FormData): Promis
     const a = await admin();
     const d = z
       .object({
-        advance: z.coerce.number().min(1).max(5000),
         fee: z.coerce.number().min(0).max(500),
         holdMinutes: z.coerce.number().int().min(2).max(30),
-        freeTrialDays: z.coerce.number().int().min(0).max(730),
-        feePerBooking: z.coerce.number().min(0).max(1000),
-        feeCap: z.coerce.number().min(0).max(100000),
         coinsPerBooking: z.coerce.number().int().min(0).max(1000),
         coinValue: z.coerce.number().min(0.5).max(10),
       })
@@ -204,12 +199,8 @@ export async function savePlatformSettings(_: ActionState, fd: FormData): Promis
       .filter((i) => String(fd.get(`h_${i}`) ?? "") !== "" && String(fd.get(`p_${i}`) ?? "") !== "")
       .map((i) => ({ minHoursBefore: Number(fd.get(`h_${i}`)), refundPercent: Number(fd.get(`p_${i}`)) }));
     const channels = fd.getAll("channels").map(String).filter((c): c is "SMS" | "WHATSAPP" | "EMAIL" => ["SMS", "WHATSAPP", "EMAIL"].includes(c));
-    await setSetting("advanceAmountPaise", Math.round(d.advance * 100));
-    await setSetting("platformFeePaise", Math.round(d.fee * 100));
+    await setSetting("bookingFeePaise", Math.round(d.fee * 100));
     await setSetting("holdMinutes", d.holdMinutes);
-    await setSetting("freeTrialDays", d.freeTrialDays);
-    await setSetting("onlineBookingFeePaise", Math.round(d.feePerBooking * 100));
-    await setSetting("monthlyFeeCapPaise", Math.round(d.feeCap * 100));
     await setSetting("coinsPerBooking", d.coinsPerBooking);
     await setSetting("coinValuePaise", Math.round(d.coinValue * 100));
     await setSetting("defaultCancellationPolicy", policySchema.parse({ tiers, ownerCancelRefundPercent: 100 }));

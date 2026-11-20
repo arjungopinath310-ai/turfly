@@ -9,7 +9,7 @@ import { Empty } from "./ui";
 const TurfMap = dynamic(() => import("./TurfMap"), { ssr: false, loading: () => <div className="card h-[560px] animate-pulse" /> });
 
 /** List (current page of cards) or map (every match, as light points). Paging links come from the page. */
-export function TurfResults({ rows, points, center, header, footer }: { rows: TurfCard[]; points: MapPoint[]; center: { lat: number; lng: number }; header?: React.ReactNode; footer?: React.ReactNode }) {
+export function TurfResults({ rows, points, center, zoom, header, footer, free = {} }: { rows: TurfCard[]; points: MapPoint[]; center: { lat: number; lng: number }; zoom?: number; header?: React.ReactNode; footer?: React.ReactNode; free?: Record<string, number | null> }) {
   const [view, setView] = useState<"list" | "map">("list");
   return (
     <div>
@@ -29,13 +29,13 @@ export function TurfResults({ rows, points, center, header, footer }: { rows: Tu
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             {rows.map((t) => (
-              <TurfCardView key={t.id} t={t} />
+              <TurfCardView key={t.id} t={t} free={free[t.id]} />
             ))}
           </div>
           {footer}
         </>
       ) : (
-        <TurfMap rows={points} center={center} />
+        <TurfMap rows={points} center={center} zoom={zoom} />
       )}
     </div>
   );

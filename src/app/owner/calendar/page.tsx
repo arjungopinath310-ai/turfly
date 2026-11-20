@@ -4,22 +4,15 @@ import { pageUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getAvailability, releaseExpiredHolds } from "@/lib/engine/booking";
 import { manageableTurfs, pickTurf } from "@/lib/owner";
-import { addDays, formatMinute, formatTimeRange, istParts, istToUtc, isValidDate, todayIst, weekdayOf } from "@/lib/time";
+import { addDays, formatTimeRange, istParts, istToUtc, isValidDate, todayIst, weekdayOf } from "@/lib/time";
 import { ActionButton, ActionForm } from "@/components/ActionForm";
 import { Empty } from "@/components/ui";
 import { TurfSwitcher } from "@/components/TurfSwitcher";
-import { blockSlot, unblock, walkIn } from "../actions";
-
-const CELL: Record<string, string> = {
-  available: "bg-brand-100 border-brand-200",
-  booked: "bg-red-400 border-red-500",
-  held: "bg-amber-300 border-amber-400",
-  blocked: "bg-slate-400 border-slate-500",
-  unavailable: "bg-slate-100 border-slate-200",
-};
+import { SlotChart } from "@/components/SlotChart";
+import { blockFromChart, blockSlot, unblock, walkIn } from "../actions";
 
 export default async function OwnerCalendar(
-  props: { searchParams: Promise<{ turf?: string; date?: string; view?: string }> }
+  props: { searchParams: Promise<{ turf?: string; date?: string; view?: string; config?: string; start?: string; dur?: string }> }
 ) {
   const searchParams = await props.searchParams;
   const user = await pageUser("/owner/calendar");
@@ -32,6 +25,12 @@ export default async function OwnerCalendar(
   const turf = await prisma.turf.findUniqueOrThrow({ where: { id: sel.id }, include: { configs: { where: { isActive: true }, orderBy: { sortOrder: "asc" } } } });
   const q = (o: Record<string, string>) => `/owner/calendar?${new URLSearchParams({ turf: turf.id, date, view, ...o })}`;
   const shift = view === "month" ? 30 : view === "week" ? 7 : 1;
+  // A walk-in started from the chart arrives with the pitch, time and length filled in
+  const pre = {
+    config: turf.configs.some((c) => c.id === searchParams.config) ? searchParams.config! : turf.configs[0]?.id,
+    start: /^\d{2}:\d{2}$/.test(searchParams.start ?? "") ? searchParams.start! : "18:00",
+    dur: turf.allowedDurations.includes(Number(searchParams.dur)) ? Number(searchParams.dur) : turf.allowedDurations[0],
+  };
 
   return (
     <div className="space-y-5">
@@ -59,19 +58,20 @@ export default async function OwnerCalendar(
       </div>
 
       {view === "day" && <DayView turfId={turf.id} date={date} step={turf.slotStepMinutes} />}
+      {view !== "day" && <p className="text-xs text-slate-500">To block or free up slots, open a day (tap a date) and tap the slots on its chart.</p>}
       {view === "week" && <RangeView turfId={turf.id} from={date} days={7} configs={turf.configs} q={q} />}
       {view === "month" && <MonthView turfId={turf.id} date={date} q={q} />}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div id="walkin" className="card scroll-mt-20 p-5">
           <h2 className="h2 mb-3">Walk-in / phone booking</h2>
-          <ActionForm action={walkIn} className="grid grid-cols-1 gap-2 sm:grid-cols-2" submit="Create booking" submitClass="btn-primary sm:col-span-2">
+          <ActionForm key={`${date}-${pre.config}-${pre.start}-${pre.dur}`} action={walkIn} className="grid grid-cols-1 gap-2 sm:grid-cols-2" submit="Create booking" submitClass="btn-primary sm:col-span-2">
             <input type="hidden" name="turfId" value={turf.id} />
-            <select name="configId" className="input sm:col-span-2">{turf.configs.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
-            <input type="date" name="date" defaultValue={date} className="input" />
+            <select name="configId" defaultValue={pre.config} className="input sm:col-span-2" aria-label="Pitch">{turf.configs.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+            <label className="field-label">Date<input type="date" name="date" defaultValue={date} className="input mt-1" /></label>
             <div className="grid grid-cols-2 gap-2">
-              <input type="time" name="start" step={turf.slotStepMinutes * 60} defaultValue="18:00" className="input" />
-              <select name="duration" className="input">{turf.allowedDurations.map((d) => <option key={d} value={d}>{d}m</option>)}</select>
+              <label className="field-label">Start<input type="time" name="start" step={turf.slotStepMinutes * 60} defaultValue={pre.start} className="input mt-1" /></label>
+              <label className="field-label">Length<select name="duration" defaultValue={pre.dur} className="input mt-1">{turf.allowedDurations.map((d) => <option key={d} value={d}>{d % 60 ? `${d} min` : `${d / 60} hr`}</option>)}</select></label>
             </div>
             <input name="customerName" placeholder="Customer name *" className="input" />
             <input name="customerPhone" placeholder="Phone (optional)" className="input" />
@@ -84,18 +84,19 @@ export default async function OwnerCalendar(
           </ActionForm>
         </div>
         <div id="block" className="card scroll-mt-20 p-5">
-          <h2 className="h2 mb-3">Block time (maintenance, private event, holiday)</h2>
+          <h2 className="h2">Block time</h2>
+          <p className="mb-3 mt-1 text-xs text-slate-500">For longer closures: maintenance, a private event or a holiday. To block a slot or two, tap it on the day chart above.</p>
           <ActionForm action={blockSlot} className="grid grid-cols-1 gap-2 sm:grid-cols-2" submit="Block" submitClass="btn-dark sm:col-span-2">
             <input type="hidden" name="turfId" value={turf.id} />
-            <select name="configId" className="input sm:col-span-2">
+            <select name="configId" className="input sm:col-span-2" aria-label="What to block">
               <option value="ALL">Entire turf (all pitches)</option>
               {turf.configs.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
-            <input type="date" name="date" defaultValue={date} className="input" />
-            <input type="date" name="endDate" placeholder="End date (multi-day)" className="input" title="End date (optional, for multi-day closures)" />
-            <input type="time" name="start" defaultValue="06:00" className="input" />
-            <input type="time" name="end" defaultValue="23:59" className="input" />
-            <select name="reason" className="input"><option value="MAINTENANCE">Maintenance</option><option value="PRIVATE_EVENT">Private event</option><option value="HOLIDAY">Holiday</option><option value="OTHER">Other</option></select>
+            <label className="field-label">From date<input type="date" name="date" defaultValue={date} className="input mt-1" /></label>
+            <label className="field-label">To date <span className="font-normal text-slate-400">(optional, for several days)</span><input type="date" name="endDate" className="input mt-1" /></label>
+            <label className="field-label">From time<input type="time" name="start" defaultValue="06:00" className="input mt-1" /></label>
+            <label className="field-label">To time<input type="time" name="end" defaultValue="23:59" className="input mt-1" /></label>
+            <select name="reason" className="input" aria-label="Reason"><option value="MAINTENANCE">Maintenance</option><option value="PRIVATE_EVENT">Private event</option><option value="HOLIDAY">Holiday</option><option value="OTHER">Other</option></select>
             <input name="note" placeholder="Note (internal)" className="input" />
           </ActionForm>
         </div>
@@ -114,37 +115,30 @@ async function DayView({ turfId, date, step }: { turfId: string; date: string; s
     }),
     prisma.slotBlock.findMany({ where: { turfId, startAt: { lt: istToUtc(date, 1800) }, endAt: { gt: istToUtc(date, 0) } }, include: { config: true } }),
   ]);
-  const slots = a.configs[0]?.slots ?? [];
+  const dayStart = istToUtc(date, 0).getTime();
+  const rel = (d: Date) => Math.round((d.getTime() - dayStart) / 60000);
+  const configName = (id: string | null) => (id ? a.configs.find((c) => c.id === id)?.name ?? "Pitch" : "Entire turf");
+  const chartBookings = bookings
+    .filter((b) => b.status !== "NO_SHOW")
+    .map((b) => ({ id: b.id, code: b.code, configId: b.configId, configName: b.config.name, start: Math.max(0, rel(b.startAt)), end: Math.min(1800, rel(b.endAt)), who: b.teamName || b.team?.name || b.customerName || b.user?.name || "Customer", held: b.status === "HELD" }));
+  const chartBlocks = blocks.map((bl) => ({
+    id: bl.id, configId: bl.configId, configName: configName(bl.configId), start: Math.max(0, rel(bl.startAt)), end: Math.min(1800, rel(bl.endAt)), reason: bl.reason, note: bl.note,
+    until: istParts(bl.endAt).date !== istParts(bl.startAt).date ? istParts(bl.endAt).date : null,
+  }));
   if (!a.hours || a.hours.isClosed) return <div className="card p-6 text-sm text-slate-500">Closed on {date} (weekday {weekdayOf(date)}). Change operating hours in turf settings.</div>;
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
-      <div className="card overflow-x-auto p-5">
-        <div className="mb-3 flex flex-wrap gap-3 text-[11px] text-slate-500">
-          {[["bg-brand-100", "Free"], ["bg-red-400", "Booked"], ["bg-amber-300", "Held in checkout"], ["bg-slate-400", "Blocked"], ["bg-slate-100", "Past"]].map(([c, t]) => (
-            <span key={t} className="flex items-center gap-1"><span className={`h-2.5 w-2.5 rounded-sm ${c}`} /> {t}</span>
-          ))}
-        </div>
-        <table className="min-w-[560px] border-separate border-spacing-0.5 text-[11px]">
-          <thead>
-            <tr>
-              <th className="w-36" />
-              {slots.map((s, i) => (
-                <th key={s.startMinute} className="font-normal text-slate-400">{i % (60 / step) === 0 ? formatMinute(s.startMinute).replace(":00", "") : ""}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {a.configs.map((c) => (
-              <tr key={c.id}>
-                <td className="pr-2 text-xs font-semibold text-slate-700">{c.name}</td>
-                {c.slots.map((s) => (
-                  <td key={s.startMinute} title={`${formatMinute(s.startMinute)} · ${s.status}`} className={clsx("h-7 min-w-[14px] rounded border", CELL[s.status])} />
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p className="mt-2 text-[11px] text-slate-500">Rows that share an area show as booked together, e.g. a Full 7-a-side booking also marks Pitch A and B.</p>
+      <div className="card p-4 sm:p-5">
+        <SlotChart
+          turfId={turfId}
+          date={date}
+          step={step}
+          rows={a.configs.map((c) => ({ id: c.id, name: c.name, slots: c.slots.map((s) => ({ startMinute: s.startMinute, status: s.status })) }))}
+          bookings={chartBookings}
+          blocks={chartBlocks}
+          onBlock={blockFromChart.bind(null, turfId)}
+          onUnblock={unblock.bind(null, turfId)}
+        />
       </div>
       <div className="card p-5">
         <h2 className="h2 mb-3">Bookings & blocks</h2>
