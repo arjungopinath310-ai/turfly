@@ -60,7 +60,7 @@ const AVAILABILITY_CONCURRENCY = 6;
  *  3. Full card data is loaded only for the page being shown.
  * Returns the page's cards, every match as a light map point, and the total.
  */
-export async function searchTurfs(f: TurfFilters, opts: { page?: number; pageSize?: number } = {}) {
+export async function searchTurfs(f: TurfFilters, opts: { page?: number; pageSize?: number; pinDemo?: boolean } = {}) {
   const pageSize = Math.min(Math.max(opts.pageSize ?? PAGE_SIZE, 1), 100);
   // Private sample copies (demo mode) belong to one person and never show in search
   const where: Prisma.TurfWhereInput = { status: { in: ["APPROVED", "UNCLAIMED"] }, isSandbox: false };
@@ -83,9 +83,7 @@ export async function searchTurfs(f: TurfFilters, opts: { page?: number; pageSiz
   if (and.length) where.AND = and;
 
   // 1. Light candidate set
-  const candidates = await prisma.turf.findMany({
-    where,
-    select: {
+  const select = {
       id: true,
       slug: true,
       name: true,
@@ -99,10 +97,10 @@ export async function searchTurfs(f: TurfFilters, opts: { page?: number; pageSiz
       reportedPriceFrom: true,
       city: { select: { name: true } },
       configs: { where: { isActive: true }, select: { playersPerSide: true, basePricePerHour: true } },
-    },
-  });
+  } satisfies Prisma.TurfSelect;
+  const candidates = await prisma.turf.findMany({ where, select });
 
-  let rows = candidates.map((t) => {
+  const toRow = (t: (typeof candidates)[number]) => {
     const relevant = f.format ? t.configs.filter((c) => c.playersPerSide === Number(f.format)) : t.configs;
     const prices = relevant.map((c) => c.basePricePerHour);
     return {
@@ -112,7 +110,8 @@ export async function searchTurfs(f: TurfFilters, opts: { page?: number; pageSiz
       reportedPriceFrom: prices.length ? null : t.reportedPriceFrom, // only for turfs without their own prices
       distanceKm: origin ? haversineKm(origin, t) : null,
     };
-  });
+  };
+  let rows = candidates.map(toRow);
 
   // 2. Filters that need computed values
   if (f.maxPrice) rows = rows.filter((r) => r.minPrice != null && r.minPrice <= Number(f.maxPrice) * 100);
@@ -143,6 +142,12 @@ export async function searchTurfs(f: TurfFilters, opts: { page?: number; pageSiz
           : // Best match: featured, then turfs you can book here, then the best rated.
             Number(b.isFeatured) - Number(a.isFeatured) || isLive(b) - isLive(a) || b.ratingAvg - a.ratingAvg || a.name.localeCompare(b.name),
   );
+
+  // The sales demo turf (every feature switched on) comes first wherever the player is, without a distance
+  if (opts.pinDemo) {
+    const demo = await prisma.turf.findFirst({ where: { isDemo: true, isSandbox: false, status: "APPROVED" }, select, orderBy: { createdAt: "asc" } });
+    if (demo) rows = [{ ...toRow(demo), distanceKm: null }, ...rows.filter((r) => r.id !== demo.id)];
+  }
 
   const total = rows.length;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
