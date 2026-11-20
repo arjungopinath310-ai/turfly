@@ -57,7 +57,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{turf.name}</h1>
+          <h1 className="font-display font-extrabold uppercase italic leading-[.92] text-[2rem] sm:text-[2.6rem]">{turf.name}</h1>
           <div className="mt-1 flex gap-2"><StatusBadge status={turf.status} /><StatusBadge status={turf.availabilityMode} /></div>
         </div>
         <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
@@ -70,7 +70,7 @@ export default async function OwnerHome(props: { searchParams: Promise<{ turf?: 
         <b>Turfly is free for turf owners: online bookings, WhatsApp alerts and Razorpay payments included.</b> Players pay Turfly a small booking fee online to reserve; you collect your full price at the turf.
       </div>
       {turf.isSandbox && (
-        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
+        <div className="rounded-xl border-l-4 border-ink bg-volt/40 p-4 text-sm text-ink">
           <b>Your private sample turf.</b> It&apos;s filled with sample bookings, players and chats so you can try everything: add walk-ins,
           change prices, cancel bookings. Only you can see it, and nothing here affects real players.{" "}
           <Link href="/owner/claim" className="font-semibold underline">Find my real turf</Link> ·{" "}

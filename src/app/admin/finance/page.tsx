@@ -106,7 +106,7 @@ export default async function Finance(props: { searchParams: Promise<{ q?: strin
             {webhooks.map((w) => (
               <li key={w.id}><b>{w.type}</b> · {formatIst(w.createdAt)} · {w.signatureValid ? "" : "INVALID SIGNATURE · "}{w.error}</li>
             ))}
-            {webhooks.length === 0 && <li className="muted">None 🎉</li>}
+            {webhooks.length === 0 && <li className="muted">None</li>}
           </ul>
           <p className="mt-2 text-[11px] text-slate-400">Failed events return HTTP 500 so Razorpay retries them automatically. Look up any booking with <Link href="/admin/finance" className="underline">search</Link>.</p>
         </section>

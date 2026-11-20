@@ -24,7 +24,7 @@ export default async function SignupPage(props: { searchParams: Promise<{ next?:
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm md:self-start">
         <NeighbourhoodMap variant={initialView === "owner" ? "owner" : "players"} crop className="block h-36 w-full sm:h-52 md:h-auto" />
         <div className="hidden p-7 md:block">
-        <h2 className="text-2xl font-extrabold leading-tight tracking-tight">Football turfs near you, one tap away.</h2>
+        <h2 className="font-display font-extrabold uppercase italic leading-[.92] text-[2rem]">Football turfs near you, one tap away.</h2>
         <ul className="mt-6 space-y-5 text-sm">
           {[
             [MapPin, "Turfs around you", "See every turf nearby with live free slots, prices and photos."],

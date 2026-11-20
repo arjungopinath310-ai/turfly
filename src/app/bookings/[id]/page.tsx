@@ -51,10 +51,10 @@ export default async function BookingPage(
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       {searchParams.new && b.status === "CONFIRMED" && (
-        <div className="mb-6 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-800 p-6 text-white">
-          <div className="text-sm opacity-80">Payment verified ✓</div>
-          <div className="text-2xl font-bold">You&apos;re booked! See you on the pitch.</div>
-          <div className="mt-1 text-sm opacity-90">Confirmation sent via in-app notification{user.phone ? ", SMS/WhatsApp" : ""}{user.email ? " and email" : ""} where configured.</div>
+        <div className="pitch-bg relative mb-6 overflow-hidden rounded-xl border-b-4 border-volt p-6 text-white">
+          <div className="kicker text-volt">Payment verified ✓</div>
+          <div className="mt-1 font-display text-3xl font-extrabold uppercase italic leading-none">You&apos;re booked! See you on the pitch.</div>
+          <div className="mt-2 text-sm text-slate-300">Confirmation sent via in-app notification{user.phone ? ", SMS/WhatsApp" : ""}{user.email ? " and email" : ""} where configured.</div>
         </div>
       )}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
@@ -64,7 +64,7 @@ export default async function BookingPage(
               <span className="font-mono text-sm text-slate-500">Booking ID {b.code}</span>
               <StatusBadge status={b.status} />
             </div>
-            <h1 className="mt-2 text-2xl font-bold">{b.turf.name}</h1>
+            <h1 className="mt-2 font-display font-extrabold uppercase italic leading-[.92] text-[2rem]">{b.turf.name}</h1>
             <p className="text-sm text-slate-600">{b.turf.locality ?? b.turf.addressLine}, {b.turf.city.name} {b.turf.pincode}</p>
             {digipin && <DigipinChip pin={digipin} className="mt-1.5" />}
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">

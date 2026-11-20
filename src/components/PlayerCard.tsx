@@ -18,13 +18,13 @@ export function PlayerCard({ name, p, rank, setGoal }: { name: string | null; p:
     <div className="space-y-4">
       <section className="card p-5">
         <div className="flex items-center gap-4">
-          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xl font-extrabold text-white">{initials(name)}</span>
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-ink font-display text-2xl font-extrabold text-volt">{initials(name)}</span>
           <div className="min-w-0">
-            <div className="truncate text-lg font-bold">{name ?? "Player"}</div>
+            <div className="truncate font-display text-2xl font-extrabold uppercase italic leading-none">{name ?? "Player"}</div>
             <div className="text-sm text-slate-500">{p.lastPlayed ? `Last played ${formatDateLong(p.lastPlayed)}` : "No matches yet: book one or join a game"}</div>
           </div>
         </div>
-        <dl className="mt-5 grid grid-cols-3 divide-x divide-slate-100 text-center">
+        <dl className="mt-5 grid grid-cols-3 divide-x divide-slate-200 rounded-lg bg-ink py-3 text-center text-white">
           {[
             [p.played, "Matches"],
             [p.teammates, "Teammates"],
@@ -32,8 +32,8 @@ export function PlayerCard({ name, p, rank, setGoal }: { name: string | null; p:
           ].map(([v, l]) => (
             <div key={l as string}>
               <dt className="sr-only">{l}</dt>
-              <dd className="text-2xl font-extrabold">{v}</dd>
-              <div className="text-xs text-slate-500">{l}</div>
+              <dd className="score text-3xl leading-none text-volt">{v}</dd>
+              <div className="mt-1 font-display text-[12px] font-semibold uppercase tracking-[.08em] text-slate-300">{l}</div>
             </div>
           ))}
         </dl>
@@ -45,11 +45,11 @@ export function PlayerCard({ name, p, rank, setGoal }: { name: string | null; p:
         {goal ? (
           <>
             <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-2xl font-extrabold">{goal.thisWeek} <span className="text-base font-semibold text-slate-400">of {goal.target}</span></span>
+              <span className="score text-3xl">{goal.thisWeek} <span className="text-base font-semibold text-slate-400">of {goal.target}</span></span>
               <span className="text-sm text-slate-500">{goal.streak > 0 ? `${goal.streak}-week streak` : `This week, until ${formatDateLong(new Date(`${goal.weekEnds}T12:00:00+05:30`)).split(",")[0]}`}</span>
             </div>
-            <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuemin={0} aria-valuemax={goal.target} aria-valuenow={goal.thisWeek}>
-              <div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-brand-500" style={{ width: `${Math.min(100, (100 * goal.thisWeek) / goal.target)}%` }} />
+            <div className="mt-2 h-3 overflow-hidden rounded-sm bg-slate-200" role="progressbar" aria-valuemin={0} aria-valuemax={goal.target} aria-valuenow={goal.thisWeek}>
+              <div className="h-full bg-brand-600" style={{ width: `${Math.min(100, (100 * goal.thisWeek) / goal.target)}%` }} />
             </div>
           </>
         ) : (

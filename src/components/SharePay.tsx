@@ -59,7 +59,7 @@ export function SharePay(p: { token: string; amountLabel: string }) {
         name: "Turfly",
         description: `Share for ${o.bookingCode}`,
         prefill: o.prefill,
-        theme: { color: "#039855" },
+        theme: { color: "#0f1a13" },
         handler: async (resp: Record<string, string>) => {
           await fetch("/api/payments/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(resp) }).catch(() => {});
           poll();
@@ -87,8 +87,8 @@ export function SharePay(p: { token: string; amountLabel: string }) {
           <Loader2 size={16} className="animate-spin" /> Waiting for payment confirmation…
         </div>
       ) : order?.provider === "mock" ? (
-        <div className="space-y-2 rounded-xl border border-dashed border-violet-300 bg-violet-50 p-3">
-          <p className="text-xs text-violet-800">Demo payment: no real money is charged. These buttons go through the real confirmation code.</p>
+        <div className="space-y-2 rounded-xl border border-dashed border-ink/40 bg-volt/25 p-3">
+          <p className="text-xs text-ink">Demo payment: no real money is charged. These buttons go through the real confirmation code.</p>
           <button className="btn-primary w-full" onClick={() => mock("success")}><CheckCircle2 size={16} /> Simulate successful UPI payment</button>
           <button className="btn-danger w-full" onClick={() => mock("failure")}>Simulate failed payment</button>
         </div>

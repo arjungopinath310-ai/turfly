@@ -198,7 +198,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
             const on = d === date;
             return (
               <button key={d} onClick={() => setDate(d)} aria-pressed={on}
-                className={clsx("flex w-[58px] shrink-0 flex-col items-center rounded-2xl border py-2 transition", on ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-700")}>
+                className={clsx("flex w-[58px] shrink-0 flex-col items-center rounded-2xl border py-2 transition", on ? "border-ink bg-ink text-volt" : "border-slate-200 bg-white text-slate-700")}>
                 <span className="text-[11px] font-medium opacity-75">{l.wd}</span>
                 <span className="text-lg font-bold leading-tight">{l.dm}</span>
                 <span className="text-[10px] opacity-60">{l.mon}</span>
@@ -214,7 +214,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
             <div className="flex flex-wrap gap-2">
               {data.configs.map((c) => (
                 <button key={c.id} onClick={() => { setConfigId(c.id); setSlot(null); }} aria-pressed={c.id === configId}
-                  className={clsx("rounded-xl border px-3 py-2 text-left text-sm", c.id === configId ? "border-brand-600 bg-brand-50 font-semibold text-brand-800" : "border-slate-200 bg-white")}>
+                  className={clsx("rounded-xl border px-3 py-2 text-left text-sm", c.id === configId ? "border-ink bg-ink font-semibold text-white" : "border-slate-200 bg-white")}>
                   {c.name}{!/a-side/i.test(c.name) && <span className="text-xs text-slate-500"> · {c.playersPerSide}-a-side</span>}
                 </button>
               ))}
@@ -227,7 +227,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
             <div className="flex gap-2">
               {p.durations.map((d) => (
                 <button key={d} onClick={() => setDuration(d)} aria-pressed={d === duration}
-                  className={clsx("min-w-[64px] rounded-xl border px-3 py-2 text-sm", d === duration ? "border-brand-600 bg-brand-50 font-semibold text-brand-800" : "border-slate-200 bg-white")}>
+                  className={clsx("min-w-[64px] rounded-xl border px-3 py-2 text-sm", d === duration ? "border-ink bg-ink font-semibold text-white" : "border-slate-200 bg-white")}>
                   {durationLabel(d)}
                 </button>
               ))}
@@ -278,11 +278,11 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
                       <button key={s.startMinute} disabled={!ok} onClick={() => pick(s)} aria-pressed={on}
                         title={`${formatMinute(s.startMinute)} – ${formatMinute(s.endMinute)}${s.peakLabel ? ` · ${s.peakLabel}` : ""}`}
                         className={clsx("rounded-xl border px-1 py-2.5 text-center transition",
-                          on ? "border-slate-900 bg-slate-900 text-white" :
+                          on ? "border-ink bg-volt font-semibold text-ink" :
                           s.status === "available" ? "border-brand-200 bg-white text-slate-900 active:bg-brand-50 enabled:hover:border-brand-500" :
                           "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-400")}>
                         <span className="block text-[13px] font-semibold leading-tight">{slotRange(s.startMinute, s.endMinute)}</span>
-                        <span className={clsx("block text-[11px]", on ? "text-white/80" : s.status === "available" ? "text-brand-700" : "")}>
+                        <span className={clsx("block text-[11px]", on ? "text-ink/75" : s.status === "available" ? "text-brand-700" : "")}>
                           {s.status === "available" ? `${rupees(s.price)}${s.peakLabel ? " · peak" : ""}` : TAKEN[s.status] ?? "Taken"}
                         </span>
                       </button>
@@ -347,7 +347,7 @@ export function BookingWidget(p: { turfId: string; durations: number[]; today: s
                   <div className="flex flex-wrap gap-1.5">
                     {["", ...SKILL_LEVELS].map((l) => (
                       <button key={l} type="button" onClick={() => setSkill(l)} aria-pressed={skill === l}
-                        className={clsx("rounded-full border px-3 py-1 text-xs", skill === l ? "border-slate-900 bg-slate-900 text-white" : "border-slate-300 bg-white")}>
+                        className={clsx("rounded-full border px-3 py-1 text-xs", skill === l ? "border-ink bg-ink text-white" : "border-slate-300 bg-white")}>
                         {l || "Any level"}
                       </button>
                     ))}

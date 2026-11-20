@@ -14,7 +14,7 @@ export async function OwnerWelcome({ userId, name }: { userId: string; name: str
   return (
     <div className="mx-auto max-w-2xl space-y-6 py-4">
       <div>
-        <h1 className="h1">{first ? `Welcome, ${first}` : "Welcome"} 👋</h1>
+        <h1 className="h1">{first ? `Welcome, ${first}` : "Welcome"}</h1>
         <p className="muted mt-1">Let&apos;s get your turf on Turfly. It&apos;s free to list.</p>
       </div>
 

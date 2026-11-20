@@ -8,6 +8,7 @@ import { displayName } from "@/lib/format";
 import { homeFor } from "@/lib/access";
 import { currentView } from "@/lib/view";
 import { UserMenu } from "./UserMenu";
+import { Logo } from "./Logo";
 import { isDemoMode } from "@/lib/format";
 
 /** Main links for each side. The phone tab bar (MobileTabBar) shows the same destinations. */
@@ -34,45 +35,44 @@ export async function Navbar() {
     ? await Promise.all([prisma.notification.count({ where: { userId: user.id, readAt: null, NOT: { link: { startsWith: "/messages" } } } }), unreadMessageCount(user.id)])
     : [0, 0];
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-40 bg-ink text-white">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4">
-        <Link href={user ? homeFor(view) : "/"} className="flex items-center gap-2 text-lg font-extrabold tracking-tight">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-brand-400 to-brand-700 text-white">⚽</span>
-          {BRAND.name}
-          {user && view === "owner" && <span className="rounded-md bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Owner</span>}
+        <Link href={user ? homeFor(view) : "/"} className="flex items-center gap-2">
+          <Logo name={BRAND.name} />
+          {user && view === "owner" && <span className="rounded-sm bg-volt px-1.5 py-0.5 font-display text-[11px] font-bold uppercase tracking-[.1em] text-ink">Owner</span>}
         </Link>
         {user ? (
-          <nav className="hidden items-center gap-4 whitespace-nowrap text-sm font-medium text-slate-600 md:flex lg:gap-5">
+          <nav className="hidden items-center gap-5 whitespace-nowrap font-display text-[15px] font-semibold uppercase tracking-[.06em] text-slate-300 md:flex lg:gap-6">
             {NAV[view].map((l) => (
-              <Link key={l.href} href={l.href} className="hover:text-slate-900">{l.label}</Link>
+              <Link key={l.href} href={l.href} className="hover:text-white">{l.label}</Link>
             ))}
-            {user.role === "ADMIN" && <Link href="/admin" className="hover:text-slate-900">Admin</Link>}
+            {user.role === "ADMIN" && <Link href="/admin" className="hover:text-white">Admin</Link>}
           </nav>
         ) : (
           // Signed-out visitors can find turfs; booking and the owner side need an account.
-          <nav className="flex items-center gap-4 whitespace-nowrap text-sm font-medium text-slate-600">
-            <Link href="/games" className="hidden hover:text-slate-900 sm:inline">Games</Link>
-            <Link href="/turfs" className="hidden hover:text-slate-900 sm:inline">Turfs</Link>
-            <Link href="/signup?as=owner" className="hidden hover:text-slate-900 sm:inline">List your turf</Link>
-            <Link href="/about" className="hidden hover:text-slate-900 md:inline">About</Link>
+          <nav className="flex items-center gap-5 whitespace-nowrap font-display text-[15px] font-semibold uppercase tracking-[.06em] text-slate-300">
+            <Link href="/games" className="hidden hover:text-white sm:inline">Games</Link>
+            <Link href="/turfs" className="hidden hover:text-white sm:inline">Turfs</Link>
+            <Link href="/signup?as=owner" className="hidden hover:text-white sm:inline">List your turf</Link>
+            <Link href="/about" className="hidden hover:text-white md:inline">About</Link>
           </nav>
         )}
         <div className="ml-auto flex items-center gap-3">
           {user ? (
             <>
-              <Link href="/messages" className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100" aria-label={`Messages${unreadChats ? ` (${unreadChats} unread)` : ""}`}>
+              <Link href="/messages" className="relative rounded-lg p-2 text-slate-300 hover:bg-white/10 hover:text-white" aria-label={`Messages${unreadChats ? ` (${unreadChats} unread)` : ""}`}>
                 <MessageCircle size={18} />
-                {unreadChats > 0 && <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-600 px-1 text-[9px] font-bold text-white">{unreadChats > 9 ? "9+" : unreadChats}</span>}
+                {unreadChats > 0 && <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-volt px-1 text-[9px] font-bold text-ink">{unreadChats > 9 ? "9+" : unreadChats}</span>}
               </Link>
-              <Link href="/notifications" className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100" aria-label="Notifications">
+              <Link href="/notifications" className="relative rounded-lg p-2 text-slate-300 hover:bg-white/10 hover:text-white" aria-label="Notifications">
                 <Bell size={18} />
-                {unread > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />}
+                {unread > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-volt ring-2 ring-ink" />}
               </Link>
               <UserMenu name={displayName(user)} hasName={Boolean(user.name?.trim())} role={user.role} view={view} demo={isDemoMode()} />
             </>
           ) : (
             <>
-              <Link href="/login" className="btn-ghost btn-sm whitespace-nowrap">Sign in</Link>
+              <Link href="/login" className="btn btn-sm whitespace-nowrap border border-white/30 text-white hover:border-white">Sign in</Link>
               <Link href="/signup" className="btn-primary btn-sm whitespace-nowrap">Sign up<span className="hidden sm:inline">&nbsp;free</span></Link>
             </>
           )}

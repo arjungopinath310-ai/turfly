@@ -11,6 +11,7 @@ import { getSettings } from "@/lib/settings";
 import { rupees } from "@/lib/engine/pricing";
 import { LocationSync } from "@/components/LocationSync";
 import { NeighbourhoodMap } from "@/components/NeighbourhoodMap";
+import { PitchLines } from "@/components/PitchLines";
 import { nearestCity } from "@/lib/places";
 import { currentView } from "@/lib/view";
 import { formatDateLong, formatTimeRange } from "@/lib/time";
@@ -59,42 +60,47 @@ export default async function Home() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-pitch-night text-white">
-        <div className="absolute inset-0 opacity-30 [background:radial-gradient(60%_60%_at_70%_20%,#12b76a_0%,transparent_60%),repeating-linear-gradient(90deg,transparent_0_78px,rgba(255,255,255,.05)_78px_80px)]" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-12 pt-7 sm:pb-16 sm:pt-12 lg:grid-cols-[1.15fr_1fr]">
+      <section className="pitch-bg relative overflow-hidden text-white">
+        <PitchLines />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-10 pt-6 sm:pb-16 sm:pt-12 lg:grid-cols-[1.2fr_1fr]">
           <div className="min-w-0">
-          {/* Where you are: tap to update; it also finds turfs around you that Turfly doesn't list yet */}
-          <LocationSync active={Boolean(near)} ask tone="dark" label={here ? `📍 ${here.name}` : "📍 Near you"} />
-          {first && <p className="mt-5 font-semibold text-brand-300">Hi {first}, ready to play?</p>}
-          <h1 className={`${first ? "mt-1" : "mt-5"} max-w-3xl text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl`}>
-            Book turfs. Join games.<br />Find players near you.
-          </h1>
-          <p className="mt-3 text-slate-300">Every turf around you with free slots and prices. Book for {fee} and pay the rest at the turf.</p>
-          <form action="/turfs" className="mt-6 flex max-w-2xl gap-2 rounded-2xl bg-white p-2 text-slate-900 shadow-2xl">
-            <input name="q" className="input flex-1 border-0 focus:ring-0" placeholder="Search by turf name" aria-label="Search by turf name" />
-            <button className="btn-primary px-5">Search</button>
-          </form>
-          <div className="mt-4 flex flex-wrap gap-2 text-sm">
-            {towns.map((t) => (
-              <Link key={t.id} href={`/turfs?city=${t.slug}`} className="chip border-white/20 bg-white/5 text-slate-100 hover:bg-white/15">
-                {t.name} <span className="text-slate-400">{t._count.turfs}</span>
-              </Link>
-            ))}
+            {/* Where you are: tap to update; it also finds turfs around you that Turfly doesn't list yet */}
+            <LocationSync active={Boolean(near)} ask tone="dark" label={here ? here.name : "Near you"} />
+            {first && <p className="kicker mt-6 text-volt">Hi {first}, ready to play?</p>}
+            <h1 className={`${first ? "mt-2" : "mt-6"} font-display text-[3.1rem] font-extrabold uppercase italic leading-[.86] tracking-[-.01em] sm:text-[4.4rem]`}>
+              Book turfs.<br />Join games.<br />
+              <span className="text-volt">Find players<br />near you.</span>
+            </h1>
+            <p className="mt-4 max-w-md text-[17px] leading-snug text-slate-300">
+              Every turf around you, with free slots and prices. Book for <b className="font-semibold text-white">{fee}</b>, pay the rest at the turf.
+            </p>
+            <form action="/turfs" className="mt-6 flex max-w-xl gap-1.5 rounded-lg bg-white p-1.5 text-slate-900">
+              <input name="q" className="input flex-1 border-0 focus:ring-0" placeholder="Search by turf name" aria-label="Search by turf name" />
+              <button className="btn-primary px-5">Search</button>
+            </form>
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {towns.map((t) => (
+                <Link key={t.id} href={`/turfs?city=${t.slug}`} className="inline-flex items-center gap-1.5 rounded border border-white/20 px-2 py-1 font-display text-[13px] font-semibold uppercase tracking-[.06em] text-slate-200 transition hover:border-volt hover:text-volt">
+                  {t.name} <span className="text-volt/80">{t._count.turfs}</span>
+                </Link>
+              ))}
+            </div>
           </div>
-          </div>
-          <div className="hidden overflow-hidden rounded-3xl ring-1 ring-white/10 lg:block">
+          <div className="hidden overflow-hidden rounded-xl border border-white/10 lg:block">
             <NeighbourhoodMap variant="players" className="block h-auto w-full" />
           </div>
         </div>
+        {/* the touchline */}
+        <div className="h-1.5 bg-volt" />
       </section>
 
       <div className="mx-auto max-w-6xl space-y-10 px-4 pt-8">
         {nextMatch && (
-          <Link href={`/bookings/${nextMatch.id}`} className="card flex items-center gap-4 p-4 hover:shadow-lg">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"><CalendarCheck size={20} /></span>
+          <Link href={`/bookings/${nextMatch.id}`} className="card flex items-center gap-4 border-ink p-4 transition hover:shadow-lift">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-ink text-volt"><CalendarCheck size={20} /></span>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-brand-700">Your next match</div>
-              <div className="truncate font-semibold">{nextMatch.turf.name}</div>
+              <div className="kicker">Your next match</div>
+              <div className="truncate font-display text-lg font-bold leading-tight">{nextMatch.turf.name}</div>
               <div className="text-sm text-slate-500">{formatDateLong(nextMatch.startAt)} · {formatTimeRange(nextMatch.startAt, nextMatch.endAt)}</div>
             </div>
             <ChevronRight className="text-slate-400" />
@@ -105,10 +111,10 @@ export default async function Home() {
           <section>
             <div className="mb-3 flex items-end justify-between">
               <div>
-                <h2 className="text-xl font-bold tracking-tight">Games you can join</h2>
+                <h2 className="h2">Games you can join</h2>
                 <p className="text-sm text-slate-500">No team? These are booked and short of players.</p>
               </div>
-              <Link href="/games" className="shrink-0 text-sm font-semibold text-brand-700 hover:underline">See all →</Link>
+              <Link href="/games" className="shrink-0 font-display text-sm font-bold uppercase tracking-[.08em] text-brand-700 hover:underline">See all →</Link>
             </div>
             <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3">
               {games.slice(0, 6).map((g) => (
@@ -121,10 +127,10 @@ export default async function Home() {
         <section>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
             <div className="mr-auto">
-              <h2 className="text-xl font-bold tracking-tight">{near ? "Turfs near you" : "Turfs"}</h2>
+              <h2 className="h2">{near ? "Turfs near you" : "Turfs"}</h2>
               <p className="text-sm text-slate-500">{near ? "Closest first, with today's free slots." : "Share your location to see the closest turfs first."}</p>
             </div>
-            <Link href={allHref} className="text-sm font-semibold text-brand-700 hover:underline">See all & map →</Link>
+            <Link href={allHref} className="font-display text-sm font-bold uppercase tracking-[.08em] text-brand-700 hover:underline">See all & map →</Link>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {turfs.map((t) => (

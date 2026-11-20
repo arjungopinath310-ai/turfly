@@ -30,13 +30,18 @@ async function makeTurf(name: string, dLat: number, live: boolean) {
   return t;
 }
 
+// Earlier runs' turfs at the same spot would push ours off the first page: take them out of search
+const retireOld = () => prisma.turf.updateMany({ where: { slug: { startsWith: "near-" }, NOT: { slug: { startsWith: `near-${tag}-` } }, status: "APPROVED" }, data: { status: "SUSPENDED" } });
+
 beforeAll(async () => {
+  await retireOld();
   await makeTurf("far", 0.2, true); // ~22 km
   await makeTurf("close", 0.01, true); // ~1 km
   await makeTurf("listed", 0.05, false); // ~5.5 km, no live slots
 });
 
 afterAll(async () => {
+  await prisma.turf.updateMany({ where: { id: { in: turfs.map((t) => t.id) } }, data: { status: "SUSPENDED" } });
   await prisma.$disconnect();
 });
 

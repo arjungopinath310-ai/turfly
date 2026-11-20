@@ -2,12 +2,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { Check, Loader2 } from "lucide-react";
+import { Check, LandPlot, Loader2, Shirt } from "lucide-react";
 import { homeFor, VIEW_COOKIE, VIEW_COOKIE_MAX_AGE, type View } from "@/lib/access";
 
-const CHOICES: { view: View; icon: string; title: string; hint: string }[] = [
-  { view: "player", icon: "⚽", title: "I want to play", hint: "Find and book turfs near you" },
-  { view: "owner", icon: "🏟️", title: "I own or run a turf", hint: "List it free, manage bookings" },
+const CHOICES: { view: View; icon: React.ElementType; title: string; hint: string }[] = [
+  { view: "player", icon: Shirt, title: "I want to play", hint: "Find and book turfs near you" },
+  { view: "owner", icon: LandPlot, title: "I own or run a turf", hint: "List it free, manage bookings" },
 ];
 
 function rememberView(view: View) {
@@ -105,11 +105,11 @@ export function SignupForm({ next, initialView, fee }: { next: string; initialVi
               const on = view === c.view;
               return (
                 <button key={c.view} type="button" role="radio" aria-checked={on} onClick={() => { setView(c.view); rememberView(c.view); }}
-                  className={`relative rounded-2xl border-2 p-3 text-left transition ${on ? "border-brand-600 bg-brand-50" : "border-slate-200 bg-white hover:border-slate-300"}`}>
-                  {on && <Check size={16} className="absolute right-2.5 top-2.5 text-brand-700" aria-hidden />}
-                  <div className="text-2xl" aria-hidden>{c.icon}</div>
-                  <div className="mt-1 text-sm font-bold leading-tight">{c.title}</div>
-                  <div className="text-xs text-slate-500">{c.hint}</div>
+                  className={`relative rounded-xl border-2 bg-white p-3 text-left transition ${on ? "border-ink shadow-lift" : "border-slate-200 hover:border-slate-400"}`}>
+                  {on && <Check size={16} className="absolute right-2.5 top-2.5 text-ink" aria-hidden />}
+                  <span className={`grid h-9 w-9 place-items-center rounded-md ${on ? "bg-ink text-volt" : "bg-slate-100 text-slate-700"}`} aria-hidden><c.icon size={19} /></span>
+                  <div className="mt-2 font-display text-[17px] font-bold uppercase leading-none tracking-[.02em]">{c.title}</div>
+                  <div className="mt-1 text-xs text-slate-500">{c.hint}</div>
                 </button>
               );
             })}

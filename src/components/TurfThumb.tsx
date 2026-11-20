@@ -3,11 +3,11 @@
  * The drawing's shade of green varies per turf so neighbouring cards don't look identical.
  */
 const SHADES = [
-  ["#15803d", "#166534"],
-  ["#16a34a", "#15803d"],
-  ["#047857", "#065f46"],
-  ["#059669", "#047857"],
-  ["#0f766e", "#115e59"],
+  ["#2f6a1f", "#295d1b"],
+  ["#36751f", "#2f6a1f"],
+  ["#24561c", "#1f4b19"],
+  ["#3b6f24", "#33621f"],
+  ["#1f4a22", "#1a401d"],
 ];
 
 function shadeFor(seed: string) {
@@ -26,7 +26,7 @@ export function TurfThumb({ photo, name, className = "", eager = false }: { phot
       <rect width="160" height="100" fill={a} />
       {/* mowing stripes */}
       {Array.from({ length: 8 }, (_, i) => (i % 2 ? <rect key={i} x={i * 20} width="20" height="100" fill={b} /> : null))}
-      <g fill="none" stroke="#ffffff" strokeOpacity="0.85" strokeWidth="1.6">
+      <g fill="none" stroke="#f5f4ee" strokeOpacity="0.8" strokeWidth="1.6">
         <rect x="8" y="8" width="144" height="84" rx="1" />
         <line x1="80" y1="8" x2="80" y2="92" />
         <circle cx="80" cy="50" r="13" />
@@ -35,8 +35,8 @@ export function TurfThumb({ photo, name, className = "", eager = false }: { phot
         <rect x="8" y="41" width="7" height="18" />
         <rect x="145" y="41" width="7" height="18" />
       </g>
-      <circle cx="80" cy="50" r="1.8" fill="#ffffff" fillOpacity="0.9" />
-      <circle cx="104" cy="62" r="5" fill="#ffffff" stroke="#0f172a" strokeOpacity="0.5" strokeWidth="0.8" />
+      <circle cx="80" cy="50" r="1.8" fill="#f5f4ee" fillOpacity="0.9" />
+      <circle cx="104" cy="62" r="5" fill="#d7f74a" stroke="#0f1a13" strokeOpacity="0.6" strokeWidth="0.8" />
     </svg>
   );
 }
