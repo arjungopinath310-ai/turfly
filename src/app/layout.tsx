@@ -40,7 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           )}
           {/* Signed in on a phone: room for the bottom tab bar / action bar; the web footer is replaced by the account menu. */}
-          <main className={user ? "pb-24 md:pb-0" : ""}>{children}</main>
+          <main className="pb-24 md:pb-0">{children}</main>
           <footer className={`mt-24 border-t border-slate-200 bg-white ${user ? "hidden md:block" : "safe-bottom"}`}>
             <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-slate-500">
               <nav className="flex flex-wrap gap-x-5 gap-y-2">
@@ -58,7 +58,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </div>
             </div>
           </footer>
-          {user && view && <MobileTabBar view={view} admin={user.role === "ADMIN"} />}
+          {user && view ? <MobileTabBar view={view} admin={user.role === "ADMIN"} /> : !user && <MobileTabBar view="guest" admin={false} />}
         </Providers>
       </body>
     </html>

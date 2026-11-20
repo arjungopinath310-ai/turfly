@@ -48,3 +48,10 @@ body { @apply bg-slate-50 text-slate-900 antialiased; }
 /* Capacitor's SystemBars plugin injects --safe-area-inset-* in the Android app; browsers provide env(). */
 .safe-bottom { padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom)); }
 header.sticky { padding-top: var(--safe-area-inset-top, env(safe-area-inset-top)); }
+
+/* Illustration motion (welcome screens, sign-in): bubbles pop in, "you" pulses. Off when motion is reduced. */
+@keyframes tf-pop { from { opacity: 0; transform: translateY(6px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes tf-pulse { 0%, 100% { transform: scale(1); opacity: 0.15; } 50% { transform: scale(1.25); opacity: 0.05; } }
+.tf-pop { animation: tf-pop 0.5s ease-out both; transform-box: fill-box; transform-origin: center; }
+.tf-pulse { animation: tf-pulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: reduce) { .tf-pop, .tf-pulse { animation: none; } }

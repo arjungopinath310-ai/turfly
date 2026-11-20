@@ -33,3 +33,27 @@ describe("Turf coins at checkout", () => {
     expect(coinsUsable(100, 4950, 100)).toBe(48); // 49 would leave 50 paise, under the gateway minimum
   });
 });
+
+import { activityLevel, badgesFor, weekStart } from "@/lib/player-stats";
+describe("player profile", () => {
+  it("activity level from matches in the last 30 days", () => {
+    expect(activityLevel(0).label).toBe("Getting started");
+    expect(activityLevel(1).label).toBe("Regular");
+    expect(activityLevel(4).label).toBe("Keen");
+    expect(activityLevel(12).label).toBe("Turf legend");
+  });
+  it("weeks start on Monday (IST dates)", () => {
+    expect(weekStart("2026-11-20")).toBe("2026-11-16"); // Friday → Monday
+    expect(weekStart("2026-11-16")).toBe("2026-11-16"); // Monday
+    expect(weekStart("2026-11-22")).toBe("2026-11-16"); // Sunday belongs to the week before
+  });
+  it("badges: earned at the target; one no-show stops 'Always turns up'", () => {
+    const m = (n: number) => Array.from({ length: n }, (_, i) => ({ bookingId: `b${i}`, turfId: `t${i % 2}`, startAt: new Date(), endAt: new Date(), role: "organiser" as const }));
+    const base = { hosted: 5, joinedGames: 1, turfs: 2, lateNight: 0, settled: 5 };
+    const good = badgesFor({ matches: m(5), noShows: 0, ...base });
+    expect(good.find((b) => b.key === "on-time")?.earned).toBe(true);
+    expect(good.find((b) => b.key === "host")?.earned).toBe(true);
+    expect(good.find((b) => b.key === "team-player")).toMatchObject({ earned: false, progress: 1, target: 3 });
+    expect(badgesFor({ matches: m(9), noShows: 1, ...base }).find((b) => b.key === "on-time")?.earned).toBe(false);
+  });
+});

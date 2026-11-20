@@ -13,7 +13,7 @@ const movedKm = (a: { lat: number; lng: number }, b: { lat: number; lng: number 
  * first time (the home page); otherwise it only refreshes a position the person already shared.
  * The position stays on the device (a cookie); the page re-renders with the nearest turfs.
  */
-export function LocationSync({ active, ask = false, quiet = false, className = "" }: { active: boolean; ask?: boolean; quiet?: boolean; className?: string }) {
+export function LocationSync({ active, ask = false, quiet = false, className = "", label, tone = "light" }: { active: boolean; ask?: boolean; quiet?: boolean; className?: string; label?: string; tone?: "light" | "dark" }) {
   const { refresh } = useRefreshingRouter();
   const [state, setState] = useState<"idle" | "busy" | "denied" | "unsupported">("idle");
   const [finding, setFinding] = useState(false);
@@ -84,9 +84,9 @@ export function LocationSync({ active, ask = false, quiet = false, className = "
 
   if (state === "unsupported" || quiet) return null;
   return (
-    <button type="button" onClick={() => locate(false)} disabled={state === "busy"} className={`chip shrink-0 whitespace-nowrap ${active ? "border-brand-200 bg-brand-50 text-brand-800" : "border-slate-200 bg-white text-slate-700"} ${className}`}>
+    <button type="button" onClick={() => locate(false)} disabled={state === "busy"} className={`chip shrink-0 whitespace-nowrap ${tone === "dark" ? "border-white/20 bg-white/10 text-white hover:bg-white/20" : active ? "border-brand-200 bg-brand-50 text-brand-800" : "border-slate-200 bg-white text-slate-700"} ${className}`}>
       {state === "busy" || finding ? <Loader2 size={13} className="animate-spin" /> : state === "denied" ? <MapPinOff size={13} /> : <LocateFixed size={13} />}
-      {state === "denied" ? "Location is off · tap to retry" : finding ? "Finding turfs near you…" : active ? "Near you · update" : "Use my location"}
+      {state === "denied" ? "Location is off · tap to retry" : finding ? "Finding turfs near you…" : active ? (label ?? "Near you · update") : "Use my location"}
     </button>
   );
 }

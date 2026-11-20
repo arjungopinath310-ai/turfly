@@ -5,7 +5,7 @@
  * The sign-in, legal and help pages are public too (payment-gateway, Google and Play Store reviews).
  * Pure functions: used by the middleware and by tests.
  */
-const PUBLIC_EXACT = new Set(["/", "/turfs", "/compare", "/login", "/signup", "/about", "/contact", "/account/delete"]);
+const PUBLIC_EXACT = new Set(["/", "/turfs", "/compare", "/games", "/welcome", "/login", "/signup", "/about", "/contact", "/account/delete"]);
 const PUBLIC_PREFIXES = ["/legal/", "/turfs/"];
 
 export function isPublicPath(pathname: string) {
