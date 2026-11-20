@@ -13,7 +13,7 @@ import { normalizePhone } from "./otp";
 import { findOrCreateCity, nearestCity, normalizeState } from "./places";
 import { haversineKm } from "./search";
 
-const SERVERS = (process.env.OVERPASS_URLS ?? "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter,https://overpass.private.coffee/api/interpreter")
+const SERVERS = (process.env.OVERPASS_URLS || "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter,https://overpass.private.coffee/api/interpreter")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
