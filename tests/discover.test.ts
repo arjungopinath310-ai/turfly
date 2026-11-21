@@ -66,7 +66,7 @@ describe("finding turfs on the public map", () => {
 });
 
 import { photosFrom } from "@/lib/discover";
-import { nearestTown, parseTile, indiaTiles } from "@/lib/import-india";
+import { nearestTown, parseTile, indiaTiles, tileHasTown, type Place } from "@/lib/import-india";
 describe("photos and the India import", () => {
   it("takes real photos the map links to", () => {
     expect(photosFrom({ wikimedia_commons: "File:Kick Off Turf.jpg" })).toEqual(["https://commons.wikimedia.org/wiki/Special:FilePath/Kick_Off_Turf.jpg?width=800"]);
@@ -104,5 +104,19 @@ describe("photos and the India import", () => {
     const tiles = indiaTiles();
     expect(tiles[0].key).toBe("tile:11,76");
     expect(tiles.length).toBe(31 * 30);
+  });
+
+  it("can walk India in larger steps (fewer, bigger tiles)", () => {
+    const tiles = indiaTiles(undefined, undefined, 2);
+    expect(tiles[0]).toMatchObject({ w: 76, s: 10, e: 78, n: 12 }); // the 2° tile covering Malappuram
+    expect(tiles.length).toBe(16 * 15);
+  });
+
+  it("skips tiles with no town within ~66 km (open sea, abroad)", () => {
+    const towns: Place[] = [{ name: "Kochi", lat: 9.97, lng: 76.28, state: "Kerala", india: true }];
+    const kochiTile = { s: 9, w: 76, n: 10, e: 77, key: "tile:9,76" };
+    const arabianSea = { s: 9, w: 70, n: 10, e: 71, key: "tile:9,70" };
+    expect(tileHasTown(kochiTile, towns)).toBe(true);
+    expect(tileHasTown(arabianSea, towns)).toBe(false);
   });
 });

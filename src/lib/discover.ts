@@ -13,7 +13,7 @@ import { normalizePhone } from "./otp";
 import { findOrCreateCity, nearestCity, normalizeState } from "./places";
 import { haversineKm } from "./search";
 
-const SERVERS = (process.env.OVERPASS_URLS || "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter,https://overpass.private.coffee/api/interpreter")
+export const SERVERS = (process.env.OVERPASS_URLS || "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter,https://overpass.private.coffee/api/interpreter")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
@@ -153,6 +153,25 @@ export async function overpassQuery(q: string, timeoutMs = 90_000): Promise<OsmE
 
 /** The turfs around a square's centre (busy public servers can take over a minute for a big city). */
 export const overpassFetcher: Fetcher = (lat, lng) => overpassQuery(query(lat, lng), 90_000);
+
+/**
+ * One Overpass query against ONE named server (throws on any failure). The bulk India import uses this to run
+ * several map servers at once — each server one request at a time, so no single server is overloaded.
+ */
+export async function overpassOn(url: string, q: string, timeoutMs = 120_000): Promise<OsmElement[]> {
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "Turfly/1.0 (football turf finder)" },
+    body: new URLSearchParams({ data: q }),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = (await r.json()) as { elements?: OsmElement[]; remark?: string };
+  // Any remark from Overpass means trouble (a runtime error, or a quota/rate-limit notice served as an empty
+  // 200). Throw so the caller moves to another mirror instead of accepting zero results.
+  if (j.remark) throw new Error(j.remark.slice(0, 200));
+  return j.elements ?? [];
+}
 
 const running = new Map<string, Promise<{ found: number; added: number }>>();
 const recentLookups: number[] = [];
