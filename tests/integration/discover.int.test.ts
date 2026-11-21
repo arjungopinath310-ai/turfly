@@ -88,7 +88,24 @@ describe("WhatsApp alerts for turf owners", () => {
   });
 });
 
-import { importTile } from "@/lib/import-india";
+import { importTile, importTileTurfs, type Place } from "@/lib/import-india";
+describe("importing turfs with a prebuilt town cache (the fast India import)", () => {
+  it("files each turf under its nearest cached town, with that town's state", async () => {
+    const b = { lat: +(19 + Math.random() * 2).toFixed(3), lng: +(72 + Math.random() * 2).toFixed(3) };
+    const towns: Place[] = [
+      { name: `Epsilonpur ${tag}`, lat: b.lat, lng: b.lng, state: "Maharashtra", india: true },
+      { name: `Zetatown ${tag}`, lat: b.lat + 0.4, lng: b.lng, state: "Maharashtra", india: true },
+    ];
+    const near: OsmElement = { type: "way", id: id(), center: { lat: b.lat + 0.02, lon: b.lng }, tags: { name: `Epsilon Turf ${tag}`, leisure: "pitch", sport: "soccer" } };
+    const far: OsmElement = { type: "node", id: id(), lat: b.lat + 5, lon: b.lng + 5, tags: { name: `Nowhere Turf ${tag}`, leisure: "pitch", sport: "soccer" } }; // >60 km from any town
+    const r = await importTileTurfs([near, far], towns);
+    expect(r).toMatchObject({ found: 2, added: 1 }); // the far turf has no town within 60 km, so it is skipped
+    const t = await prisma.turf.findFirstOrThrow({ where: { sourceRef: `way/${near.id}` }, include: { city: true } });
+    expect(t.city).toMatchObject({ name: `Epsilonpur ${tag}`, state: "Maharashtra" });
+    expect(await prisma.turf.findFirst({ where: { sourceRef: `node/${far.id}` } })).toBeNull();
+  });
+});
+
 describe("importing a map tile", () => {
   it("files turfs under their nearest town, skips ones already listed, and adds map photos later", async () => {
     const b = { lat: +(15 + Math.random() * 3).toFixed(3), lng: +(74 + Math.random() * 3).toFixed(3) };

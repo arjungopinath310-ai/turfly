@@ -35,7 +35,15 @@ export async function findOrCreateCity(input: { name: string; state: string; lat
   let slug = slugify(name) || "town";
   if (await prisma.city.findUnique({ where: { slug } })) slug = slugify(`${name}-${state}`);
   if (await prisma.city.findUnique({ where: { slug } })) slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
-  return prisma.city.create({ data: { slug, name, state, district: input.district ?? null, lat: input.lat, lng: input.lng, pincodes: [] } });
+  try {
+    return await prisma.city.create({ data: { slug, name, state, district: input.district ?? null, lat: input.lat, lng: input.lng, pincodes: [] } });
+  } catch (e) {
+    // another import worker created the same town at the same moment: use theirs
+    if ((e as { code?: string }).code !== "P2002") throw e;
+    const other = await prisma.city.findFirst({ where: { name: { equals: name, mode: "insensitive" }, state: { equals: state, mode: "insensitive" } } });
+    if (other) return other;
+    return prisma.city.create({ data: { slug: `${slug}-${Date.now().toString(36).slice(-4)}`, name, state, district: input.district ?? null, lat: input.lat, lng: input.lng, pincodes: [] } });
+  }
 }
 
 /** The closest town Turfly already knows within `km` of a point, or null. */
