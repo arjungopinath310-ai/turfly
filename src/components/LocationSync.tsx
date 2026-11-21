@@ -13,7 +13,7 @@ const movedKm = (a: { lat: number; lng: number }, b: { lat: number; lng: number 
  * first time (the home page); otherwise it only refreshes a position the person already shared.
  * The position stays on the device (a cookie); the page re-renders with the nearest turfs.
  */
-export function LocationSync({ active, ask = false, quiet = false, className = "", label, tone = "light" }: { active: boolean; ask?: boolean; quiet?: boolean; className?: string; label?: string; tone?: "light" | "dark" }) {
+export function LocationSync({ active, ask = false, quiet = false, className = "", label, tone = "light", variant = "chip" }: { active: boolean; ask?: boolean; quiet?: boolean; className?: string; label?: string; tone?: "light" | "dark"; variant?: "chip" | "button" }) {
   const { refresh } = useRefreshingRouter();
   const [state, setState] = useState<"idle" | "busy" | "denied" | "unsupported">("idle");
   const [finding, setFinding] = useState(false);
@@ -83,10 +83,23 @@ export function LocationSync({ active, ask = false, quiet = false, className = "
   }, [ask, locate, discover]);
 
   if (state === "unsupported" || quiet) return null;
+  const busy = state === "busy" || finding;
+  const Icon = busy ? Loader2 : state === "denied" ? MapPinOff : LocateFixed;
+  const text = state === "denied"
+    ? variant === "button" ? "Location is blocked — allow it for this site, then tap again" : "Location is off · tap to retry"
+    : finding ? "Finding turfs near you…" : active ? (label ?? "Near you · update") : "Use my location";
+
+  if (variant === "button")
+    return (
+      <button type="button" onClick={() => locate(false)} disabled={busy} className={`btn-primary ${className}`}>
+        <Icon size={18} className={busy ? "animate-spin" : ""} />
+        {text}
+      </button>
+    );
   return (
     <button type="button" onClick={() => locate(false)} disabled={state === "busy"} className={`chip shrink-0 whitespace-nowrap ${tone === "dark" ? "border-volt/60 py-1 font-display text-[13px] uppercase tracking-[.08em] text-volt hover:bg-volt hover:text-ink" : active ? "border-brand-200 bg-brand-50 text-brand-800" : "border-slate-200 bg-white text-slate-700"} ${className}`}>
-      {state === "busy" || finding ? <Loader2 size={13} className="animate-spin" /> : state === "denied" ? <MapPinOff size={13} /> : <LocateFixed size={13} />}
-      {state === "denied" ? "Location is off · tap to retry" : finding ? "Finding turfs near you…" : active ? (label ?? "Near you · update") : "Use my location"}
+      <Icon size={13} className={busy ? "animate-spin" : ""} />
+      {text}
     </button>
   );
 }
