@@ -1,6 +1,6 @@
 /* Turfly service worker: shows an offline page when the network is down, caches only static build files.
    It never caches pages or API responses, so availability, prices and bookings are always live. */
-const VERSION = "turfly-v1";
+const VERSION = "turfly-v2";
 const OFFLINE = "/offline.html";
 
 self.addEventListener("install", (e) => {
