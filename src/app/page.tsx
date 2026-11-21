@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 import { isAppUserAgent } from "@/lib/access";
-import { CalendarCheck, ChevronRight } from "lucide-react";
+import { CalendarCheck, ChevronRight, MapPin } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
 import { freeToday, haversineKm, searchTurfs } from "@/lib/search";
@@ -128,10 +128,23 @@ export default async function Home() {
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
             <div className="mr-auto">
               <h2 className="h2">{near ? "Turfs near you" : "Turfs"}</h2>
-              <p className="text-sm text-slate-500">{near ? "Closest first, with today's free slots." : "Share your location to see the closest turfs first."}</p>
+              <p className="text-sm text-slate-500">{near ? "Closest first, with today's free slots." : "A few to get you started."}</p>
             </div>
             <Link href={allHref} className="font-display text-sm font-bold uppercase tracking-[.08em] text-brand-700 hover:underline">See all & map →</Link>
           </div>
+          {/* No location yet: a clear prompt (the list below is just a default order until we know where you are). */}
+          {!near && (
+            <div className="mb-5 flex flex-col gap-3 rounded-xl border-2 border-ink bg-volt/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <span className="hidden h-10 w-10 shrink-0 place-items-center rounded-lg bg-ink text-volt sm:grid"><MapPin size={20} /></span>
+                <div>
+                  <div className="font-display text-lg font-bold uppercase leading-tight">See the turfs nearest you</div>
+                  <p className="mt-0.5 text-sm text-slate-600">Share your location and we&apos;ll sort by distance — and pull in more turfs around you from the map.</p>
+                </div>
+              </div>
+              <LocationSync active={false} variant="button" label="Use my location" className="shrink-0 sm:w-auto" />
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {turfs.map((t) => (
               <TurfCardView key={t.id} t={t} free={free[t.id]} />
